@@ -10,8 +10,8 @@ CREATE TYPE "place_statuses" AS ENUM (
 
 CREATE TABLE "places" (
     "id"         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    "city_id"    UUID NOT NULL,
-    "company_id" UUID,
+    "owner_id"   UUID                   NOT NULL,
+    "managed_by"
     "class"      VARCHAR(32) NOT NULL REFERENCES place_classes(code) ON DELETE RESTRICT ON UPDATE CASCADE,
 
     "status"     place_statuses         NOT NULL,
