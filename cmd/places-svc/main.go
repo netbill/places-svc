@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/chains-lab/places-svc/cmd/cli"
+	"github.com/netbill/places-svc/cmd/cli"
 )
 
 func main() {

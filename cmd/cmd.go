@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"sync"
 
-	"github.com/chains-lab/logium"
-	"github.com/chains-lab/places-svc/internal"
+	"github.com/netbill/logium"
+	"github.com/netbill/places-svc/internal"
 )
 
 func StartServices(ctx context.Context, cfg internal.Config, log logium.Logger, wg *sync.WaitGroup) {

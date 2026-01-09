@@ -10,7 +10,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	"github.com/netbill/pgx"
-	replicaspg "github.com/netbill/replicas/pgdb"
+	pgdb "github.com/netbill/replicas/pgdb"
 )
 
 const PlaceFeaturesTable = "place_features"
@@ -109,22 +109,6 @@ func (q PlaceFeaturesQ) FilterByPlaceID(placeID uuid.UUID) PlaceFeaturesQ {
 	q.counter = q.counter.
 		Join(PlaceFeatureLinksTable + " pfl ON pfl.feature_id = pf.id").
 		Where(sq.Eq{"pfl.place_id": placeID})
-
-	return q
-}
-
-func (q PlaceFeaturesQ) FilterByAccountID(accountID uuid.UUID) PlaceFeaturesQ {
-	q.selector = q.selector.
-		Join(PlaceFeatureLinksTable + " pfl ON pfl.feature_id = pf.id").
-		Join(PlacesTable + " p ON p.id = pfl.place_id").
-		Join(replicaspg.OrganizationMembersTable + " om ON om.organization_id = p.organization_id").
-		Where(sq.Eq{"om.account_id": accountID})
-
-	q.counter = q.counter.
-		Join(PlaceFeatureLinksTable + " pfl ON pfl.feature_id = pf.id").
-		Join(PlacesTable + " p ON p.id = pfl.place_id").
-		Join(replicaspg.OrganizationMembersTable + " om ON om.organization_id = p.organization_id").
-		Where(sq.Eq{"om.account_id": accountID})
 
 	return q
 }
@@ -240,4 +224,25 @@ func (q PlaceFeaturesQ) Count(ctx context.Context) (uint, error) {
 	}
 
 	return count, nil
+}
+
+func (q PlaceFeaturesQ) Exists(ctx context.Context) (bool, error) {
+	query, args, err := q.selector.
+		Columns("1").
+		Limit(1).
+		ToSql()
+	if err != nil {
+		return false, fmt.Errorf("building exists query for %s: %w", PlaceFeaturesTable, err)
+	}
+
+	var one int
+	err = q.db.QueryRowContext(ctx, query, args...).Scan(&one)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
 }

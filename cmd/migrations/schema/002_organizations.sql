@@ -41,22 +41,6 @@ CREATE TABLE organization_members (
     UNIQUE(account_id, organization_id)
 );
 
-CREATE TYPE organization_invite_status AS ENUM (
-    'sent',
-    'declined',
-    'accepted'
-);
-
-CREATE TABLE organization_invites (
-    id              UUID PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4(),
-    account_id      UUID NOT NULL REFERENCES profiles(account_id) ON DELETE CASCADE,
-    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-    status          organization_invite_status NOT NULL DEFAULT 'sent',
-
-    expires_at TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT (now() at time zone 'utc')
-);
-
 CREATE TABLE organization_roles (
     id              UUID    PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4(),
     organization_id UUID    NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -272,9 +256,7 @@ DROP TABLE IF EXISTS organization_role_permissions CASCADE;
 DROP TABLE IF EXISTS organization_member_roles CASCADE;
 DROP TABLE IF EXISTS organization_roles CASCADE;
 DROP TABLE IF EXISTS organization_members CASCADE;
-DROP TABLE IF EXISTS organization_invites CASCADE;
 DROP TABLE IF EXISTS organizations CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
 
 DROP TYPE IF EXISTS organization_status;
-DROP TYPE IF EXISTS organization_invite_status;
