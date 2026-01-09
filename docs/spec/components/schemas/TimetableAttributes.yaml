@@ -1,9 +1,0 @@
-type: object
-required:
-  - table
-properties:
-  table:
-    type: array
-    description: "timetable table"
-    items:
-      $ref: './TimeInterval.yaml'

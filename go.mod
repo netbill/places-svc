@@ -1,19 +1,12 @@
 module github.com/chains-lab/places-svc
 
-go 1.24.6
-
-toolchain go1.24.7
+go 1.25.4
 
 require (
-	github.com/Masterminds/squirrel v1.5.4
 	github.com/alecthomas/kingpin v2.2.6+incompatible
-	github.com/chains-lab/ape v0.4.14
 	github.com/chains-lab/logium v0.1.1
-	github.com/go-chi/chi/v5 v5.2.2
-	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
-	github.com/google/uuid v1.6.0
-	github.com/lib/pq v1.10.9
-	github.com/paulmach/orb v0.11.1
+	github.com/netbill/pgx v0.1.0
+	github.com/netbill/replicas v0.1.2
 	github.com/pkg/errors v0.9.1
 	github.com/rubenv/sql-migrate v1.8.0
 	github.com/sirupsen/logrus v1.9.3
@@ -21,19 +14,18 @@ require (
 )
 
 require (
+	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20240927000941-0f3dac36c52b // indirect
-	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496 // indirect
-	github.com/chains-lab/restkit v0.3.0 // indirect
 	github.com/chains-lab/svc-errors v0.2.2 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
-	github.com/google/jsonapi v1.0.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
