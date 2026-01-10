@@ -5,51 +5,51 @@ import (
 	"database/sql"
 
 	"github.com/netbill/pgx"
-	replicaspg "github.com/netbill/replicas/pgdb"
+	"github.com/netbill/replicas/pgdb"
 )
 
-type Repository struct {
+type Service struct {
 	db *sql.DB
 }
 
-func New(db *sql.DB) *Repository {
-	return &Repository{
+func New(db *sql.DB) *Service {
+	return &Service{
 		db: db,
 	}
 }
 
-func (r Repository) OrganizationsQ(ctx context.Context) replicaspg.OrganizationsQ {
-	return replicaspg.NewOrganizationsQ(pgx.Exec(r.db, ctx))
+func (s Service) organizationsQ(ctx context.Context) pgdb.OrganizationsQ {
+	return pgdb.NewOrganizationsQ(pgx.Exec(s.db, ctx))
 }
 
-func (r Repository) membersQ(ctx context.Context) replicaspg.OrgMembersQ {
-	return replicaspg.NewOrgMembersQ(pgx.Exec(r.db, ctx))
+func (s Service) orgMembersQ(ctx context.Context) pgdb.OrgMembersQ {
+	return pgdb.NewOrgMembersQ(pgx.Exec(s.db, ctx))
 }
 
-func (r Repository) memberRolesQ(ctx context.Context) replicaspg.OrgMemberRolesQ {
-	return replicaspg.NewOrgMemberRolesQ(pgx.Exec(r.db, ctx))
+func (s Service) orgMemberRolesQ(ctx context.Context) pgdb.OrgMemberRolesQ {
+	return pgdb.NewOrgMemberRolesQ(pgx.Exec(s.db, ctx))
 }
 
-func (r Repository) rolesQ(ctx context.Context) replicaspg.OrgRolesQ {
-	return replicaspg.NewOrgRolesQ(pgx.Exec(r.db, ctx))
+func (s Service) orgRolesQ(ctx context.Context) pgdb.OrgRolesQ {
+	return pgdb.NewOrgRolesQ(pgx.Exec(s.db, ctx))
 }
 
-func (r Repository) rolePermissionLinksQ(ctx context.Context) replicaspg.OrgRolePermissionLinksQ {
-	return replicaspg.NewOrgRolePermissionsQ(pgx.Exec(r.db, ctx))
+func (s Service) orgRolePermissionLinksQ(ctx context.Context) pgdb.OrgRolePermissionLinksQ {
+	return pgdb.NewOrgRolePermissionsQ(pgx.Exec(s.db, ctx))
 }
 
-func (r Repository) rolePermissionsQ(ctx context.Context) replicaspg.OrgRolePermissionsQ {
-	return replicaspg.NewOrgPermissionsQ(pgx.Exec(r.db, ctx))
+func (s Service) orgRolePermissionsQ(ctx context.Context) pgdb.OrgRolePermissionsQ {
+	return pgdb.NewOrgPermissionsQ(pgx.Exec(s.db, ctx))
 }
 
-func (r Repository) invitesQ(ctx context.Context) replicaspg.OrgInvitesQ {
-	return replicaspg.NewOrgInvitesQ(pgx.Exec(r.db, ctx))
+func (s Service) orgInvitesQ(ctx context.Context) pgdb.OrgInvitesQ {
+	return pgdb.NewOrgInvitesQ(pgx.Exec(s.db, ctx))
 }
 
-func (r Repository) profilesQ(ctx context.Context) replicaspg.ProfilesQ {
-	return replicaspg.NewProfilesQ(pgx.Exec(r.db, ctx))
+func (s Service) orgProfilesQ(ctx context.Context) pgdb.ProfilesQ {
+	return pgdb.NewProfilesQ(pgx.Exec(s.db, ctx))
 }
 
-func (r Repository) Transaction(ctx context.Context, fn func(ctx context.Context) error) error {
-	return pgx.Transaction(r.db, ctx, fn)
+func (s Service) Transaction(ctx context.Context, fn func(ctx context.Context) error) error {
+	return pgx.Transaction(s.db, ctx, fn)
 }

@@ -97,16 +97,16 @@ CREATE TABLE places (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC')
 );
 
-CREATE TABLE place_features (
+CREATE TABLE place_possibilities (
     id          UUID          PRIMARY KEY DEFAULT uuid_generate_v4(),
     code        VARCHAR(255)  UNIQUE NOT NULL,
     description VARCHAR(1024) NOT NULL
 );
 
-CREATE TABLE place_feature_links (
+CREATE TABLE place_possibility_links (
     place_id   UUID NOT NULL REFERENCES places(id) ON DELETE CASCADE,
-    feature_id UUID NOT NULL REFERENCES place_features(id) ON DELETE CASCADE,
-    PRIMARY KEY (place_id, feature_id)
+    possibility_id UUID NOT NULL REFERENCES place_possibilities(id) ON DELETE CASCADE,
+    PRIMARY KEY (place_id, possibility_id)
 );
 
 CREATE TABLE place_timetables (
@@ -125,8 +125,8 @@ CREATE TABLE place_timetables (
 
 -- +migrate Down
 DROP TABLE IF EXISTS place_timetables CASCADE;
-DROP TABLE IF EXISTS place_feature_links CASCADE;
-DROP TABLE IF EXISTS place_features CASCADE;
+DROP TABLE IF EXISTS place_possibility_links CASCADE;
+DROP TABLE IF EXISTS place_possibilities CASCADE;
 DROP TABLE IF EXISTS places CASCADE;
 
 DROP TABLE IF EXISTS place_classes CASCADE;

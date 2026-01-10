@@ -10,30 +10,27 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	"github.com/netbill/pgx"
-	pgdb "github.com/netbill/replicas/pgdb"
 )
 
-const PlaceFeaturesTable = "place_features"
-const PlaceFeaturesColumns = "id, code, description"
+const PlacePossibilitiesTable = "place_possibilities"
+const PlacePossibilitiesColumns = "code, description"
 
-type PlaceFeature struct {
-	ID          uuid.UUID `json:"id"`
-	Code        string    `json:"code"`
-	Description string    `json:"description"`
+type PlacePossibility struct {
+	Code        string `json:"code"`
+	Description string `json:"description"`
 }
 
-func (f *PlaceFeature) scan(row sq.RowScanner) error {
+func (f *PlacePossibility) scan(row sq.RowScanner) error {
 	if err := row.Scan(
-		&f.ID,
 		&f.Code,
 		&f.Description,
 	); err != nil {
-		return fmt.Errorf("scanning place feature: %w", err)
+		return fmt.Errorf("scanning place possibility: %w", err)
 	}
 	return nil
 }
 
-type PlaceFeaturesQ struct {
+type PlacePossibilitiesQ struct {
 	db       pgx.DBTX
 	selector sq.SelectBuilder
 	inserter sq.InsertBuilder
@@ -42,58 +39,50 @@ type PlaceFeaturesQ struct {
 	counter  sq.SelectBuilder
 }
 
-func NewPlaceFeaturesQ(db pgx.DBTX) PlaceFeaturesQ {
+func NewPlacePossibilitiesQ(db pgx.DBTX) PlacePossibilitiesQ {
 	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	return PlaceFeaturesQ{
+	return PlacePossibilitiesQ{
 		db:       db,
-		selector: builder.Select("pf." + strings.ReplaceAll(PlaceFeaturesColumns, ", ", ", pf.")).From(PlaceFeaturesTable + " pf"),
-		inserter: builder.Insert(PlaceFeaturesTable),
-		updater:  builder.Update(PlaceFeaturesTable),
-		deleter:  builder.Delete(PlaceFeaturesTable),
-		counter:  builder.Select("COUNT(*) AS count").From(PlaceFeaturesTable + " pf"),
+		selector: builder.Select("pf." + strings.ReplaceAll(PlacePossibilitiesColumns, ", ", ", pf.")).From(PlacePossibilitiesTable + " pf"),
+		inserter: builder.Insert(PlacePossibilitiesTable),
+		updater:  builder.Update(PlacePossibilitiesTable),
+		deleter:  builder.Delete(PlacePossibilitiesTable),
+		counter:  builder.Select("COUNT(*) AS count").From(PlacePossibilitiesTable + " pf"),
 	}
 }
 
-type PlaceFeaturesQInsertInput struct {
+type PlacePossibilitiesQInsertInput struct {
 	Code        string
 	Description string
 }
 
-func (q PlaceFeaturesQ) Insert(ctx context.Context, data PlaceFeaturesQInsertInput) (PlaceFeature, error) {
+func (q PlacePossibilitiesQ) Insert(ctx context.Context, data PlacePossibilitiesQInsertInput) (PlacePossibility, error) {
 	query, args, err := q.inserter.
 		SetMap(map[string]interface{}{
 			"code":        data.Code,
 			"description": data.Description,
 		}).
-		Suffix("RETURNING " + PlaceFeaturesColumns).
+		Suffix("RETURNING " + PlacePossibilitiesColumns).
 		ToSql()
 	if err != nil {
-		return PlaceFeature{}, fmt.Errorf("building insert query for %s: %w", PlaceFeaturesTable, err)
+		return PlacePossibility{}, fmt.Errorf("building insert query for %s: %w", PlacePossibilitiesTable, err)
 	}
 
-	var inserted PlaceFeature
+	var inserted PlacePossibility
 	if err := inserted.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return PlaceFeature{}, nil
+			return PlacePossibility{}, nil
 		default:
-			return PlaceFeature{}, err
+			return PlacePossibility{}, err
 		}
 	}
 
 	return inserted, nil
 }
 
-func (q PlaceFeaturesQ) FilterByID(id uuid.UUID) PlaceFeaturesQ {
-	q.selector = q.selector.Where(sq.Eq{"id": id})
-	q.counter = q.counter.Where(sq.Eq{"id": id})
-	q.updater = q.updater.Where(sq.Eq{"id": id})
-	q.deleter = q.deleter.Where(sq.Eq{"id": id})
-	return q
-}
-
-func (q PlaceFeaturesQ) FilterByCode(code string) PlaceFeaturesQ {
+func (q PlacePossibilitiesQ) FilterByCode(code string) PlacePossibilitiesQ {
 	q.selector = q.selector.Where(sq.Eq{"code": code})
 	q.counter = q.counter.Where(sq.Eq{"code": code})
 	q.updater = q.updater.Where(sq.Eq{"code": code})
@@ -101,47 +90,47 @@ func (q PlaceFeaturesQ) FilterByCode(code string) PlaceFeaturesQ {
 	return q
 }
 
-func (q PlaceFeaturesQ) FilterByPlaceID(placeID uuid.UUID) PlaceFeaturesQ {
+func (q PlacePossibilitiesQ) FilterByPlaceID(placeID uuid.UUID) PlacePossibilitiesQ {
 	q.selector = q.selector.
-		Join(PlaceFeatureLinksTable + " pfl ON pfl.feature_id = pf.id").
+		Join(PlacePossibilityLinksTable + " pfl ON pfl.possibility_id = pf.id").
 		Where(sq.Eq{"pfl.place_id": placeID})
 
 	q.counter = q.counter.
-		Join(PlaceFeatureLinksTable + " pfl ON pfl.feature_id = pf.id").
+		Join(PlacePossibilityLinksTable + " pfl ON pfl.possibility_id = pf.id").
 		Where(sq.Eq{"pfl.place_id": placeID})
 
 	return q
 }
 
-func (q PlaceFeaturesQ) Get(ctx context.Context) (PlaceFeature, error) {
+func (q PlacePossibilitiesQ) Get(ctx context.Context) (PlacePossibility, error) {
 	query, args, err := q.selector.Limit(1).ToSql()
 	if err != nil {
-		return PlaceFeature{}, fmt.Errorf("building select query for %s: %w", PlaceFeaturesTable, err)
+		return PlacePossibility{}, fmt.Errorf("building select query for %s: %w", PlacePossibilitiesTable, err)
 	}
 
-	var f PlaceFeature
+	var f PlacePossibility
 	if err := f.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
-		return PlaceFeature{}, err
+		return PlacePossibility{}, err
 	}
 
 	return f, nil
 }
 
-func (q PlaceFeaturesQ) Select(ctx context.Context) ([]PlaceFeature, error) {
+func (q PlacePossibilitiesQ) Select(ctx context.Context) ([]PlacePossibility, error) {
 	query, args, err := q.selector.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("building select query for %s: %w", PlaceFeaturesTable, err)
+		return nil, fmt.Errorf("building select query for %s: %w", PlacePossibilitiesTable, err)
 	}
 
 	rows, err := q.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("executing select query for %s: %w", PlaceFeaturesTable, err)
+		return nil, fmt.Errorf("executing select query for %s: %w", PlacePossibilitiesTable, err)
 	}
 	defer rows.Close()
 
-	var items []PlaceFeature
+	var items []PlacePossibility
 	for rows.Next() {
-		var f PlaceFeature
+		var f PlacePossibility
 		if err := f.scan(rows); err != nil {
 			return nil, err
 		}
@@ -154,85 +143,85 @@ func (q PlaceFeaturesQ) Select(ctx context.Context) ([]PlaceFeature, error) {
 	return items, nil
 }
 
-func (q PlaceFeaturesQ) UpdateOne(ctx context.Context) (PlaceFeature, error) {
+func (q PlacePossibilitiesQ) UpdateOne(ctx context.Context) (PlacePossibility, error) {
 	query, args, err := q.updater.
-		Suffix("RETURNING " + PlaceFeaturesColumns).
+		Suffix("RETURNING " + PlacePossibilitiesColumns).
 		ToSql()
 	if err != nil {
-		return PlaceFeature{}, fmt.Errorf("building update query for %s: %w", PlaceFeaturesTable, err)
+		return PlacePossibility{}, fmt.Errorf("building update query for %s: %w", PlacePossibilitiesTable, err)
 	}
 
-	var updated PlaceFeature
+	var updated PlacePossibility
 	if err := updated.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
-		return PlaceFeature{}, err
+		return PlacePossibility{}, err
 	}
 
 	return updated, nil
 }
 
-func (q PlaceFeaturesQ) UpdateMany(ctx context.Context) (int64, error) {
+func (q PlacePossibilitiesQ) UpdateMany(ctx context.Context) (int64, error) {
 	query, args, err := q.updater.ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("building update query for %s: %w", PlaceFeaturesTable, err)
+		return 0, fmt.Errorf("building update query for %s: %w", PlacePossibilitiesTable, err)
 	}
 
 	res, err := q.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return 0, fmt.Errorf("executing update query for %s: %w", PlaceFeaturesTable, err)
+		return 0, fmt.Errorf("executing update query for %s: %w", PlacePossibilitiesTable, err)
 	}
 
 	affected, err := res.RowsAffected()
 	if err != nil {
-		return 0, fmt.Errorf("rows affected for %s: %w", PlaceFeaturesTable, err)
+		return 0, fmt.Errorf("rows affected for %s: %w", PlacePossibilitiesTable, err)
 	}
 
 	return affected, nil
 }
 
-func (q PlaceFeaturesQ) UpdateCode(code string) PlaceFeaturesQ {
+func (q PlacePossibilitiesQ) UpdateCode(code string) PlacePossibilitiesQ {
 	q.updater = q.updater.Set("code", code)
 	return q
 }
 
-func (q PlaceFeaturesQ) UpdateDescription(description string) PlaceFeaturesQ {
+func (q PlacePossibilitiesQ) UpdateDescription(description string) PlacePossibilitiesQ {
 	q.updater = q.updater.Set("description", description)
 	return q
 }
 
-func (q PlaceFeaturesQ) Delete(ctx context.Context) error {
+func (q PlacePossibilitiesQ) Delete(ctx context.Context) error {
 	query, args, err := q.deleter.ToSql()
 	if err != nil {
-		return fmt.Errorf("building delete query for %s: %w", PlaceFeaturesTable, err)
+		return fmt.Errorf("building delete query for %s: %w", PlacePossibilitiesTable, err)
 	}
 
 	if _, err := q.db.ExecContext(ctx, query, args...); err != nil {
-		return fmt.Errorf("executing delete query for %s: %w", PlaceFeaturesTable, err)
+		return fmt.Errorf("executing delete query for %s: %w", PlacePossibilitiesTable, err)
 	}
 
 	return nil
 }
 
-func (q PlaceFeaturesQ) Count(ctx context.Context) (uint, error) {
+func (q PlacePossibilitiesQ) Count(ctx context.Context) (uint, error) {
 	query, args, err := q.counter.ToSql()
 	if err != nil {
-		return 0, fmt.Errorf("building count query for %s: %w", PlaceFeaturesTable, err)
+		return 0, fmt.Errorf("building count query for %s: %w", PlacePossibilitiesTable, err)
 	}
 
 	var count uint
 	if err := q.db.QueryRowContext(ctx, query, args...).Scan(&count); err != nil {
-		return 0, fmt.Errorf("scanning count for %s: %w", PlaceFeaturesTable, err)
+		return 0, fmt.Errorf("scanning count for %s: %w", PlacePossibilitiesTable, err)
 	}
 
 	return count, nil
 }
 
-func (q PlaceFeaturesQ) Exists(ctx context.Context) (bool, error) {
+func (q PlacePossibilitiesQ) Exists(ctx context.Context) (bool, error) {
 	query, args, err := q.selector.
 		Columns("1").
 		Limit(1).
 		ToSql()
 	if err != nil {
-		return false, fmt.Errorf("building exists query for %s: %w", PlaceFeaturesTable, err)
+		return false, fmt.Errorf("building exists query for %s: %w", PlacePossibilitiesTable, err)
 	}
 
 	var one int

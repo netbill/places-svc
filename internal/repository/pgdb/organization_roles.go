@@ -16,34 +16,28 @@ import (
 
 const OrganizationRoleTable = "organization_roles"
 
-const OrganizationRoleColumns = "id, organization_id, head, rank, name, color, created_at, updated_at"
-const OrganizationRoleColumnsR = "r.id, r.organization_id, r.head, r.rank, r.name, r.color, r.created_at, r.updated_at"
+const OrganizationRoleColumns = "id, organization_id, head, rank, created_at, updated_at"
+const OrganizationRoleColumnsR = "r.id, r.organization_id, r.head, r.rank, r.created_at, r.updated_at"
 
 type OrganizationRole struct {
 	ID             uuid.UUID `json:"id"`
 	OrganizationID uuid.UUID `json:"organization_id"`
 	Head           bool      `json:"head"`
 	Rank           uint      `json:"rank"`
-	Name           string    `json:"name"`
-	Color          string    `json:"color"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (r *OrganizationRole) scan(row sq.RowScanner) error {
-	err := row.Scan(
+	if err := row.Scan(
 		&r.ID,
 		&r.OrganizationID,
 		&r.Head,
 		&r.Rank,
-		&r.Name,
-		&r.Color,
 		&r.CreatedAt,
 		&r.UpdatedAt,
-	)
-
-	if err != nil {
+	); err != nil {
 		return fmt.Errorf("scanning role: %w", err)
 	}
 	return nil
@@ -71,47 +65,38 @@ func NewOrgRolesQ(db pgx.DBTX) OrgRolesQ {
 }
 
 type InsertRoleParams struct {
-	OrganizationID uuid.UUID `json:"organization_id"`
-	Head           bool      `json:"head"`
-	Rank           uint      `json:"rank"`
-	Name           string    `json:"name"`
-	Color          string    `json:"color"`
+	OrganizationID uuid.UUID
+	Head           bool
+	Rank           uint
 }
 
 func (q OrgRolesQ) Insert(ctx context.Context, data InsertRoleParams) (OrganizationRole, error) {
 	const sqlInsertAtRank = `
 		WITH bumped AS (
 			UPDATE organization_roles
-			SET
-				rank = rank + 1,
-				updated_at = now()
+			SET rank = rank + 1, updated_at = now()
 			WHERE organization_id = $1
 			  AND rank >= $2
-			RETURNING 1
 		),
 		ins AS (
-			INSERT INTO organization_roles (organization_id, head, rank, name, color)
-			VALUES ($1, $3, $2, $4, $5)
-			RETURNING id, organization_id, head, rank, name, color, created_at, updated_at
+			INSERT INTO organization_roles (organization_id, head, rank)
+			VALUES ($1, $3, $2)
+			RETURNING id, organization_id, head, rank, created_at, updated_at
 		)
-		SELECT id, organization_id, head, rank, name, color, created_at, updated_at
-		FROM ins;
+		SELECT * FROM ins;
 	`
 
 	args := []any{
 		data.OrganizationID,
 		data.Rank,
 		data.Head,
-		data.Name,
-		data.Color,
 	}
 
-	var inserted OrganizationRole
-	if err := inserted.scan(q.db.QueryRowContext(ctx, sqlInsertAtRank, args...)); err != nil {
-		return OrganizationRole{}, fmt.Errorf("insert role at rank: %w", err)
+	var out OrganizationRole
+	if err := out.scan(q.db.QueryRowContext(ctx, sqlInsertAtRank, args...)); err != nil {
+		return OrganizationRole{}, err
 	}
-
-	return inserted, nil
+	return out, nil
 }
 
 func (q OrgRolesQ) Get(ctx context.Context) (OrganizationRole, error) {
@@ -223,16 +208,6 @@ func (q OrgRolesQ) UpdateMany(ctx context.Context) (int64, error) {
 	}
 
 	return aff, nil
-}
-
-func (q OrgRolesQ) UpdateName(name string) OrgRolesQ {
-	q.updater = q.updater.Set("name", name)
-	return q
-}
-
-func (q OrgRolesQ) UpdateColor(color string) OrgRolesQ {
-	q.updater = q.updater.Set("color", color)
-	return q
 }
 
 func (q OrgRolesQ) FilterByID(id ...uuid.UUID) OrgRolesQ {
@@ -368,11 +343,15 @@ func (q OrgRolesQ) UpdateRoleRank(ctx context.Context, roleID uuid.UUID, newRank
 	var aggID uuid.UUID
 	var oldRank int
 
-	{
-		const sqlGet = `SELECT organization_id, rank FROM roles WHERE id = $1 LIMIT 1`
-		if err := q.db.QueryRowContext(ctx, sqlGet, roleID).Scan(&aggID, &oldRank); err != nil {
-			return OrganizationRole{}, fmt.Errorf("scanning role rank: %w", err)
-		}
+	const sqlGet = `
+		SELECT organization_id, rank
+		FROM organization_roles
+		WHERE id = $1
+		LIMIT 1
+	`
+
+	if err := q.db.QueryRowContext(ctx, sqlGet, roleID).Scan(&aggID, &oldRank); err != nil {
+		return OrganizationRole{}, fmt.Errorf("scanning role rank: %w", err)
 	}
 
 	if oldRank == int(newRank) {
@@ -391,9 +370,9 @@ func (q OrgRolesQ) UpdateRoleRank(ctx context.Context, roleID uuid.UUID, newRank
 				END,
 				updated_at = now()
 			WHERE organization_id = $4
-			RETURNING id, organization_id, head, rank, name, color, created_at, updated_at
+			RETURNING id, organization_id, head, rank, created_at, updated_at
 		)
-		SELECT id, organization_id, head, rank, name, color, created_at, updated_at
+		SELECT id, organization_id, head, rank, created_at, updated_at
 		FROM upd
 		WHERE id = $1
 	`
@@ -495,7 +474,7 @@ func (q OrgRolesQ) UpdateRolesRanks(
 		) v
 		WHERE r.id = v.id
 		  AND r.organization_id = $3
-		RETURNING r.id, r.organization_id, r.head, r.rank, r.name, r.color, r.created_at, r.updated_at
+		RETURNING r.id, r.organization_id, r.head, r.rank, r.created_at, r.updated_at
 	`
 
 	ids := make([]string, len(changed))

@@ -11,16 +11,16 @@ import (
 	"github.com/netbill/pgx"
 )
 
-const OrganizationPermissionTable = "organization_role_permission"
-const OrganizationPermissionColumns = "id, code"
+const OrganizationPermissionTable = "organization_role_permissions"
+const OrganizationPermissionColumns = "code, description"
 
 type OrganizationRolePermission struct {
-	ID   uuid.UUID `json:"id"`
-	Code string    `json:"code"`
+	Code        string `json:"code"`
+	Description string `json:"description"`
 }
 
 func (p *OrganizationRolePermission) scan(row sq.RowScanner) error {
-	if err := row.Scan(&p.ID, &p.Code); err != nil {
+	if err := row.Scan(&p.Code, &p.Description); err != nil {
 		return fmt.Errorf("scanning permission: %w", err)
 	}
 	return nil
@@ -35,7 +35,7 @@ type OrgRolePermissionsQ struct {
 	counter  sq.SelectBuilder
 }
 
-func NewOrgPermissionsQ(db pgx.DBTX) OrgRolePermissionsQ {
+func NewOrgRolePermissionsQ(db pgx.DBTX) OrgRolePermissionsQ {
 	b := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	return OrgRolePermissionsQ{
 		db:       db,
@@ -43,22 +43,32 @@ func NewOrgPermissionsQ(db pgx.DBTX) OrgRolePermissionsQ {
 		inserter: b.Insert(OrganizationPermissionTable),
 		updater:  b.Update(OrganizationPermissionTable),
 		deleter:  b.Delete(OrganizationPermissionTable),
-		counter:  b.Select("COUNT(*)").From(OrganizationPermissionTable),
+		counter:  b.Select("COUNT(*) AS count").From(OrganizationPermissionTable),
 	}
 }
 
-func (q OrgRolePermissionsQ) Insert(ctx context.Context, data OrganizationRolePermission) (OrganizationRolePermission, error) {
+type OrgRolePermissionsQInsertInput struct {
+	Code        string
+	Description string
+}
+
+func (q OrgRolePermissionsQ) Insert(ctx context.Context, data OrgRolePermissionsQInsertInput) (OrganizationRolePermission, error) {
 	query, args, err := q.inserter.SetMap(map[string]any{
-		"id":   data.ID,
-		"code": data.Code,
+		"code":        data.Code,
+		"description": data.Description,
 	}).Suffix("RETURNING " + OrganizationPermissionColumns).ToSql()
 	if err != nil {
 		return OrganizationRolePermission{}, fmt.Errorf("building insert query for %s: %w", OrganizationPermissionTable, err)
 	}
 
 	var out OrganizationRolePermission
-	if err = out.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
-		return OrganizationRolePermission{}, err
+	if err := out.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return OrganizationRolePermission{}, nil
+		default:
+			return OrganizationRolePermission{}, err
+		}
 	}
 	return out, nil
 }
@@ -70,7 +80,7 @@ func (q OrgRolePermissionsQ) Get(ctx context.Context) (OrganizationRolePermissio
 	}
 
 	var out OrganizationRolePermission
-	if err = out.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
+	if err := out.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
 			return OrganizationRolePermission{}, nil
@@ -96,12 +106,12 @@ func (q OrgRolePermissionsQ) Select(ctx context.Context) ([]OrganizationRolePerm
 	var out []OrganizationRolePermission
 	for rows.Next() {
 		var p OrganizationRolePermission
-		if err = p.scan(rows); err != nil {
+		if err := p.scan(rows); err != nil {
 			return nil, err
 		}
 		out = append(out, p)
 	}
-	if err = rows.Err(); err != nil {
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
@@ -115,7 +125,7 @@ func (q OrgRolePermissionsQ) UpdateOne(ctx context.Context) (OrganizationRolePer
 	}
 
 	var out OrganizationRolePermission
-	if err = out.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
+	if err := out.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
 		return OrganizationRolePermission{}, err
 	}
 	return out, nil
@@ -144,18 +154,10 @@ func (q OrgRolePermissionsQ) Delete(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("building delete query for %s: %w", OrganizationPermissionTable, err)
 	}
-	if _, err = q.db.ExecContext(ctx, query, args...); err != nil {
+	if _, err := q.db.ExecContext(ctx, query, args...); err != nil {
 		return fmt.Errorf("executing delete query for %s: %w", OrganizationPermissionTable, err)
 	}
 	return nil
-}
-
-func (q OrgRolePermissionsQ) FilterByID(id uuid.UUID) OrgRolePermissionsQ {
-	q.selector = q.selector.Where(sq.Eq{"id": id})
-	q.counter = q.counter.Where(sq.Eq{"id": id})
-	q.updater = q.updater.Where(sq.Eq{"id": id})
-	q.deleter = q.deleter.Where(sq.Eq{"id": id})
-	return q
 }
 
 func (q OrgRolePermissionsQ) FilterByCode(code ...string) OrgRolePermissionsQ {
@@ -168,12 +170,12 @@ func (q OrgRolePermissionsQ) FilterByCode(code ...string) OrgRolePermissionsQ {
 
 func (q OrgRolePermissionsQ) FilterByRoleID(roleID uuid.UUID) OrgRolePermissionsQ {
 	q.selector = q.selector.
-		Join("organization_role_permission_links rp ON rp.permission_id = role_permissions.id").
+		Join("organization_role_permission_links rp ON rp.permission_code = organization_role_permissions.code").
 		Where(sq.Eq{"rp.role_id": roleID}).
 		Distinct()
 
 	q.counter = q.counter.
-		Join("organization_role_permission_links rp ON rp.permission_id = role_permissions.id").
+		Join("organization_role_permission_links rp ON rp.permission_code = organization_role_permissions.code").
 		Where(sq.Eq{"rp.role_id": roleID})
 
 	return q
@@ -192,12 +194,12 @@ func (q OrgRolePermissionsQ) GetForRole(
 
 	const sqlq = `
 		SELECT
-			p.id,
 			p.code,
-			(rp.permission_id IS NOT NULL) AS enabled
+			p.description,
+			(rp.permission_code IS NOT NULL) AS enabled
 		FROM organization_role_permissions p
 		LEFT JOIN organization_role_permission_links rp
-			ON rp.permission_id = p.id
+			ON rp.permission_code = p.code
 			AND rp.role_id = $1
 		ORDER BY p.code
 	`
@@ -214,9 +216,9 @@ func (q OrgRolePermissionsQ) GetForRole(
 		var p OrganizationRolePermission
 		var enabled bool
 
-		if err = rows.Scan(
-			&p.ID,
+		if err := rows.Scan(
 			&p.Code,
+			&p.Description,
 			&enabled,
 		); err != nil {
 			return nil, fmt.Errorf("scanning permission for role: %w", err)
@@ -225,7 +227,7 @@ func (q OrgRolePermissionsQ) GetForRole(
 		out[p] = enabled
 	}
 
-	if err = rows.Err(); err != nil {
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
