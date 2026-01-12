@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type Role struct {
+type OrgRole struct {
 	ID             uuid.UUID `json:"id"`
 	OrganizationID uuid.UUID `json:"organization_id"`
 	Head           bool      `json:"head"`
@@ -16,6 +16,6 @@ type Role struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (r Role) IsNil() bool {
+func (r OrgRole) IsNil() bool {
 	return r.ID == uuid.Nil
 }

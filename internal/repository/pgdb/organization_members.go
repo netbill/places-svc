@@ -17,16 +17,7 @@ const OrganizationMembersTable = "organization_members"
 const OrganizationMemberColumns = "id, account_id, organization_id, created_at, updated_at"
 const OrganizationMemberColumnsM = "m.id, m.account_id, m.organization_id, m.created_at, m.updated_at"
 
-type OrganizationMember struct {
-	ID             uuid.UUID `json:"id"`
-	AccountID      uuid.UUID `json:"account_id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
-
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
-func (m *OrganizationMember) scan(row sq.RowScanner) error {
+func (m *OrgMember) scan(row sq.RowScanner) error {
 	err := row.Scan(
 		&m.ID,
 		&m.AccountID,
@@ -62,23 +53,57 @@ func NewOrgMembersQ(db pgx.DBTX) OrgMembersQ {
 	}
 }
 
+type OrgMember struct {
+	ID             uuid.UUID `json:"id"`
+	AccountID      uuid.UUID `json:"account_id"`
+	OrganizationID uuid.UUID `json:"organization_id"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (q OrgMembersQ) Upsert(
+	ctx context.Context,
+	data OrgMember,
+) error {
+
+	const sqlUpsert = `
+		INSERT INTO organization_members (account_id, organization_id)
+		VALUES ($1, $2)
+		ON CONFLICT (account_id, organization_id)
+		DO UPDATE SET
+			updated_at = now()
+	`
+
+	if _, err := q.db.ExecContext(
+		ctx,
+		sqlUpsert,
+		data.AccountID,
+		data.OrganizationID,
+	); err != nil {
+		return fmt.Errorf("upserting organization member: %w", err)
+	}
+
+	return nil
+}
+
 type InsertMemberParams struct {
 	AccountID      uuid.UUID
 	OrganizationID uuid.UUID
 }
 
-func (q OrgMembersQ) Insert(ctx context.Context, data InsertMemberParams) (OrganizationMember, error) {
+func (q OrgMembersQ) Insert(ctx context.Context, data InsertMemberParams) (OrgMember, error) {
 	query, args, err := q.inserter.SetMap(map[string]interface{}{
 		"account_id":      data.AccountID,
 		"organization_id": data.OrganizationID,
 	}).Suffix("RETURNING " + OrganizationMemberColumns).ToSql()
 	if err != nil {
-		return OrganizationMember{}, fmt.Errorf("building insert query for %s: %w", OrganizationMembersTable, err)
+		return OrgMember{}, fmt.Errorf("building insert query for %s: %w", OrganizationMembersTable, err)
 	}
 
-	var inserted OrganizationMember
+	var inserted OrgMember
 	if err := inserted.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
-		return OrganizationMember{}, err
+		return OrgMember{}, err
 	}
 
 	return inserted, nil
@@ -106,27 +131,27 @@ func (q OrgMembersQ) Exists(ctx context.Context) (bool, error) {
 	return ok, nil
 }
 
-func (q OrgMembersQ) Get(ctx context.Context) (OrganizationMember, error) {
+func (q OrgMembersQ) Get(ctx context.Context) (OrgMember, error) {
 	query, args, err := q.selector.Limit(1).ToSql()
 	if err != nil {
-		return OrganizationMember{}, fmt.Errorf("building select query for %s: %w", OrganizationMembersTable, err)
+		return OrgMember{}, fmt.Errorf("building select query for %s: %w", OrganizationMembersTable, err)
 	}
 
-	var m OrganizationMember
+	var m OrgMember
 	err = m.scan(q.db.QueryRowContext(ctx, query, args...))
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return OrganizationMember{}, nil
+			return OrgMember{}, nil
 		default:
-			return OrganizationMember{}, err
+			return OrgMember{}, err
 		}
 	}
 
 	return m, nil
 }
 
-func (q OrgMembersQ) Select(ctx context.Context) ([]OrganizationMember, error) {
+func (q OrgMembersQ) Select(ctx context.Context) ([]OrgMember, error) {
 	query, args, err := q.selector.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("building select query for %s: %w", OrganizationMembersTable, err)
@@ -138,9 +163,9 @@ func (q OrgMembersQ) Select(ctx context.Context) ([]OrganizationMember, error) {
 	}
 	defer rows.Close()
 
-	var out []OrganizationMember
+	var out []OrgMember
 	for rows.Next() {
-		var m OrganizationMember
+		var m OrgMember
 		if err := m.scan(rows); err != nil {
 			return nil, err
 		}
@@ -177,17 +202,37 @@ func (q OrgMembersQ) FilterByOrganizationID(organizationID uuid.UUID) OrgMembers
 	return q
 }
 
-func (q OrgMembersQ) UpdateOne(ctx context.Context) (OrganizationMember, error) {
+func (q OrgMembersQ) FilterByPermissionCode(code string) OrgMembersQ {
+	expr := sq.Expr(`
+		EXISTS (
+			SELECT 1
+			FROM organization_member_roles mr
+			JOIN organization_role_permission_links rp ON rp.role_id = mr.role_id
+			JOIN organization_role_permissions perm ON perm.id = rp.permission_id
+			WHERE mr.member_id = m.id
+			  AND perm.code = ?
+		)
+	`, code)
+
+	q.selector = q.selector.Where(expr)
+	q.counter = q.counter.Where(expr)
+	q.updater = q.updater.Where(expr)
+	q.deleter = q.deleter.Where(expr)
+
+	return q
+}
+
+func (q OrgMembersQ) UpdateOne(ctx context.Context) (OrgMember, error) {
 	q.updater = q.updater.Set("updated_at", time.Now().UTC())
 
 	query, args, err := q.updater.Suffix("RETURNING " + OrganizationMemberColumns).ToSql()
 	if err != nil {
-		return OrganizationMember{}, fmt.Errorf("building update query for %s: %w", OrganizationMembersTable, err)
+		return OrgMember{}, fmt.Errorf("building update query for %s: %w", OrganizationMembersTable, err)
 	}
 
-	var updated OrganizationMember
+	var updated OrgMember
 	if err := updated.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
-		return OrganizationMember{}, err
+		return OrgMember{}, err
 	}
 
 	return updated, nil

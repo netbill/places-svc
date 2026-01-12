@@ -63,23 +63,31 @@ func NewOrganizationsQ(db pgx.DBTX) OrganizationsQ {
 	}
 }
 
-type OrganizationsQInsertInput struct {
-	Name string
-	Icon *string
-}
-
-func (q OrganizationsQ) Insert(ctx context.Context, data OrganizationsQInsertInput) (Organization, error) {
-	query, args, err := q.inserter.SetMap(map[string]interface{}{
-		"name": data.Name,
-		"icon": data.Icon,
-	}).Suffix("RETURNING " + OrganizationColumns).ToSql()
+func (q OrganizationsQ) Upsert(ctx context.Context, data Organization) (Organization, error) {
+	query, args, err := q.inserter.
+		SetMap(map[string]any{
+			"id":       data.ID,
+			"status":   data.Status,
+			"verified": data.Verified,
+			"name":     data.Name,
+			"icon":     data.Icon,
+		}).
+		Suffix(`
+			ON CONFLICT (id) DO UPDATE SET
+				status = EXCLUDED.status,
+				verified = EXCLUDED.verified,
+				name = EXCLUDED.name,
+				icon = EXCLUDED.icon,
+				updated_at = now() AT TIME ZONE 'UTC'
+			RETURNING ` + OrganizationColumns,
+		).
+		ToSql()
 	if err != nil {
-		return Organization{}, fmt.Errorf("building insert query for %s: %w", OrganizationTable, err)
+		return Organization{}, fmt.Errorf("building upsert query for %s: %w", OrganizationTable, err)
 	}
 
-	var inserted Organization
-	err = inserted.scan(q.db.QueryRowContext(ctx, query, args...))
-	if err != nil {
+	var out Organization
+	if err := out.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
 			return Organization{}, nil
@@ -88,7 +96,7 @@ func (q OrganizationsQ) Insert(ctx context.Context, data OrganizationsQInsertInp
 		}
 	}
 
-	return inserted, nil
+	return out, nil
 }
 
 func (q OrganizationsQ) FilterByID(id uuid.UUID) OrganizationsQ {

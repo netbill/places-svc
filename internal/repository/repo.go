@@ -5,7 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/netbill/pgx"
-	"github.com/netbill/replicas/pgdb"
+	"github.com/netbill/places-svc/internal/repository/pgdb"
 )
 
 type Service struct {
@@ -35,18 +35,14 @@ func (s Service) orgRolesQ(ctx context.Context) pgdb.OrgRolesQ {
 }
 
 func (s Service) orgRolePermissionLinksQ(ctx context.Context) pgdb.OrgRolePermissionLinksQ {
-	return pgdb.NewOrgRolePermissionsQ(pgx.Exec(s.db, ctx))
+	return pgdb.NewOrgRolePermissionLinksQ(pgx.Exec(s.db, ctx))
 }
 
 func (s Service) orgRolePermissionsQ(ctx context.Context) pgdb.OrgRolePermissionsQ {
-	return pgdb.NewOrgPermissionsQ(pgx.Exec(s.db, ctx))
+	return pgdb.NewOrgRolePermissionsQ(pgx.Exec(s.db, ctx))
 }
 
-func (s Service) orgInvitesQ(ctx context.Context) pgdb.OrgInvitesQ {
-	return pgdb.NewOrgInvitesQ(pgx.Exec(s.db, ctx))
-}
-
-func (s Service) orgProfilesQ(ctx context.Context) pgdb.ProfilesQ {
+func (s Service) profilesQ(ctx context.Context) pgdb.ProfilesQ {
 	return pgdb.NewProfilesQ(pgx.Exec(s.db, ctx))
 }
 

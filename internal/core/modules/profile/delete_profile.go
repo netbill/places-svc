@@ -15,17 +15,17 @@ func (s Service) DeleteProfile(
 	accountID uuid.UUID,
 ) error {
 	return s.repo.Transaction(ctx, func(ctx context.Context) error {
-		err := s.repo.DeleteProfileByAccountID(ctx, accountID)
-		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to delete profile: %w", err),
-			)
-		}
-
-		err = s.repo.DeleteMembersByAccountID(ctx, accountID)
+		err := s.repo.DeleteMembersByAccountID(ctx, accountID)
 		if err != nil {
 			return errx.ErrorInternal.Raise(
 				fmt.Errorf("failed to delete memberships for accountID %s: %w", accountID, err),
+			)
+		}
+
+		err = s.repo.DeleteProfile(ctx, accountID)
+		if err != nil {
+			return errx.ErrorInternal.Raise(
+				fmt.Errorf("failed to delete profile: %w", err),
 			)
 		}
 

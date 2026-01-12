@@ -12,11 +12,10 @@ type Service struct {
 }
 
 type repo interface {
-	CreateProfile(ctx context.Context, profile models.Profile) error
-	UpdateProfile(ctx context.Context, ID uuid.UUID, param UpdateProfileParams) (models.Profile, error)
-	UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error)
+	UpsertProfile(ctx context.Context, profile models.Profile) error
+	UpdateProfileUsername(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error)
+	DeleteProfile(ctx context.Context, ID uuid.UUID) error
 
-	DeleteProfileByAccountID(ctx context.Context, accountID uuid.UUID) error
 	DeleteMembersByAccountID(ctx context.Context, accountID uuid.UUID) error
 
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error

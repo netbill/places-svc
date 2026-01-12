@@ -19,7 +19,7 @@ const OrganizationRoleTable = "organization_roles"
 const OrganizationRoleColumns = "id, organization_id, head, rank, created_at, updated_at"
 const OrganizationRoleColumnsR = "r.id, r.organization_id, r.head, r.rank, r.created_at, r.updated_at"
 
-type OrganizationRole struct {
+type OrgRole struct {
 	ID             uuid.UUID `json:"id"`
 	OrganizationID uuid.UUID `json:"organization_id"`
 	Head           bool      `json:"head"`
@@ -29,7 +29,7 @@ type OrganizationRole struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (r *OrganizationRole) scan(row sq.RowScanner) error {
+func (r *OrgRole) scan(row sq.RowScanner) error {
 	if err := row.Scan(
 		&r.ID,
 		&r.OrganizationID,
@@ -70,7 +70,7 @@ type InsertRoleParams struct {
 	Rank           uint
 }
 
-func (q OrgRolesQ) Insert(ctx context.Context, data InsertRoleParams) (OrganizationRole, error) {
+func (q OrgRolesQ) Insert(ctx context.Context, data InsertRoleParams) (OrgRole, error) {
 	const sqlInsertAtRank = `
 		WITH bumped AS (
 			UPDATE organization_roles
@@ -92,33 +92,103 @@ func (q OrgRolesQ) Insert(ctx context.Context, data InsertRoleParams) (Organizat
 		data.Head,
 	}
 
-	var out OrganizationRole
+	var out OrgRole
 	if err := out.scan(q.db.QueryRowContext(ctx, sqlInsertAtRank, args...)); err != nil {
-		return OrganizationRole{}, err
+		return OrgRole{}, err
 	}
 	return out, nil
 }
 
-func (q OrgRolesQ) Get(ctx context.Context) (OrganizationRole, error) {
-	query, args, err := q.selector.Limit(1).ToSql()
-	if err != nil {
-		return OrganizationRole{}, fmt.Errorf("building select query for %s: %w", OrganizationRoleTable, err)
+func (q OrgRolesQ) Upsert(ctx context.Context, data OrgRole) error {
+	const sqlUpsert = `
+		WITH cur AS (
+			SELECT organization_id, rank
+			FROM organization_roles
+			WHERE id = $1
+			LIMIT 1
+		),
+
+		-- if role doesn't exist -> bump rank >= newRank
+		bump_insert AS (
+			UPDATE organization_roles r
+			SET rank = r.rank + 1,
+			    updated_at = now()
+			WHERE r.organization_id = $2
+			  AND NOT EXISTS (SELECT 1 FROM cur)
+			  AND r.rank >= $3
+		),
+
+		-- if role exists and rank changed -> shift ranks between old and new
+		bump_move AS (
+			UPDATE organization_roles r
+			SET
+				rank = CASE
+					WHEN $3 < (SELECT rank FROM cur) AND r.rank >= $3 AND r.rank < (SELECT rank FROM cur) THEN r.rank + 1
+					WHEN $3 > (SELECT rank FROM cur) AND r.rank <= $3 AND r.rank > (SELECT rank FROM cur) THEN r.rank - 1
+					ELSE r.rank
+				END,
+				updated_at = now()
+			WHERE r.organization_id = $2
+			  AND EXISTS (SELECT 1 FROM cur)
+			  AND $3 <> (SELECT rank FROM cur)
+			  AND r.id <> $1
+			  AND (
+					($3 < (SELECT rank FROM cur) AND r.rank >= $3 AND r.rank < (SELECT rank FROM cur))
+				 OR ($3 > (SELECT rank FROM cur) AND r.rank <= $3 AND r.rank > (SELECT rank FROM cur))
+			  )
+		),
+
+		upsert AS (
+			INSERT INTO organization_roles (id, organization_id, head, rank, created_at, updated_at)
+			VALUES ($1, $2, $4, $3, $5, $6)
+			ON CONFLICT (id) DO UPDATE
+			SET
+				head       = EXCLUDED.head,
+				rank       = EXCLUDED.rank,
+				created_at = EXCLUDED.created_at,
+				updated_at = EXCLUDED.updated_at
+			RETURNING id, organization_id, head, rank, created_at, updated_at
+		)
+		SELECT * FROM upsert;
+	`
+
+	args := []any{
+		data.ID,             // $1
+		data.OrganizationID, // $2
+		int(data.Rank),      // $3
+		data.Head,           // $4
+		data.CreatedAt,      // $5
+		data.UpdatedAt,      // $6
 	}
 
-	var r OrganizationRole
+	var out OrgRole
+	if err := out.scan(q.db.QueryRowContext(ctx, sqlUpsert, args...)); err != nil {
+		return fmt.Errorf("upserting organization role: %w", err)
+	}
+
+	return nil
+}
+
+func (q OrgRolesQ) Get(ctx context.Context) (OrgRole, error) {
+	query, args, err := q.selector.Limit(1).ToSql()
+	if err != nil {
+		return OrgRole{}, fmt.Errorf("building select query for %s: %w", OrganizationRoleTable, err)
+	}
+
+	var r OrgRole
 	if err = r.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return OrganizationRole{}, nil
+			return OrgRole{}, nil
 		default:
-			return OrganizationRole{}, err
+			return OrgRole{}, err
 		}
 	}
 
 	return r, nil
 }
 
-func (q OrgRolesQ) Select(ctx context.Context) ([]OrganizationRole, error) {
+func (q OrgRolesQ) Select(ctx context.Context) ([]OrgRole, error) {
 	query, args, err := q.selector.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("building select query for %s: %w", OrganizationRoleTable, err)
@@ -130,9 +200,9 @@ func (q OrgRolesQ) Select(ctx context.Context) ([]OrganizationRole, error) {
 	}
 	defer rows.Close()
 
-	var out []OrganizationRole
+	var out []OrgRole
 	for rows.Next() {
-		var r OrganizationRole
+		var r OrgRole
 		if err = r.scan(rows); err != nil {
 			return nil, err
 		}
@@ -173,17 +243,17 @@ func (q OrgRolesQ) Count(ctx context.Context) (uint, error) {
 	return count, nil
 }
 
-func (q OrgRolesQ) UpdateOne(ctx context.Context) (OrganizationRole, error) {
+func (q OrgRolesQ) UpdateOne(ctx context.Context) (OrgRole, error) {
 	q.updater = q.updater.Set("updated_at", time.Now().UTC())
 
 	query, args, err := q.updater.Suffix("RETURNING " + OrganizationRoleColumns).ToSql()
 	if err != nil {
-		return OrganizationRole{}, fmt.Errorf("building update query for %s: %w", OrganizationRoleTable, err)
+		return OrgRole{}, fmt.Errorf("building update query for %s: %w", OrganizationRoleTable, err)
 	}
 
-	var updated OrganizationRole
+	var updated OrgRole
 	if err = updated.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
-		return OrganizationRole{}, err
+		return OrgRole{}, err
 	}
 
 	return updated, nil
@@ -339,7 +409,7 @@ func (q OrgRolesQ) DeleteAndShiftRanks(ctx context.Context, roleID uuid.UUID) er
 	return nil
 }
 
-func (q OrgRolesQ) UpdateRoleRank(ctx context.Context, roleID uuid.UUID, newRank uint) (OrganizationRole, error) {
+func (q OrgRolesQ) UpdateRoleRank(ctx context.Context, roleID uuid.UUID, newRank uint) (OrgRole, error) {
 	var aggID uuid.UUID
 	var oldRank int
 
@@ -351,7 +421,7 @@ func (q OrgRolesQ) UpdateRoleRank(ctx context.Context, roleID uuid.UUID, newRank
 	`
 
 	if err := q.db.QueryRowContext(ctx, sqlGet, roleID).Scan(&aggID, &oldRank); err != nil {
-		return OrganizationRole{}, fmt.Errorf("scanning role rank: %w", err)
+		return OrgRole{}, fmt.Errorf("scanning role rank: %w", err)
 	}
 
 	if oldRank == int(newRank) {
@@ -379,9 +449,9 @@ func (q OrgRolesQ) UpdateRoleRank(ctx context.Context, roleID uuid.UUID, newRank
 
 	args := []any{roleID, int(newRank), oldRank, aggID}
 
-	var out OrganizationRole
+	var out OrgRole
 	if err := out.scan(q.db.QueryRowContext(ctx, sqlMove, args...)); err != nil {
-		return OrganizationRole{}, err
+		return OrgRole{}, err
 	}
 
 	return out, nil
@@ -391,7 +461,7 @@ func (q OrgRolesQ) UpdateRolesRanks(
 	ctx context.Context,
 	organizationID uuid.UUID,
 	order map[uuid.UUID]uint,
-) ([]OrganizationRole, error) {
+) ([]OrgRole, error) {
 	roles, err := NewOrgRolesQ(q.db).
 		FilterByOrganizationID(organizationID).
 		OrderByRoleRank(true).
@@ -405,7 +475,7 @@ func (q OrgRolesQ) UpdateRolesRanks(
 
 	n := uint(len(roles))
 
-	idToRole := make(map[uuid.UUID]OrganizationRole, n)
+	idToRole := make(map[uuid.UUID]OrgRole, n)
 	for i := range roles {
 		idToRole[roles[i].ID] = roles[i]
 	}
@@ -488,9 +558,9 @@ func (q OrgRolesQ) UpdateRolesRanks(
 	}
 	defer rows.Close()
 
-	out := make([]OrganizationRole, 0, len(changed))
+	out := make([]OrgRole, 0, len(changed))
 	for rows.Next() {
-		var r OrganizationRole
+		var r OrgRole
 		if err = r.scan(rows); err != nil {
 			return nil, err
 		}

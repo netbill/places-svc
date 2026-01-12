@@ -5,48 +5,48 @@ import (
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
-const RoleCreatedEvent = "role.created"
+const OrgRoleCreatedEvent = "role.created"
 
-type RoleCreatedPayload struct {
-	Role models.Role `json:"role"`
+type OrgRoleCreatedPayload struct {
+	Role models.OrgRole `json:"role"`
 }
 
-const RoleUpdatedEvent = "role.updated"
+const OrgRoleUpdatedEvent = "role.updated"
 
-type RoleUpdatedPayload struct {
-	Role models.Role `json:"role"`
+type OrgRoleUpdatedPayload struct {
+	Role models.OrgRole `json:"role"`
 }
 
-const RoleDeletedEvent = "role.deleted"
+const OrgRoleDeletedEvent = "role.deleted"
 
-type RoleDeletedPayload struct {
-	Role models.Role `json:"role"`
+type OrgRoleDeletedPayload struct {
+	Role models.OrgRole `json:"role"`
 }
 
-const RolesRanksUpdatedEvent = "roles.ranks.updated"
+const OrgRolesRanksUpdatedEvent = "roles.ranks.updated"
 
-type RolesRanksUpdatedPayload struct {
+type OrgRolesRanksUpdatedPayload struct {
 	OrganizationID uuid.UUID          `json:"organization_id"`
 	Ranks          map[uuid.UUID]uint `json:"ranks"`
 }
 
-const RolePermissionsUpdatedEvent = "role.permissions.updated"
+const OrgRolePermissionsUpdatedEvent = "role.permissions.updated"
 
-type RolePermissionsUpdatedPayload struct {
+type OrgRolePermissionsUpdatedPayload struct {
 	RoleID      uuid.UUID       `json:"role_id"`
 	Permissions map[string]bool `json:"permissions"`
 }
 
-const MemberRoleAddedEvent = "member_role.added"
+const OrgMemberRoleAddedEvent = "member_role.added"
 
-type MemberRoleAddedPayload struct {
+type OrgMemberRoleAddedPayload struct {
 	MemberID uuid.UUID `json:"member_id"`
 	RoleID   uuid.UUID `json:"role_id"`
 }
 
-const MemberRoleRemovedEvent = "member_role.remove"
+const OrgMemberRoleRemovedEvent = "member_role.remove"
 
-type MemberRoleRemovedPayload struct {
+type OrgMemberRoleRemovedPayload struct {
 	MemberID uuid.UUID `json:"member_id"`
 	RoleID   uuid.UUID `json:"role_id"`
 }

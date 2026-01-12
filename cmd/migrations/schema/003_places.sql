@@ -77,9 +77,8 @@ CREATE TYPE place_statuses AS ENUM (
 
 CREATE TABLE places (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    parent_id       UUID REFERENCES places(id) ON DELETE SET NULL,
-    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     class_id        UUID NOT NULL REFERENCES place_classes(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
 
     status   place_statuses         NOT NULL,
     verified BOOLEAN                NOT NULL DEFAULT FALSE,
@@ -98,15 +97,15 @@ CREATE TABLE places (
 );
 
 CREATE TABLE place_possibilities (
-    id          UUID          PRIMARY KEY DEFAULT uuid_generate_v4(),
     code        VARCHAR(255)  UNIQUE NOT NULL,
     description VARCHAR(1024) NOT NULL
 );
 
 CREATE TABLE place_possibility_links (
     place_id   UUID NOT NULL REFERENCES places(id) ON DELETE CASCADE,
-    possibility_id UUID NOT NULL REFERENCES place_possibilities(id) ON DELETE CASCADE,
-    PRIMARY KEY (place_id, possibility_id)
+    possibility_code VARCHAR(255) NOT NULL REFERENCES place_possibilities(code) ON DELETE CASCADE,
+
+    PRIMARY KEY (place_id, possibility_code)
 );
 
 CREATE TABLE place_timetables (

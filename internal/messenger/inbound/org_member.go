@@ -10,17 +10,17 @@ import (
 	"github.com/netbill/places-svc/internal/messenger/contracts"
 )
 
-func (i Inbound) MemberCreated(
+func (i Inbound) OrgMemberCreated(
 	ctx context.Context,
 	event inbox.Event,
 ) inbox.EventStatus {
-	var payload contracts.MemberCreatedPayload
+	var payload contracts.OrgMemberCreatedPayload
 	if err := json.Unmarshal(event.Payload, &payload); err != nil {
 		i.log.Errorf("bad payload for %s, key %s, id: %s, error: %v", event.Type, event.Key, event.ID, err)
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.CreateMember(ctx, payload.Member); err != nil {
+	if err := i.domain.UpsertOrgMember(ctx, payload.Member); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -37,17 +37,17 @@ func (i Inbound) MemberCreated(
 	return inbox.EventStatusProcessed
 }
 
-func (i Inbound) MemberDeleted(
+func (i Inbound) OrgMemberDeleted(
 	ctx context.Context,
 	event inbox.Event,
 ) inbox.EventStatus {
-	var payload contracts.MemberDeletedPayload
+	var payload contracts.OrgMemberDeletedPayload
 	if err := json.Unmarshal(event.Payload, &payload); err != nil {
 		i.log.Errorf("bad payload for %s, key %s, id: %s, error: %v", event.Type, event.Key, event.ID, err)
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.DeleteMember(ctx, payload.Member.ID); err != nil {
+	if err := i.domain.DeleteOrgMember(ctx, payload.Member.ID); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -64,17 +64,17 @@ func (i Inbound) MemberDeleted(
 	return inbox.EventStatusProcessed
 }
 
-func (i Inbound) MemberAddedRole(
+func (i Inbound) OrgMemberAddedRole(
 	ctx context.Context,
 	event inbox.Event,
 ) inbox.EventStatus {
-	var payload contracts.MemberRoleAddedPayload
+	var payload contracts.OrgMemberRoleAddedPayload
 	if err := json.Unmarshal(event.Payload, &payload); err != nil {
 		i.log.Errorf("bad payload for %s, key %s, id: %s, error: %v", event.Type, event.Key, event.ID, err)
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.AddMemberRole(ctx, payload.MemberID, payload.RoleID); err != nil {
+	if err := i.domain.AddOrgMemberRole(ctx, payload.MemberID, payload.RoleID); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -91,17 +91,17 @@ func (i Inbound) MemberAddedRole(
 	return inbox.EventStatusProcessed
 }
 
-func (i Inbound) MemberRemovedRole(
+func (i Inbound) OrgMemberRemovedRole(
 	ctx context.Context,
 	event inbox.Event,
 ) inbox.EventStatus {
-	var payload contracts.MemberRoleRemovedPayload
+	var payload contracts.OrgMemberRoleRemovedPayload
 	if err := json.Unmarshal(event.Payload, &payload); err != nil {
 		i.log.Errorf("bad payload for %s, key %s, id: %s, error: %v", event.Type, event.Key, event.ID, err)
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.RemoveMemberRole(ctx, payload.MemberID, payload.RoleID); err != nil {
+	if err := i.domain.RemoveOrgMemberRole(ctx, payload.MemberID, payload.RoleID); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(

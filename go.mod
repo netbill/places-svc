@@ -11,7 +11,7 @@ require (
 	github.com/netbill/evebox v0.3.0
 	github.com/netbill/logium v0.1.0
 	github.com/netbill/pgx v0.1.0
-	github.com/netbill/replicas v0.1.2
+	github.com/paulmach/orb v0.12.0
 	github.com/pkg/errors v0.9.1
 	github.com/rubenv/sql-migrate v1.8.0
 	github.com/sirupsen/logrus v1.9.3

@@ -14,12 +14,12 @@ import (
 const OrganizationMemberRoleTable = "organization_member_roles"
 const OrganizationMemberRoleColumns = "member_id, role_id"
 
-type OrganizationMemberRole struct {
+type OrgMemberRole struct {
 	MemberID uuid.UUID `json:"member_id"`
 	RoleID   uuid.UUID `json:"role_id"`
 }
 
-func (mr *OrganizationMemberRole) scan(row sq.RowScanner) error {
+func (mr *OrgMemberRole) scan(row sq.RowScanner) error {
 	if err := row.Scan(&mr.MemberID, &mr.RoleID); err != nil {
 		return fmt.Errorf("scanning member_role: %w", err)
 	}
@@ -45,41 +45,41 @@ func NewOrgMemberRolesQ(db pgx.DBTX) OrgMemberRolesQ {
 	}
 }
 
-func (q OrgMemberRolesQ) Insert(ctx context.Context, data OrganizationMemberRole) (OrganizationMemberRole, error) {
+func (q OrgMemberRolesQ) Insert(ctx context.Context, data OrgMemberRole) (OrgMemberRole, error) {
 	query, args, err := q.inserter.SetMap(map[string]any{
 		"member_id": data.MemberID,
 		"role_id":   data.RoleID,
 	}).Suffix("RETURNING " + OrganizationMemberRoleColumns).ToSql()
 	if err != nil {
-		return OrganizationMemberRole{}, fmt.Errorf("building insert query for %s: %w", OrganizationMemberRoleTable, err)
+		return OrgMemberRole{}, fmt.Errorf("building insert query for %s: %w", OrganizationMemberRoleTable, err)
 	}
 
-	var out OrganizationMemberRole
+	var out OrgMemberRole
 	if err = out.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
-		return OrganizationMemberRole{}, err
+		return OrgMemberRole{}, err
 	}
 	return out, nil
 }
 
-func (q OrgMemberRolesQ) Get(ctx context.Context) (OrganizationMemberRole, error) {
+func (q OrgMemberRolesQ) Get(ctx context.Context) (OrgMemberRole, error) {
 	query, args, err := q.selector.Limit(1).ToSql()
 	if err != nil {
-		return OrganizationMemberRole{}, fmt.Errorf("building select query for %s: %w", OrganizationMemberRoleTable, err)
+		return OrgMemberRole{}, fmt.Errorf("building select query for %s: %w", OrganizationMemberRoleTable, err)
 	}
 
-	var out OrganizationMemberRole
+	var out OrgMemberRole
 	if err = out.scan(q.db.QueryRowContext(ctx, query, args...)); err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return OrganizationMemberRole{}, nil
+			return OrgMemberRole{}, nil
 		default:
-			return OrganizationMemberRole{}, err
+			return OrgMemberRole{}, err
 		}
 	}
 	return out, nil
 }
 
-func (q OrgMemberRolesQ) Select(ctx context.Context) ([]OrganizationMemberRole, error) {
+func (q OrgMemberRolesQ) Select(ctx context.Context) ([]OrgMemberRole, error) {
 	query, args, err := q.selector.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("building select query for %s: %w", OrganizationMemberRoleTable, err)
@@ -91,9 +91,9 @@ func (q OrgMemberRolesQ) Select(ctx context.Context) ([]OrganizationMemberRole, 
 	}
 	defer rows.Close()
 
-	var out []OrganizationMemberRole
+	var out []OrgMemberRole
 	for rows.Next() {
-		var mr OrganizationMemberRole
+		var mr OrgMemberRole
 		if err = mr.scan(rows); err != nil {
 			return nil, err
 		}

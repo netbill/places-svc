@@ -16,9 +16,8 @@ const PlacesTable = "places"
 
 const PlacesColumns = `
 	id,
-	parent_id,
-	organization_id,
 	class_id,
+	organization_id,
 	status,
 	verified,
 	point,
@@ -35,9 +34,8 @@ const PlacesColumns = `
 
 type Place struct {
 	ID             uuid.UUID     `json:"id"`
-	ParentID       uuid.NullUUID `json:"parent_id"`
-	OrganizationID uuid.UUID     `json:"organization_id"`
 	ClassID        uuid.UUID     `json:"class_id"`
+	OrganizationID uuid.NullUUID `json:"organization_id"`
 
 	Status   string `json:"status"`
 	Verified bool   `json:"verified"`
@@ -59,9 +57,8 @@ type Place struct {
 func (p *Place) scan(row sq.RowScanner) error {
 	if err := row.Scan(
 		&p.ID,
-		&p.ParentID,
-		&p.OrganizationID,
 		&p.ClassID,
+		&p.OrganizationID,
 		&p.Status,
 		&p.Verified,
 		&p.Point,
@@ -103,8 +100,7 @@ func NewPlacesQ(db pgx.DBTX) PlacesQ {
 }
 
 type PlacesQInsertInput struct {
-	ParentID       *uuid.UUID
-	OrganizationID uuid.UUID
+	OrganizationID *uuid.UUID
 	ClassID        uuid.UUID
 
 	Status   string
@@ -123,22 +119,21 @@ type PlacesQInsertInput struct {
 
 func (q PlacesQ) Insert(ctx context.Context, data PlacesQInsertInput) (Place, error) {
 	set := map[string]interface{}{
-		"organization_id": data.OrganizationID,
-		"class_id":        data.ClassID,
-		"status":          data.Status,
-		"verified":        data.Verified,
-		"point":           data.Point,
-		"address":         data.Address,
-		"name":            data.Name,
-		"description":     data.Description,
-		"icon":            data.Icon,
-		"banner":          data.Banner,
-		"website":         data.Website,
-		"phone":           data.Phone,
+		"class_id":    data.ClassID,
+		"status":      data.Status,
+		"verified":    data.Verified,
+		"point":       data.Point,
+		"address":     data.Address,
+		"name":        data.Name,
+		"description": data.Description,
+		"icon":        data.Icon,
+		"banner":      data.Banner,
+		"website":     data.Website,
+		"phone":       data.Phone,
 	}
 
-	if data.ParentID != nil {
-		set["parent_id"] = *data.ParentID
+	if data.OrganizationID != nil {
+		set["organization_id"] = *data.OrganizationID
 	}
 
 	query, args, err := q.inserter.
@@ -170,7 +165,7 @@ func (q PlacesQ) FilterByID(id uuid.UUID) PlacesQ {
 	return q
 }
 
-func (q PlacesQ) FilterByOrganizationID(orgID uuid.UUID) PlacesQ {
+func (q PlacesQ) FilterByOrganizationID(orgID *uuid.UUID) PlacesQ {
 	q.selector = q.selector.Where(sq.Eq{"organization_id": orgID})
 	q.counter = q.counter.Where(sq.Eq{"organization_id": orgID})
 	q.updater = q.updater.Where(sq.Eq{"organization_id": orgID})

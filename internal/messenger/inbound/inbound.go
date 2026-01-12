@@ -37,26 +37,26 @@ type profileSvc interface {
 }
 
 type organizationSvc interface {
-	CreateOrganization(ctx context.Context, params models.Organization) error
+	UpsertOrganization(ctx context.Context, params models.Organization) error
 	DeleteOrganization(ctx context.Context, ID uuid.UUID) error
-	UpdateOrganizationStatus(ctx context.Context, ID uuid.UUID, status string) (models.Organization, error)
+	UpdateOrganizationStatus(ctx context.Context, org models.Organization) error
 
-	CreateMember(ctx context.Context, member models.Member) error
-	DeleteMember(ctx context.Context, ID uuid.UUID) error
+	UpsertOrgMember(ctx context.Context, member models.Member) error
+	DeleteOrgMember(ctx context.Context, ID uuid.UUID) error
 
-	AddMemberRole(ctx context.Context, memberID, roleID uuid.UUID) error
-	RemoveMemberRole(ctx context.Context, memberID, roleID uuid.UUID) error
+	AddOrgMemberRole(ctx context.Context, memberID, roleID uuid.UUID) error
+	RemoveOrgMemberRole(ctx context.Context, memberID, roleID uuid.UUID) error
 
-	CreateRole(ctx context.Context, role models.Role) error
-	DeleteRole(ctx context.Context, ID uuid.UUID) error
+	UpsertOrgRole(ctx context.Context, role models.OrgRole) error
+	DeleteOrgRole(ctx context.Context, ID uuid.UUID) error
 
-	UpdateRolePermissions(
+	UpdateOrgRolePermissions(
 		ctx context.Context,
 		roleID uuid.UUID,
 		permissions map[string]bool,
 	) error
 
-	UpdateRolesRanks(
+	UpdateOrgRolesRanks(
 		ctx context.Context,
 		organizationID uuid.UUID,
 		order map[uuid.UUID]uint,

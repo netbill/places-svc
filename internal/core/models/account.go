@@ -16,3 +16,7 @@ type Account struct {
 	UpdatedAt         time.Time `json:"updated_at"`
 	UsernameUpdatedAt time.Time `json:"username_name_updated_at"`
 }
+
+func (a Account) IsNIl() bool {
+	return a.ID == uuid.Nil
+}

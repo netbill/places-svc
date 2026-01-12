@@ -68,15 +68,15 @@ CREATE TABLE organization_member_roles (
 
 -- permissions dictionary
 CREATE TABLE organization_role_permissions (
-    id   UUID          PRIMARY KEY,
-    code VARCHAR(255)  UNIQUE NOT NULL,
+    code        VARCHAR(255)  PRIMARY KEY UNIQUE NOT NULL,
+    description VARCHAR(1024) NOT NULL
 );
 
-INSERT INTO organization_role_permissions (id, code, description) VALUES
-    (uuid_generate_v4(), 'organization.manage'),
-    (uuid_generate_v4(), 'invites.manage'),
-    (uuid_generate_v4(), 'members.manage'),
-    (uuid_generate_v4(), 'roles.manage');
+INSERT INTO organization_role_permissions (code, description) VALUES
+    ('organization.manage', 'manage organization settings'),
+    ('invites.manage', 'manage organization invites'),
+    ('members.manage', 'manage organization members'),
+    ('roles.manage', 'manage organization roles');
 
 -- role ↔ permission links
 CREATE TABLE organization_role_permission_links (

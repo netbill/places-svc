@@ -8,11 +8,11 @@ import (
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
-func (s Service) CreateRole(
+func (s Service) UpsertOrgRole(
 	ctx context.Context,
-	params models.Role,
+	params models.OrgRole,
 ) error {
-	if err := s.repo.CreateRole(ctx, params); err != nil {
+	if err := s.repo.UpsertOrgRole(ctx, params); err != nil {
 		return errx.ErrorInternal.Raise(
 			fmt.Errorf("failed to create role: %w", err),
 		)

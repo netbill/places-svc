@@ -2,20 +2,20 @@ package contracts
 
 import "github.com/netbill/places-svc/internal/core/models"
 
-const MemberCreatedEvent = "member.created"
+const OrgMemberCreatedEvent = "member.created"
 
-type MemberCreatedPayload struct {
+type OrgMemberCreatedPayload struct {
 	Member models.Member `json:"member"`
 }
 
-const MemberUpdatedEvent = "member.updated"
+const OrgMemberUpdatedEvent = "member.updated"
 
-type MemberUpdatedPayload struct {
+type OrgMemberUpdatedPayload struct {
 	Member models.Member `json:"member"`
 }
 
-const MemberDeletedEvent = "member.deleted"
+const OrgMemberDeletedEvent = "member.deleted"
 
-type MemberDeletedPayload struct {
+type OrgMemberDeletedPayload struct {
 	Member models.Member `json:"member"`
 }

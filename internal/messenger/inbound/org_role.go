@@ -10,17 +10,17 @@ import (
 	"github.com/netbill/places-svc/internal/messenger/contracts"
 )
 
-func (i Inbound) RoleCreated(
+func (i Inbound) OrgRoleCreated(
 	ctx context.Context,
 	event inbox.Event,
 ) inbox.EventStatus {
-	var payload contracts.RoleCreatedPayload
+	var payload contracts.OrgRoleCreatedPayload
 	if err := json.Unmarshal(event.Payload, &payload); err != nil {
 		i.log.Errorf("bad payload for %s, key %s, id: %s, error: %v", event.Type, event.Key, event.ID, err)
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.CreateRole(ctx, payload.Role); err != nil {
+	if err := i.domain.UpsertOrgRole(ctx, payload.Role); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -40,17 +40,17 @@ func (i Inbound) RoleCreated(
 	return inbox.EventStatusProcessed
 }
 
-func (i Inbound) RoleDeleted(
+func (i Inbound) OrgRoleDeleted(
 	ctx context.Context,
 	event inbox.Event,
 ) inbox.EventStatus {
-	var payload contracts.RoleDeletedPayload
+	var payload contracts.OrgRoleDeletedPayload
 	if err := json.Unmarshal(event.Payload, &payload); err != nil {
 		i.log.Errorf("bad payload for %s, key %s, id: %s, error: %v", event.Type, event.Key, event.ID, err)
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.DeleteRole(ctx, payload.Role.ID); err != nil {
+	if err := i.domain.DeleteOrgRole(ctx, payload.Role.ID); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -70,17 +70,17 @@ func (i Inbound) RoleDeleted(
 	return inbox.EventStatusProcessed
 }
 
-func (i Inbound) RolePermissionsUpdated(
+func (i Inbound) OrgRolePermissionsUpdated(
 	ctx context.Context,
 	event inbox.Event,
 ) inbox.EventStatus {
-	var payload contracts.RolePermissionsUpdatedPayload
+	var payload contracts.OrgRolePermissionsUpdatedPayload
 	if err := json.Unmarshal(event.Payload, &payload); err != nil {
 		i.log.Errorf("bad payload for %s, key %s, id: %s, error: %v", event.Type, event.Key, event.ID, err)
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.UpdateRolePermissions(ctx, payload.RoleID, payload.Permissions); err != nil {
+	if err := i.domain.UpdateOrgRolePermissions(ctx, payload.RoleID, payload.Permissions); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -100,17 +100,17 @@ func (i Inbound) RolePermissionsUpdated(
 	return inbox.EventStatusProcessed
 }
 
-func (i Inbound) RolesRanksUpdated(
+func (i Inbound) OrgRolesRanksUpdated(
 	ctx context.Context,
 	event inbox.Event,
 ) inbox.EventStatus {
-	var payload contracts.RolesRanksUpdatedPayload
+	var payload contracts.OrgRolesRanksUpdatedPayload
 	if err := json.Unmarshal(event.Payload, &payload); err != nil {
 		i.log.Errorf("bad payload for %s, key %s, id: %s, error: %v", event.Type, event.Key, event.ID, err)
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.UpdateRolesRanks(ctx, payload.OrganizationID, payload.Ranks); err != nil {
+	if err := i.domain.UpdateOrgRolesRanks(ctx, payload.OrganizationID, payload.Ranks); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(

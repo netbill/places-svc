@@ -20,7 +20,7 @@ func (i Inbound) OrganizationCreated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.CreateOrganization(ctx, payload.Organization); err != nil {
+	if err := i.domain.UpsertOrganization(ctx, payload.Organization); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -80,10 +80,9 @@ func (i Inbound) OrganizationActivated(
 		return inbox.EventStatusFailed
 	}
 
-	if _, err := i.domain.UpdateOrganizationStatus(
+	if err := i.domain.UpdateOrganizationStatus(
 		ctx,
-		payload.Organization.ID,
-		payload.Organization.Status,
+		payload.Organization,
 	); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
@@ -114,10 +113,9 @@ func (i Inbound) OrganizationDeactivated(
 		return inbox.EventStatusFailed
 	}
 
-	if _, err := i.domain.UpdateOrganizationStatus(
+	if err := i.domain.UpdateOrganizationStatus(
 		ctx,
-		payload.Organization.ID,
-		payload.Organization.Status,
+		payload.Organization,
 	); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
@@ -148,10 +146,9 @@ func (i Inbound) OrganizationSuspended(
 		return inbox.EventStatusFailed
 	}
 
-	if _, err := i.domain.UpdateOrganizationStatus(
+	if err := i.domain.UpdateOrganizationStatus(
 		ctx,
-		payload.Organization.ID,
-		payload.Organization.Status,
+		payload.Organization,
 	); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
