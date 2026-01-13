@@ -46,6 +46,18 @@ func (s Service) profilesQ(ctx context.Context) pgdb.ProfilesQ {
 	return pgdb.NewProfilesQ(pgx.Exec(s.db, ctx))
 }
 
+func (s Service) placeQ(ctx context.Context) pgdb.PlacesQ {
+	return pgdb.NewPlacesQ(pgx.Exec(s.db, ctx))
+}
+
+func (s Service) placeClassesQ(ctx context.Context) pgdb.PlaceClassesQ {
+	return pgdb.NewPlaceClassesQ(pgx.Exec(s.db, ctx))
+}
+
+func (s Service) placePossibilitiesQ(ctx context.Context) pgdb.PlacePossibilityLinksQ {
+	return pgdb.NewPlacePossibilitiesQ(pgx.Exec(s.db, ctx))
+}
+
 func (s Service) Transaction(ctx context.Context, fn func(ctx context.Context) error) error {
 	return pgx.Transaction(s.db, ctx, fn)
 }

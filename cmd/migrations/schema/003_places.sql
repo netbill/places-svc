@@ -17,6 +17,8 @@ CREATE TABLE place_classes (
     CONSTRAINT place_classes_no_self_parent CHECK (parent_id IS NULL OR parent_id <> id)
 );
 
+--TODO if wanna delete class need check to things, first - no child class and second - no place
+
 -- +migrate StatementBegin
 CREATE OR REPLACE FUNCTION place_classes_prevent_cycles()
 RETURNS trigger
@@ -72,7 +74,7 @@ CREATE INDEX place_classes_parent_name_idx ON place_classes(parent_id, name);
 CREATE TYPE place_statuses AS ENUM (
     'active',
     'inactive',
-    'blocked'
+    'suspended'
 );
 
 CREATE TABLE places (
@@ -80,12 +82,12 @@ CREATE TABLE places (
     class_id        UUID NOT NULL REFERENCES place_classes(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
 
-    status   place_statuses         NOT NULL,
+    status   place_statuses         NOT NULL DEFAULT 'inactive',
     verified BOOLEAN                NOT NULL DEFAULT FALSE,
     point    geography(POINT, 4326) NOT NULL,
     address  VARCHAR(255)           NOT NULL,
+    name     VARCHAR(128)           NOT NULL,
 
-    name        VARCHAR(128)   NOT NULL,
     description VARCHAR(1024),
     icon        VARCHAR(255),
     banner      VARCHAR(255),
@@ -102,7 +104,7 @@ CREATE TABLE place_possibilities (
 );
 
 CREATE TABLE place_possibility_links (
-    place_id   UUID NOT NULL REFERENCES places(id) ON DELETE CASCADE,
+    place_id         UUID NOT NULL REFERENCES places(id) ON DELETE CASCADE,
     possibility_code VARCHAR(255) NOT NULL REFERENCES place_possibilities(code) ON DELETE CASCADE,
 
     PRIMARY KEY (place_id, possibility_code)

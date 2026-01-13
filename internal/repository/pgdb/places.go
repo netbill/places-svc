@@ -10,6 +10,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	"github.com/netbill/pgx"
+	"github.com/paulmach/orb"
 )
 
 const PlacesTable = "places"
@@ -40,8 +41,8 @@ type Place struct {
 	Status   string `json:"status"`
 	Verified bool   `json:"verified"`
 
-	Point   any    `json:"point"` // geography, как и в других местах
-	Address string `json:"address"`
+	Point   orb.Point `json:"point"` // geography, как и в других местах
+	Address string    `json:"address"`
 
 	Name        string         `json:"name"`
 	Description sql.NullString `json:"description"`
@@ -99,7 +100,7 @@ func NewPlacesQ(db pgx.DBTX) PlacesQ {
 	}
 }
 
-type PlacesQInsertInput struct {
+type PlacesInsertInput struct {
 	OrganizationID *uuid.UUID
 	ClassID        uuid.UUID
 
@@ -117,7 +118,7 @@ type PlacesQInsertInput struct {
 	Phone       *string
 }
 
-func (q PlacesQ) Insert(ctx context.Context, data PlacesQInsertInput) (Place, error) {
+func (q PlacesQ) Insert(ctx context.Context, data PlacesInsertInput) (Place, error) {
 	set := map[string]interface{}{
 		"class_id":    data.ClassID,
 		"status":      data.Status,
@@ -240,6 +241,22 @@ func (q PlacesQ) Select(ctx context.Context) ([]Place, error) {
 	return places, nil
 }
 
+func (q PlacesQ) Exists(ctx context.Context) (bool, error) {
+	subSQL, subArgs, err := q.selector.Limit(1).ToSql()
+	if err != nil {
+		return false, fmt.Errorf("building exists query for %s: %w", PlacesTable, err)
+	}
+
+	sqlq := "SELECT EXISTS (" + subSQL + ")"
+
+	var ok bool
+	if err = q.db.QueryRowContext(ctx, sqlq, subArgs...).Scan(&ok); err != nil {
+		return false, fmt.Errorf("scanning exists for %s: %w", PlacesTable, err)
+	}
+
+	return ok, nil
+}
+
 func (q PlacesQ) UpdateOne(ctx context.Context) (Place, error) {
 	q.updater = q.updater.Set("updated_at", time.Now().UTC())
 
@@ -279,6 +296,11 @@ func (q PlacesQ) UpdateMany(ctx context.Context) (int64, error) {
 	return affected, nil
 }
 
+func (q PlacesQ) UpdateClassID(classID uuid.UUID) PlacesQ {
+	q.updater = q.updater.Set("class_id", classID)
+	return q
+}
+
 func (q PlacesQ) UpdateStatus(status string) PlacesQ {
 	q.updater = q.updater.Set("status", status)
 	return q
@@ -291,6 +313,56 @@ func (q PlacesQ) UpdateVerified(verified bool) PlacesQ {
 
 func (q PlacesQ) UpdateName(name string) PlacesQ {
 	q.updater = q.updater.Set("name", name)
+	return q
+}
+
+func (q PlacesQ) UpdateAddress(address string) PlacesQ {
+	q.updater = q.updater.Set("address", address)
+	return q
+}
+
+func (q PlacesQ) UpdateDescription(description *string) PlacesQ {
+	if description == nil {
+		q.updater = q.updater.Set("description", nil)
+		return q
+	}
+	q.updater = q.updater.Set("description", description)
+	return q
+}
+
+func (q PlacesQ) UpdateIcon(icon *string) PlacesQ {
+	if icon == nil {
+		q.updater = q.updater.Set("icon", nil)
+		return q
+	}
+	q.updater = q.updater.Set("icon", icon)
+	return q
+}
+
+func (q PlacesQ) UpdateBanner(banner *string) PlacesQ {
+	if banner == nil {
+		q.updater = q.updater.Set("banner", nil)
+		return q
+	}
+	q.updater = q.updater.Set("banner", banner)
+	return q
+}
+
+func (q PlacesQ) UpdateWebsite(website *string) PlacesQ {
+	if website == nil {
+		q.updater = q.updater.Set("website", nil)
+		return q
+	}
+	q.updater = q.updater.Set("website", website)
+	return q
+}
+
+func (q PlacesQ) UpdatePhone(phone *string) PlacesQ {
+	if phone == nil {
+		q.updater = q.updater.Set("phone", nil)
+		return q
+	}
+	q.updater = q.updater.Set("phone", phone)
 	return q
 }
 

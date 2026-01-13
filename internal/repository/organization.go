@@ -39,6 +39,41 @@ func (s Service) UpsertOrgMember(ctx context.Context, member models.Member) erro
 	return err
 }
 
+func (s Service) GetOrgMemberByAccountID(ctx context.Context, organizationID, accountID uuid.UUID) (models.Member, error) {
+	row, err := s.orgMembersQ(ctx).
+		FilterByOrganizationID(organizationID).
+		FilterByAccountID(accountID).
+		Get(ctx)
+	if err != nil {
+		return models.Member{}, err
+	}
+
+	return models.Member{
+		ID:             row.ID,
+		OrganizationID: row.OrganizationID,
+		AccountID:      row.AccountID,
+		CreatedAt:      row.CreatedAt,
+		UpdatedAt:      row.UpdatedAt,
+	}, nil
+}
+
+func (s Service) GetOrgMemberByID(ctx context.Context, ID uuid.UUID) (models.Member, error) {
+	row, err := s.orgMembersQ(ctx).
+		FilterByID(ID).
+		Get(ctx)
+	if err != nil {
+		return models.Member{}, err
+	}
+
+	return models.Member{
+		ID:             row.ID,
+		OrganizationID: row.OrganizationID,
+		AccountID:      row.AccountID,
+		CreatedAt:      row.CreatedAt,
+		UpdatedAt:      row.UpdatedAt,
+	}, nil
+}
+
 func (s Service) DeleteOrgMember(ctx context.Context, ID uuid.UUID) error {
 	return s.orgMembersQ(ctx).FilterByID(ID).Delete(ctx)
 }

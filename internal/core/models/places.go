@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	PlaceStatusActive   = "active"
-	PlaceStatusInactive = "inactive"
-	PlaceStatusBlocked  = "blocked"
+	PlaceStatusActive    = "active"
+	PlaceStatusInactive  = "inactive"
+	PlaceStatusSuspended = "suspended"
 )
 
 type Place struct {
@@ -29,7 +29,6 @@ type Place struct {
 	Banner      *string `json:"banner"`
 	Website     *string `json:"website"`
 	Phone       *string `json:"phone"`
-	Email       *string `json:"email"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

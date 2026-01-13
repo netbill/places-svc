@@ -11,9 +11,9 @@ import (
 
 const PlacePossibilityLinksTable = "place_possibility_links"
 
-type PlacePossibilityLink struct {
-	PlaceID       uuid.UUID `json:"place_id"`
-	PossibilityID uuid.UUID `json:"possibility_id"`
+type PlacePossibilityLinks struct {
+	PlaceID         uuid.UUID `json:"place_id"`
+	PossibilityCode string    `json:"possibility_code"`
 }
 
 type PlacePossibilityLinksQ struct {
@@ -37,15 +37,15 @@ func NewPlacePossibilityLinksQ(db pgx.DBTX) PlacePossibilityLinksQ {
 }
 
 type PlacePossibilityLinksQInsertInput struct {
-	PlaceID       uuid.UUID
-	PossibilityID uuid.UUID
+	PlaceID         uuid.UUID
+	PossibilityCode string
 }
 
 func (q PlacePossibilityLinksQ) Insert(ctx context.Context, data PlacePossibilityLinksQInsertInput) error {
 	query, args, err := q.inserter.
 		SetMap(map[string]interface{}{
-			"place_id":       data.PlaceID,
-			"possibility_id": data.PossibilityID,
+			"place_id":         data.PlaceID,
+			"possibility_code": data.PossibilityCode,
 		}).
 		ToSql()
 	if err != nil {
@@ -66,14 +66,14 @@ func (q PlacePossibilityLinksQ) FilterByPlaceID(placeID uuid.UUID) PlacePossibil
 	return q
 }
 
-func (q PlacePossibilityLinksQ) FilterByPossibilityID(possibilityID uuid.UUID) PlacePossibilityLinksQ {
-	q.selector = q.selector.Where(sq.Eq{"possibility_id": possibilityID})
-	q.counter = q.counter.Where(sq.Eq{"possibility_id": possibilityID})
-	q.deleter = q.deleter.Where(sq.Eq{"possibility_id": possibilityID})
+func (q PlacePossibilityLinksQ) FilterByPossibilityCode(code string) PlacePossibilityLinksQ {
+	q.selector = q.selector.Where(sq.Eq{"possibility_code": code})
+	q.counter = q.counter.Where(sq.Eq{"possibility_code": code})
+	q.deleter = q.deleter.Where(sq.Eq{"possibility_code": code})
 	return q
 }
 
-func (q PlacePossibilityLinksQ) Select(ctx context.Context) ([]PlacePossibilityLink, error) {
+func (q PlacePossibilityLinksQ) Select(ctx context.Context) ([]PlacePossibilityLinks, error) {
 	query, args, err := q.selector.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("building select query for %s: %w", PlacePossibilityLinksTable, err)
@@ -85,10 +85,10 @@ func (q PlacePossibilityLinksQ) Select(ctx context.Context) ([]PlacePossibilityL
 	}
 	defer rows.Close()
 
-	var links []PlacePossibilityLink
+	var links []PlacePossibilityLinks
 	for rows.Next() {
-		var l PlacePossibilityLink
-		if err := rows.Scan(&l.PlaceID, &l.PossibilityID); err != nil {
+		var l PlacePossibilityLinks
+		if err := rows.Scan(&l.PlaceID, &l.PossibilityCode); err != nil {
 			return nil, err
 		}
 		links = append(links, l)

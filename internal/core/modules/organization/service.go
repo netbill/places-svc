@@ -41,5 +41,7 @@ type repo interface {
 		permissions map[string]bool,
 	) error
 
+	UpdatePlaceStatusForOrg(ctx context.Context, organizationID uuid.UUID, status string) error
+
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
 }
