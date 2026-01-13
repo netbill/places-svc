@@ -10,6 +10,7 @@ require (
 	github.com/netbill/ape v0.1.0
 	github.com/netbill/evebox v0.3.0
 	github.com/netbill/logium v0.1.0
+	github.com/netbill/pagi v0.1.2
 	github.com/netbill/pgx v0.1.0
 	github.com/paulmach/orb v0.12.0
 	github.com/pkg/errors v0.9.1

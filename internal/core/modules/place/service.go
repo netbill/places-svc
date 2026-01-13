@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/netbill/pagi"
 	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/geoukr"
@@ -33,6 +34,7 @@ type repo interface {
 	CreatePlace(ctx context.Context, params CreateParams) (models.Place, error)
 
 	GetPlaceByID(ctx context.Context, id uuid.UUID) (models.Place, error)
+	GetPlaces(ctx context.Context, params FilterParams, limit, offset uint) (pagi.Page[[]models.Place], error)
 
 	UpdatePlaceByID(ctx context.Context, id uuid.UUID, params UpdatePlaceParams) (models.Place, error)
 	UpdatePlaceStatus(ctx context.Context, placeID uuid.UUID, status string) (models.Place, error)

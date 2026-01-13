@@ -4,12 +4,13 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/netbill/pagi"
 	"github.com/netbill/places-svc/internal/core/models"
-	"github.com/netbill/places-svc/internal/core/modules/classes"
+	"github.com/netbill/places-svc/internal/core/modules/class"
 	"github.com/netbill/places-svc/internal/repository/pgdb"
 )
 
-func (s Service) CreatePlaceClass(ctx context.Context, params classes.CreateParams) (models.PlaceClass, error) {
+func (s Service) CreatePlaceClass(ctx context.Context, params class.CreateParams) (models.PlaceClass, error) {
 	row, err := s.placeClassesQ(ctx).Insert(ctx, pgdb.PlaceClassesInsertInput{
 		ParentID:    params.ParentID,
 		Code:        params.Code,
@@ -24,7 +25,55 @@ func (s Service) CreatePlaceClass(ctx context.Context, params classes.CreatePara
 	return toModel(row), nil
 }
 
-func (s Service) UpdatePlaceClass(ctx context.Context, classID uuid.UUID, params classes.UpdateParams) (models.PlaceClass, error) {
+func (s Service) GetClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error) {
+	row, err := s.placeClassesQ(ctx).FilterByID(id).Get(ctx)
+	if err != nil {
+		return models.PlaceClass{}, err
+	}
+
+	return toModel(row), nil
+}
+
+func (s Service) GetClasses(ctx context.Context, params class.FilterParams, limit, offset uint) (pagi.Page[[]models.PlaceClass], error) {
+	q := s.placeClassesQ(ctx)
+
+	if params.Name != nil {
+		q = q.FilterNameLike(*params.Name)
+	}
+	if params.Description != nil {
+		q = q.FilterDescriptionLike(*params.Description)
+	}
+	if params.Text != nil {
+		q = q.FilterByText(*params.Text)
+	}
+	if params.Parent != nil {
+		q = q.FilterByClassID(params.Parent.ParentID, params.Parent.Children, params.Parent.Parents)
+	}
+
+	total, err := q.Count(ctx)
+	if err != nil {
+		return pagi.Page[[]models.PlaceClass]{}, err
+	}
+
+	rows, err := q.Page(limit, offset).Select(ctx)
+	if err != nil {
+		return pagi.Page[[]models.PlaceClass]{}, err
+	}
+
+	collection := make([]models.PlaceClass, len(rows))
+	for i, row := range rows {
+		collection[i] = toModel(row)
+	}
+
+	return pagi.Page[[]models.PlaceClass]{
+		Data:  collection,
+		Total: total,
+		Page:  uint(offset/limit) + 1,
+		Size:  uint(len(collection)),
+	}, nil
+}
+
+func (s Service) UpdatePlaceClass(ctx context.Context, classID uuid.UUID, params class.UpdateParams) (models.PlaceClass, error) {
 	q := s.placeClassesQ(ctx).FilterByID(classID)
 	if params.Code != nil {
 		q = q.UpdateCode(*params.Code)
@@ -48,7 +97,7 @@ func (s Service) UpdatePlaceClass(ctx context.Context, classID uuid.UUID, params
 }
 
 func (s Service) CheckParentCycle(ctx context.Context, classID, newParentID uuid.UUID) (bool, error) {
-	res, err := s.placeClassesQ(ctx).FilterByParentIDTree(newParentID, 0).FilterByID(classID).Exists(ctx)
+	res, err := s.placeClassesQ(ctx).FilterByClassID(newParentID, true, true).FilterByID(classID).Exists(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -56,15 +105,11 @@ func (s Service) CheckParentCycle(ctx context.Context, classID, newParentID uuid
 		return true, nil
 	}
 
-	res, err = s.placeClassesQ(ctx).FilterByParentIDTree(classID, 0).FilterByID(newParentID).Exists(ctx)
-	if err != nil {
-		return false, err
-	}
-	return res, nil
+	return false, nil
 }
 
 func (s Service) CheckClassHasChildren(ctx context.Context, classID uuid.UUID) (bool, error) {
-	res, err := s.placeClassesQ(ctx).FilterByParentIDTree(classID, 0).Exists(ctx)
+	res, err := s.placeClassesQ(ctx).FilterByClassID(classID, true, false).Exists(ctx)
 	if err != nil {
 		return false, err
 	}

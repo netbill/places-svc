@@ -1,9 +1,10 @@
-package classes
+package class
 
 import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/netbill/pagi"
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
@@ -22,6 +23,9 @@ func New(repo repo, messanger messanger) Service {
 type repo interface {
 	CreatePlaceClass(ctx context.Context, class CreateParams) (models.PlaceClass, error)
 	UpdatePlaceClass(ctx context.Context, classID uuid.UUID, params UpdateParams) (models.PlaceClass, error)
+
+	GetClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error)
+	GetClasses(ctx context.Context, params FilterParams, limit, offset uint) (pagi.Page[[]models.PlaceClass], error)
 
 	CheckParentCycle(ctx context.Context, classID, parentID uuid.UUID) (bool, error)
 	CheckClassHasChildren(ctx context.Context, classID uuid.UUID) (bool, error)

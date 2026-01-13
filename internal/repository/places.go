@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/netbill/pagi"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/core/modules/place"
 	"github.com/netbill/places-svc/internal/repository/pgdb"
@@ -38,6 +39,66 @@ func (s Service) GetPlaceByID(ctx context.Context, id uuid.UUID) (models.Place, 
 	}
 
 	return Place(row), nil
+}
+
+func (s Service) GetPlaces(
+	ctx context.Context,
+	params place.FilterParams,
+	limit, offset uint,
+) (pagi.Page[[]models.Place], error) {
+	q := s.placeQ(ctx)
+
+	if params.OrganizationID != nil {
+		q = q.FilterByOrganizationID(params.OrganizationID)
+	}
+	if params.Status != nil {
+		q = q.FilterByStatus(*params.Status)
+	}
+	if params.FilterByText != nil {
+		q = q.FilterByText(*params.FilterByText)
+	}
+	if params.Verified != nil {
+		q = q.FilterByVerified(*params.Verified)
+	}
+	if params.Address != nil {
+		q = q.FilterLikeAddress(*params.Address)
+	}
+	if params.Name != nil {
+		q = q.FilterLikeName(*params.Name)
+	}
+	if params.Description != nil {
+		q = q.FilterLikeDescription(*params.Description)
+	}
+
+	if params.Class != nil {
+		q = q.FilterByClassID(params.Class.ClassID, params.Class.Children, params.Class.Parents)
+	}
+	if params.Near != nil {
+		q = q.FilterByRadius(params.Near.Point, params.Near.RadiusM)
+	}
+
+	res, err := q.Page(limit, offset).Select(ctx)
+	if err != nil {
+		return pagi.Page[[]models.Place]{}, err
+	}
+
+	total, err := q.Count(ctx)
+	if err != nil {
+		return pagi.Page[[]models.Place]{}, err
+	}
+
+	collection := make([]models.Place, 0, len(res))
+	for _, row := range res {
+		collection = append(collection, Place(row))
+	}
+
+	return pagi.Page[[]models.Place]{
+		Data:  collection,
+		Total: total,
+		Page:  uint(offset/limit) + 1,
+		Size:  uint(len(collection)),
+	}, nil
+
 }
 
 func (s Service) UpdatePlaceByID(ctx context.Context, id uuid.UUID, params place.UpdatePlaceParams) (models.Place, error) {

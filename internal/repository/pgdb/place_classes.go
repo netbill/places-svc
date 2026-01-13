@@ -142,74 +142,77 @@ func (q PlaceClassesQ) FilterNameLike(name string) PlaceClassesQ {
 	return q
 }
 
-func (q PlaceClassesQ) FilterByParentIDTree(parentID uuid.UUID, maxGeneration int) PlaceClassesQ {
-	// maxGeneration: 0 = unlimited
-	var depthCond string
-	if maxGeneration > 0 {
-		// depth starts from 1 for direct children
-		depthCond = fmt.Sprintf("WHERE t.depth <= %d", maxGeneration)
-	} else {
-		depthCond = ""
-	}
-
-	// descendants of parentID (excluding the parent itself)
-	// t.depth = 1 => direct child
-	exprSQL := fmt.Sprintf(`
-		pc.id IN (
-			WITH RECURSIVE t AS (
-				SELECT c.id, c.parent_id, 1 AS depth
-				FROM %s c
-				WHERE c.parent_id = $1
-				UNION ALL
-				SELECT c2.id, c2.parent_id, t.depth + 1
-				FROM %s c2
-				JOIN t ON c2.parent_id = t.id
-			)
-			SELECT t.id FROM t
-			%s
-		)
-	`, PlaceClassesTable, PlaceClassesTable, depthCond)
-
-	cond := sq.Expr(exprSQL, parentID)
-
-	q.selector = q.selector.Where(cond)
-	q.counter = q.counter.Where(cond)
+func (q PlaceClassesQ) FilterDescriptionLike(description string) PlaceClassesQ {
+	q.selector = q.selector.Where(sq.Like{"pc.description": "%" + description + "%"})
+	q.counter = q.counter.Where(sq.Like{"pc.description": "%" + description + "%"})
 	return q
 }
 
-func (q PlaceClassesQ) FilterByChildIDTree(childID uuid.UUID, maxGeneration int) PlaceClassesQ {
-	// maxGeneration: 0 = unlimited
-	var depthCond string
-	if maxGeneration > 0 {
-		// depth starts from 1 for direct parent
-		depthCond = fmt.Sprintf("WHERE t.depth <= %d", maxGeneration)
-	} else {
-		depthCond = ""
+func (q PlaceClassesQ) FilterByText(text string) PlaceClassesQ {
+	if text == "" {
+		return q
 	}
 
-	// ancestors of childID (excluding the child itself)
-	// t.depth = 1 => direct parent
-	exprSQL := fmt.Sprintf(`
-		pc.id IN (
-			WITH RECURSIVE t AS (
-				SELECT p.id, p.parent_id, 1 AS depth
-				FROM %s c
-				JOIN %s p ON p.id = c.parent_id
-				WHERE c.id = $1 AND c.parent_id IS NOT NULL
-				UNION ALL
-				SELECT p2.id, p2.parent_id, t.depth + 1
-				FROM %s p2
-				JOIN t ON p2.id = t.parent_id
-			)
-			SELECT t.id FROM t
-			%s
+	pattern := "%" + text + "%"
+
+	expr := sq.Or{
+		sq.Expr("name ILIKE ?", pattern),
+		sq.Expr("description ILIKE ?", pattern),
+	}
+
+	q.selector = q.selector.Where(expr)
+	q.counter = q.counter.Where(expr)
+
+	return q
+}
+
+func (q PlaceClassesQ) FilterByClassID(classID uuid.UUID, includeChild, includeParent bool) PlaceClassesQ {
+	// Только сам класс
+	if !includeChild && !includeParent {
+		q.selector = q.selector.Where(sq.Eq{"pc.id": classID})
+		q.counter = q.counter.Where(sq.Eq{"pc.id": classID})
+		return q
+	}
+
+	subSQL := `
+		WITH RECURSIVE
+		anc AS (
+			SELECT id, parent_id
+			FROM place_classes
+			WHERE id = ?
+			UNION ALL
+			SELECT pc2.id, pc2.parent_id
+			FROM place_classes pc2
+			JOIN anc ON anc.parent_id = pc2.id
+			WHERE (? = TRUE)
+		),
+		des AS (
+			SELECT id
+			FROM place_classes
+			WHERE id = ?
+			UNION ALL
+			SELECT pc2.id
+			FROM place_classes pc2
+			JOIN des ON pc2.parent_id = des.id
+			WHERE (? = TRUE)
 		)
-	`, PlaceClassesTable, PlaceClassesTable, PlaceClassesTable, depthCond)
+		SELECT DISTINCT id
+		FROM (
+			SELECT id FROM anc
+			UNION
+			SELECT id FROM des
+		) t
+	`
 
-	cond := sq.Expr(exprSQL, childID)
+	expr := sq.Expr(
+		"pc.id IN ("+subSQL+")",
+		classID, includeParent,
+		classID, includeChild,
+	)
 
-	q.selector = q.selector.Where(cond)
-	q.counter = q.counter.Where(cond)
+	q.selector = q.selector.Where(expr)
+	q.counter = q.counter.Where(expr)
+
 	return q
 }
 

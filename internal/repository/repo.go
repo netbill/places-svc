@@ -54,10 +54,6 @@ func (s Service) placeClassesQ(ctx context.Context) pgdb.PlaceClassesQ {
 	return pgdb.NewPlaceClassesQ(pgx.Exec(s.db, ctx))
 }
 
-func (s Service) placePossibilitiesQ(ctx context.Context) pgdb.PlacePossibilityLinksQ {
-	return pgdb.NewPlacePossibilitiesQ(pgx.Exec(s.db, ctx))
-}
-
 func (s Service) Transaction(ctx context.Context, fn func(ctx context.Context) error) error {
 	return pgx.Transaction(s.db, ctx, fn)
 }

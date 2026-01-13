@@ -174,9 +174,51 @@ func (q PlacesQ) FilterByOrganizationID(orgID *uuid.UUID) PlacesQ {
 	return q
 }
 
-func (q PlacesQ) FilterByClassID(classID uuid.UUID) PlacesQ {
-	q.selector = q.selector.Where(sq.Eq{"class_id": classID})
-	q.counter = q.counter.Where(sq.Eq{"class_id": classID})
+func (q PlacesQ) FilterByClassID(classID uuid.UUID, includeChild, includeParent bool) PlacesQ {
+	if !includeChild && !includeParent {
+		q.selector = q.selector.Where(sq.Eq{"class_id": classID})
+		q.counter = q.counter.Where(sq.Eq{"class_id": classID})
+		return q
+	}
+
+	subSQL := `
+		WITH RECURSIVE
+		anc AS (
+			SELECT id, parent_id
+			FROM place_classes
+			WHERE id = ?
+			UNION ALL
+			SELECT pc.id, pc.parent_id
+			FROM place_classes pc
+			JOIN anc ON anc.parent_id = pc.id
+			WHERE (? = TRUE)
+		),
+		des AS (
+			SELECT id
+			FROM place_classes
+			WHERE id = ?
+			UNION ALL
+			SELECT pc.id
+			FROM place_classes pc
+			JOIN des ON pc.parent_id = des.id
+			WHERE (? = TRUE)
+		)
+		SELECT DISTINCT id
+		FROM (
+			SELECT id FROM anc
+			UNION
+			SELECT id FROM des
+		) t
+	`
+
+	expr := sq.Expr(
+		"class_id IN ("+subSQL+")",
+		classID, includeParent,
+		classID, includeChild,
+	)
+
+	q.selector = q.selector.Where(expr)
+	q.counter = q.counter.Where(expr)
 	return q
 }
 
@@ -188,15 +230,74 @@ func (q PlacesQ) FilterByStatus(status string) PlacesQ {
 	return q
 }
 
-func (q PlacesQ) FilterVerified(verified bool) PlacesQ {
+func (q PlacesQ) FilterByVerified(verified bool) PlacesQ {
 	q.selector = q.selector.Where(sq.Eq{"verified": verified})
 	q.counter = q.counter.Where(sq.Eq{"verified": verified})
+	q.updater = q.updater.Where(sq.Eq{"verified": verified})
+	q.deleter = q.deleter.Where(sq.Eq{"verified": verified})
 	return q
 }
 
 func (q PlacesQ) FilterByParentID(parentID uuid.UUID) PlacesQ {
 	q.selector = q.selector.Where(sq.Eq{"parent_id": parentID})
 	q.counter = q.counter.Where(sq.Eq{"parent_id": parentID})
+	q.updater = q.updater.Where(sq.Eq{"parent_id": parentID})
+	q.deleter = q.deleter.Where(sq.Eq{"parent_id": parentID})
+	return q
+}
+
+func (q PlacesQ) FilterByRadius(center orb.Point, radiusMeters uint) PlacesQ {
+	// orb.Point = [lng, lat]
+	lng := center[0]
+	lat := center[1]
+
+	// point — geography
+	// ST_MakePoint(lng, lat) -> geometry, затем ST_SetSRID(..., 4326)
+	expr := sq.Expr(
+		`ST_DWithin(point, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)`,
+		lng, lat, int64(radiusMeters),
+	)
+
+	q.selector = q.selector.Where(expr)
+	q.counter = q.counter.Where(expr)
+
+	return q
+}
+
+func (q PlacesQ) FilterByText(text string) PlacesQ {
+	if text == "" {
+		return q
+	}
+
+	pattern := "%" + text + "%"
+
+	expr := sq.Or{
+		sq.Expr("name ILIKE ?", pattern),
+		sq.Expr("address ILIKE ?", pattern),
+		sq.Expr("description ILIKE ?", pattern),
+	}
+
+	q.selector = q.selector.Where(expr)
+	q.counter = q.counter.Where(expr)
+
+	return q
+}
+
+func (q PlacesQ) FilterLikeAddress(address string) PlacesQ {
+	q.selector = q.selector.Where(sq.Eq{"address": "%s" + address + "%"})
+	q.counter = q.counter.Where(sq.Eq{"address": "%s" + address + "%"})
+	return q
+}
+
+func (q PlacesQ) FilterLikeName(name string) PlacesQ {
+	q.selector = q.selector.Where(sq.Eq{"name": "%s" + name + "%"})
+	q.counter = q.counter.Where(sq.Eq{"name": "%s" + name + "%"})
+	return q
+}
+
+func (q PlacesQ) FilterLikeDescription(description string) PlacesQ {
+	q.selector = q.selector.Where(sq.Eq{"description": "%" + description + "%"})
+	q.counter = q.counter.Where(sq.Eq{"description": "%" + description + "%"})
 	return q
 }
 
