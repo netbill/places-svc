@@ -4,12 +4,19 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/google/uuid"
 	"github.com/netbill/pgx"
+	"github.com/netbill/places-svc/internal/core/modules/pclass"
 	"github.com/netbill/places-svc/internal/repository/pgdb"
 )
 
 type Service struct {
 	db *sql.DB
+}
+
+func (s Service) UpdatePlaceClassParams(ctx context.context.Context, ID uuid.uuid.UUID, params pclass.pclass.UpdateParams)  (models.PlaceClass, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func New(db *sql.DB) *Service {

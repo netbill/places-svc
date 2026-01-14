@@ -1,0 +1,13 @@
+type: object
+required:
+  - latitude
+  - longitude
+properties:
+  latitude:
+    type: number
+    format: float64
+    description: "The latitude coordinate of the place"
+  longitude:
+    type: number
+    format: float64
+    description: "The longitude coordinate of the place"

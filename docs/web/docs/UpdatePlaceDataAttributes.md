@@ -4,9 +4,15 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Class** | Pointer to **string** | place class | [optional] 
-**Website** | Pointer to **string** | place website | [optional] 
-**Phone** | Pointer to **string** | place phone number | [optional] 
+**ClassId** | Pointer to [**uuid.UUID**](uuid.UUID.md) | The ID of the class this place belongs to | [optional] 
+**Status** | Pointer to **string** | The status of the place (e.g., active, inactive) | [optional] 
+**Address** | Pointer to **string** | The physical address of the place | [optional] 
+**Name** | Pointer to **string** | The name of the place | [optional] 
+**Description** | Pointer to **string** | A brief description of the place | [optional] 
+**Icon** | Pointer to **string** | A URL to an icon representing the place | [optional] 
+**Banner** | Pointer to **string** | A URL to a banner image for the place | [optional] 
+**Website** | Pointer to **string** | The website URL of the place | [optional] 
+**Phone** | Pointer to **string** | The contact phone number of the place | [optional] 
 
 ## Methods
 
@@ -27,30 +33,180 @@ NewUpdatePlaceDataAttributesWithDefaults instantiates a new UpdatePlaceDataAttri
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetClass
+### GetClassId
 
-`func (o *UpdatePlaceDataAttributes) GetClass() string`
+`func (o *UpdatePlaceDataAttributes) GetClassId() uuid.UUID`
 
-GetClass returns the Class field if non-nil, zero value otherwise.
+GetClassId returns the ClassId field if non-nil, zero value otherwise.
 
-### GetClassOk
+### GetClassIdOk
 
-`func (o *UpdatePlaceDataAttributes) GetClassOk() (*string, bool)`
+`func (o *UpdatePlaceDataAttributes) GetClassIdOk() (*uuid.UUID, bool)`
 
-GetClassOk returns a tuple with the Class field if it's non-nil, zero value otherwise
+GetClassIdOk returns a tuple with the ClassId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetClass
+### SetClassId
 
-`func (o *UpdatePlaceDataAttributes) SetClass(v string)`
+`func (o *UpdatePlaceDataAttributes) SetClassId(v uuid.UUID)`
 
-SetClass sets Class field to given value.
+SetClassId sets ClassId field to given value.
 
-### HasClass
+### HasClassId
 
-`func (o *UpdatePlaceDataAttributes) HasClass() bool`
+`func (o *UpdatePlaceDataAttributes) HasClassId() bool`
 
-HasClass returns a boolean if a field has been set.
+HasClassId returns a boolean if a field has been set.
+
+### GetStatus
+
+`func (o *UpdatePlaceDataAttributes) GetStatus() string`
+
+GetStatus returns the Status field if non-nil, zero value otherwise.
+
+### GetStatusOk
+
+`func (o *UpdatePlaceDataAttributes) GetStatusOk() (*string, bool)`
+
+GetStatusOk returns a tuple with the Status field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetStatus
+
+`func (o *UpdatePlaceDataAttributes) SetStatus(v string)`
+
+SetStatus sets Status field to given value.
+
+### HasStatus
+
+`func (o *UpdatePlaceDataAttributes) HasStatus() bool`
+
+HasStatus returns a boolean if a field has been set.
+
+### GetAddress
+
+`func (o *UpdatePlaceDataAttributes) GetAddress() string`
+
+GetAddress returns the Address field if non-nil, zero value otherwise.
+
+### GetAddressOk
+
+`func (o *UpdatePlaceDataAttributes) GetAddressOk() (*string, bool)`
+
+GetAddressOk returns a tuple with the Address field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetAddress
+
+`func (o *UpdatePlaceDataAttributes) SetAddress(v string)`
+
+SetAddress sets Address field to given value.
+
+### HasAddress
+
+`func (o *UpdatePlaceDataAttributes) HasAddress() bool`
+
+HasAddress returns a boolean if a field has been set.
+
+### GetName
+
+`func (o *UpdatePlaceDataAttributes) GetName() string`
+
+GetName returns the Name field if non-nil, zero value otherwise.
+
+### GetNameOk
+
+`func (o *UpdatePlaceDataAttributes) GetNameOk() (*string, bool)`
+
+GetNameOk returns a tuple with the Name field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetName
+
+`func (o *UpdatePlaceDataAttributes) SetName(v string)`
+
+SetName sets Name field to given value.
+
+### HasName
+
+`func (o *UpdatePlaceDataAttributes) HasName() bool`
+
+HasName returns a boolean if a field has been set.
+
+### GetDescription
+
+`func (o *UpdatePlaceDataAttributes) GetDescription() string`
+
+GetDescription returns the Description field if non-nil, zero value otherwise.
+
+### GetDescriptionOk
+
+`func (o *UpdatePlaceDataAttributes) GetDescriptionOk() (*string, bool)`
+
+GetDescriptionOk returns a tuple with the Description field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetDescription
+
+`func (o *UpdatePlaceDataAttributes) SetDescription(v string)`
+
+SetDescription sets Description field to given value.
+
+### HasDescription
+
+`func (o *UpdatePlaceDataAttributes) HasDescription() bool`
+
+HasDescription returns a boolean if a field has been set.
+
+### GetIcon
+
+`func (o *UpdatePlaceDataAttributes) GetIcon() string`
+
+GetIcon returns the Icon field if non-nil, zero value otherwise.
+
+### GetIconOk
+
+`func (o *UpdatePlaceDataAttributes) GetIconOk() (*string, bool)`
+
+GetIconOk returns a tuple with the Icon field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetIcon
+
+`func (o *UpdatePlaceDataAttributes) SetIcon(v string)`
+
+SetIcon sets Icon field to given value.
+
+### HasIcon
+
+`func (o *UpdatePlaceDataAttributes) HasIcon() bool`
+
+HasIcon returns a boolean if a field has been set.
+
+### GetBanner
+
+`func (o *UpdatePlaceDataAttributes) GetBanner() string`
+
+GetBanner returns the Banner field if non-nil, zero value otherwise.
+
+### GetBannerOk
+
+`func (o *UpdatePlaceDataAttributes) GetBannerOk() (*string, bool)`
+
+GetBannerOk returns a tuple with the Banner field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetBanner
+
+`func (o *UpdatePlaceDataAttributes) SetBanner(v string)`
+
+SetBanner sets Banner field to given value.
+
+### HasBanner
+
+`func (o *UpdatePlaceDataAttributes) HasBanner() bool`
+
+HasBanner returns a boolean if a field has been set.
 
 ### GetWebsite
 

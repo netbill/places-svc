@@ -339,12 +339,8 @@ func (q PlaceClassesQ) UpdateMany(ctx context.Context) (int64, error) {
 	return affected, nil
 }
 
-func (q PlaceClassesQ) UpdateParent(parentID *uuid.UUID) PlaceClassesQ {
-	if parentID == nil {
-		q.updater = q.updater.Set("parent_id", nil)
-	} else {
-		q.updater = q.updater.Set("parent_id", *parentID)
-	}
+func (q PlaceClassesQ) UpdateParent(parentID uuid.NullUUID) PlaceClassesQ {
+	q.updater = q.updater.Set("parent_id", parentID)
 	return q
 }
 
@@ -363,12 +359,8 @@ func (q PlaceClassesQ) UpdateDescription(description string) PlaceClassesQ {
 	return q
 }
 
-func (q PlaceClassesQ) UpdateIcon(icon *string) PlaceClassesQ {
-	if icon == nil {
-		q.updater = q.updater.Set("icon", nil)
-	} else {
-		q.updater = q.updater.Set("icon", *icon)
-	}
+func (q PlaceClassesQ) UpdateIcon(icon sql.NullString) PlaceClassesQ {
+	q.updater = q.updater.Set("icon", icon)
 	return q
 }
 

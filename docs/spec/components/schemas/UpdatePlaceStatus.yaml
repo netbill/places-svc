@@ -1,0 +1,26 @@
+type: object
+required:
+  - data
+properties:
+  data:
+    type: object
+    required:
+      - id
+      - type
+      - attributes
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: "The unique identifier of the place"
+      type:
+        type: string
+        enum: [ update_place_status]
+      attributes:
+        type: object
+        required:
+          - status
+        properties:
+          status:
+            type: string
+            description: "The new status of the place"

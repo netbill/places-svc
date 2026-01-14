@@ -1,4 +1,4 @@
-package class
+package pclass
 
 import (
 	"context"
@@ -8,15 +8,27 @@ import (
 	"github.com/netbill/places-svc/internal/core/errx"
 )
 
-func (s Service) DeleteClass(ctx context.Context, classID uuid.UUID) error {
-	exist, err := s.repo.CheckClassHasChildren(ctx, classID)
+func (s Service) DeletePlaceClass(ctx context.Context, classID uuid.UUID) error {
+	exist, err := s.repo.PlaceClassExists(ctx, classID)
+	if err != nil {
+		return errx.ErrorInternal.Raise(
+			fmt.Errorf("failed to check place class existence: %w", err),
+		)
+	}
+	if !exist {
+		return errx.ErrorPlaceClassNotFound.Raise(
+			fmt.Errorf("place class with id %s not found", classID.String()),
+		)
+	}
+
+	exist, err = s.repo.CheckPlaceClassHasChildren(ctx, classID)
 	if err != nil {
 		return errx.ErrorInternal.Raise(
 			fmt.Errorf("failed to check if class exists: %w", err),
 		)
 	}
 	if exist {
-		return errx.ErrorClassHaveChildren.Raise(
+		return errx.ErrorPlaceClassHaveChildren.Raise(
 			fmt.Errorf("cannot delete class %s because he haw child", classID),
 		)
 	}

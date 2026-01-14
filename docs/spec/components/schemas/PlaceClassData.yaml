@@ -1,0 +1,60 @@
+type: object
+required:
+  - id
+  - type
+  - attributes
+properties:
+  id:
+    type: string
+    format: uuid
+    description: "place ID"
+  type:
+    type: string
+    enum: [ place_class ]
+  attributes:
+    type: object
+    required:
+      - code
+      - name
+      - description
+      - updated_at
+      - created_at
+    properties:
+      code:
+        type: string
+        description: "The unique code of the class"
+        example: "japanese_cuisine"
+      name:
+        type: string
+        description: "The name of the class"
+      description:
+        type: string
+        description: "A brief description of the class"
+      icon:
+        type: string
+        format: uri
+        description: "A URL to an icon representing the class"
+      updated_at:
+        type: string
+        format: date-time
+        description: "The date and time when the class was last updated"
+      created_at:
+        type: string
+        format: date-time
+        description: "The date and time when the class was created"
+  relationships:
+    type: object
+    properties:
+      parent:
+        type: object
+        required:
+          - id
+          - type
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: "The ID of the parent class"
+          type:
+            type: string
+            enum: [ place_class ]

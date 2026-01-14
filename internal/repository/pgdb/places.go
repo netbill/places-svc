@@ -422,47 +422,27 @@ func (q PlacesQ) UpdateAddress(address string) PlacesQ {
 	return q
 }
 
-func (q PlacesQ) UpdateDescription(description *string) PlacesQ {
-	if description == nil {
-		q.updater = q.updater.Set("description", nil)
-		return q
-	}
+func (q PlacesQ) UpdateDescription(description sql.NullString) PlacesQ {
 	q.updater = q.updater.Set("description", description)
 	return q
 }
 
-func (q PlacesQ) UpdateIcon(icon *string) PlacesQ {
-	if icon == nil {
-		q.updater = q.updater.Set("icon", nil)
-		return q
-	}
+func (q PlacesQ) UpdateIcon(icon sql.NullString) PlacesQ {
 	q.updater = q.updater.Set("icon", icon)
 	return q
 }
 
-func (q PlacesQ) UpdateBanner(banner *string) PlacesQ {
-	if banner == nil {
-		q.updater = q.updater.Set("banner", nil)
-		return q
-	}
+func (q PlacesQ) UpdateBanner(banner sql.NullString) PlacesQ {
 	q.updater = q.updater.Set("banner", banner)
 	return q
 }
 
-func (q PlacesQ) UpdateWebsite(website *string) PlacesQ {
-	if website == nil {
-		q.updater = q.updater.Set("website", nil)
-		return q
-	}
+func (q PlacesQ) UpdateWebsite(website sql.NullString) PlacesQ {
 	q.updater = q.updater.Set("website", website)
 	return q
 }
 
-func (q PlacesQ) UpdatePhone(phone *string) PlacesQ {
-	if phone == nil {
-		q.updater = q.updater.Set("phone", nil)
-		return q
-	}
+func (q PlacesQ) UpdatePhone(phone sql.NullString) PlacesQ {
 	q.updater = q.updater.Set("phone", phone)
 	return q
 }

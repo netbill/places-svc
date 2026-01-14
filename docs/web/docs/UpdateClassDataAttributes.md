@@ -4,9 +4,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Icon** | Pointer to **string** | class icon | [optional] 
-**Name** | Pointer to **string** | class name at english | [optional] [default to "New Class"]
-**Parent** | Pointer to **string** | parent class code | [optional] 
+**ParentId** | Pointer to [**uuid.UUID**](uuid.UUID.md) | The ID of the parent place | [optional] 
+**Code** | Pointer to **string** | The unique code of the class | [optional] 
+**Name** | Pointer to **string** | The name of the class | [optional] 
+**Description** | Pointer to **string** | A brief description of the class | [optional] 
+**Icon** | Pointer to **string** | A URL to an icon representing the class | [optional] 
 
 ## Methods
 
@@ -27,30 +29,55 @@ NewUpdateClassDataAttributesWithDefaults instantiates a new UpdateClassDataAttri
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetIcon
+### GetParentId
 
-`func (o *UpdateClassDataAttributes) GetIcon() string`
+`func (o *UpdateClassDataAttributes) GetParentId() uuid.UUID`
 
-GetIcon returns the Icon field if non-nil, zero value otherwise.
+GetParentId returns the ParentId field if non-nil, zero value otherwise.
 
-### GetIconOk
+### GetParentIdOk
 
-`func (o *UpdateClassDataAttributes) GetIconOk() (*string, bool)`
+`func (o *UpdateClassDataAttributes) GetParentIdOk() (*uuid.UUID, bool)`
 
-GetIconOk returns a tuple with the Icon field if it's non-nil, zero value otherwise
+GetParentIdOk returns a tuple with the ParentId field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetIcon
+### SetParentId
 
-`func (o *UpdateClassDataAttributes) SetIcon(v string)`
+`func (o *UpdateClassDataAttributes) SetParentId(v uuid.UUID)`
 
-SetIcon sets Icon field to given value.
+SetParentId sets ParentId field to given value.
 
-### HasIcon
+### HasParentId
 
-`func (o *UpdateClassDataAttributes) HasIcon() bool`
+`func (o *UpdateClassDataAttributes) HasParentId() bool`
 
-HasIcon returns a boolean if a field has been set.
+HasParentId returns a boolean if a field has been set.
+
+### GetCode
+
+`func (o *UpdateClassDataAttributes) GetCode() string`
+
+GetCode returns the Code field if non-nil, zero value otherwise.
+
+### GetCodeOk
+
+`func (o *UpdateClassDataAttributes) GetCodeOk() (*string, bool)`
+
+GetCodeOk returns a tuple with the Code field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetCode
+
+`func (o *UpdateClassDataAttributes) SetCode(v string)`
+
+SetCode sets Code field to given value.
+
+### HasCode
+
+`func (o *UpdateClassDataAttributes) HasCode() bool`
+
+HasCode returns a boolean if a field has been set.
 
 ### GetName
 
@@ -77,30 +104,55 @@ SetName sets Name field to given value.
 
 HasName returns a boolean if a field has been set.
 
-### GetParent
+### GetDescription
 
-`func (o *UpdateClassDataAttributes) GetParent() string`
+`func (o *UpdateClassDataAttributes) GetDescription() string`
 
-GetParent returns the Parent field if non-nil, zero value otherwise.
+GetDescription returns the Description field if non-nil, zero value otherwise.
 
-### GetParentOk
+### GetDescriptionOk
 
-`func (o *UpdateClassDataAttributes) GetParentOk() (*string, bool)`
+`func (o *UpdateClassDataAttributes) GetDescriptionOk() (*string, bool)`
 
-GetParentOk returns a tuple with the Parent field if it's non-nil, zero value otherwise
+GetDescriptionOk returns a tuple with the Description field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetParent
+### SetDescription
 
-`func (o *UpdateClassDataAttributes) SetParent(v string)`
+`func (o *UpdateClassDataAttributes) SetDescription(v string)`
 
-SetParent sets Parent field to given value.
+SetDescription sets Description field to given value.
 
-### HasParent
+### HasDescription
 
-`func (o *UpdateClassDataAttributes) HasParent() bool`
+`func (o *UpdateClassDataAttributes) HasDescription() bool`
 
-HasParent returns a boolean if a field has been set.
+HasDescription returns a boolean if a field has been set.
+
+### GetIcon
+
+`func (o *UpdateClassDataAttributes) GetIcon() string`
+
+GetIcon returns the Icon field if non-nil, zero value otherwise.
+
+### GetIconOk
+
+`func (o *UpdateClassDataAttributes) GetIconOk() (*string, bool)`
+
+GetIconOk returns a tuple with the Icon field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetIcon
+
+`func (o *UpdateClassDataAttributes) SetIcon(v string)`
+
+SetIcon sets Icon field to given value.
+
+### HasIcon
+
+`func (o *UpdateClassDataAttributes) HasIcon() bool`
+
+HasIcon returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

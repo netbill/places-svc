@@ -4,14 +4,14 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Links** | [**RelationshipLinks**](RelationshipLinks.md) |  | 
-**Data** | [**RelationshipDataObject**](RelationshipDataObject.md) |  | 
+**Id** | [**uuid.UUID**](uuid.UUID.md) | The ID of the parent class | 
+**Type** | **string** |  | 
 
 ## Methods
 
 ### NewClassDataRelationshipsParent
 
-`func NewClassDataRelationshipsParent(links RelationshipLinks, data RelationshipDataObject, ) *ClassDataRelationshipsParent`
+`func NewClassDataRelationshipsParent(id uuid.UUID, type_ string, ) *ClassDataRelationshipsParent`
 
 NewClassDataRelationshipsParent instantiates a new ClassDataRelationshipsParent object
 This constructor will assign default values to properties that have it defined,
@@ -26,44 +26,44 @@ NewClassDataRelationshipsParentWithDefaults instantiates a new ClassDataRelation
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetLinks
+### GetId
 
-`func (o *ClassDataRelationshipsParent) GetLinks() RelationshipLinks`
+`func (o *ClassDataRelationshipsParent) GetId() uuid.UUID`
 
-GetLinks returns the Links field if non-nil, zero value otherwise.
+GetId returns the Id field if non-nil, zero value otherwise.
 
-### GetLinksOk
+### GetIdOk
 
-`func (o *ClassDataRelationshipsParent) GetLinksOk() (*RelationshipLinks, bool)`
+`func (o *ClassDataRelationshipsParent) GetIdOk() (*uuid.UUID, bool)`
 
-GetLinksOk returns a tuple with the Links field if it's non-nil, zero value otherwise
+GetIdOk returns a tuple with the Id field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetLinks
+### SetId
 
-`func (o *ClassDataRelationshipsParent) SetLinks(v RelationshipLinks)`
+`func (o *ClassDataRelationshipsParent) SetId(v uuid.UUID)`
 
-SetLinks sets Links field to given value.
+SetId sets Id field to given value.
 
 
-### GetData
+### GetType
 
-`func (o *ClassDataRelationshipsParent) GetData() RelationshipDataObject`
+`func (o *ClassDataRelationshipsParent) GetType() string`
 
-GetData returns the Data field if non-nil, zero value otherwise.
+GetType returns the Type field if non-nil, zero value otherwise.
 
-### GetDataOk
+### GetTypeOk
 
-`func (o *ClassDataRelationshipsParent) GetDataOk() (*RelationshipDataObject, bool)`
+`func (o *ClassDataRelationshipsParent) GetTypeOk() (*string, bool)`
 
-GetDataOk returns a tuple with the Data field if it's non-nil, zero value otherwise
+GetTypeOk returns a tuple with the Type field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetData
+### SetType
 
-`func (o *ClassDataRelationshipsParent) SetData(v RelationshipDataObject)`
+`func (o *ClassDataRelationshipsParent) SetType(v string)`
 
-SetData sets Data field to given value.
+SetType sets Type field to given value.
 
 
 

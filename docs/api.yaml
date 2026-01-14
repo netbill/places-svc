@@ -16,3 +16,33 @@ paths:
 
 components:
   schemas:
+    # requestBodies:
+    CreatePlace:
+      $ref: './spec/components/schemas/CreatePlace.yaml'
+    UpdatePlace:
+      $ref: './spec/components/schemas/UpdatePlace.yaml'
+    UpdateClassForPlace:
+      $ref: './spec/components/schemas/UpdateClassForPlace.yaml'
+    VerifyPlace:
+      $ref: './spec/components/schemas/VerifyPlace.yaml'
+    UpdatePlaceStatus:
+      $ref: './spec/components/schemas/UpdatePlaceStatus.yaml'
+
+    CreatePlaceClass:
+      $ref: './spec/components/schemas/CreatePlaceClass.yaml'
+    UpdatePlaceClass:
+      $ref: './spec/components/schemas/UpdatePlaceClass.yaml'
+    ReplacePlaceClass:
+      $ref: './spec/components/schemas/ReplacePlaceClass.yaml'
+
+    # responses:
+    PaginationData:
+      $ref: './spec/components/schemas/PaginationData.yaml'
+    Place:
+      $ref: './spec/components/schemas/Place.yaml'
+    PlacesCollection:
+      $ref: './spec/components/schemas/PlacesCollection.yaml'
+    Class:
+      $ref: './spec/components/schemas/PlaceClass.yaml'
+    ClassesCollection:
+      $ref: './spec/components/schemas/PlaceClassesCollection.yaml'

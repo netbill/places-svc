@@ -4,16 +4,16 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Id** | [**uuid.UUID**](uuid.UUID.md) | place id | 
+**Id** | [**uuid.UUID**](uuid.UUID.md) | place ID | 
 **Type** | **string** |  | 
 **Attributes** | [**PlaceDataAttributes**](PlaceDataAttributes.md) |  | 
-**Relationships** | [**PlaceRelationships**](PlaceRelationships.md) |  | 
+**Relationships** | [**PlaceDataRelationships**](PlaceDataRelationships.md) |  | 
 
 ## Methods
 
 ### NewPlaceData
 
-`func NewPlaceData(id uuid.UUID, type_ string, attributes PlaceDataAttributes, relationships PlaceRelationships, ) *PlaceData`
+`func NewPlaceData(id uuid.UUID, type_ string, attributes PlaceDataAttributes, relationships PlaceDataRelationships, ) *PlaceData`
 
 NewPlaceData instantiates a new PlaceData object
 This constructor will assign default values to properties that have it defined,
@@ -90,20 +90,20 @@ SetAttributes sets Attributes field to given value.
 
 ### GetRelationships
 
-`func (o *PlaceData) GetRelationships() PlaceRelationships`
+`func (o *PlaceData) GetRelationships() PlaceDataRelationships`
 
 GetRelationships returns the Relationships field if non-nil, zero value otherwise.
 
 ### GetRelationshipsOk
 
-`func (o *PlaceData) GetRelationshipsOk() (*PlaceRelationships, bool)`
+`func (o *PlaceData) GetRelationshipsOk() (*PlaceDataRelationships, bool)`
 
 GetRelationshipsOk returns a tuple with the Relationships field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetRelationships
 
-`func (o *PlaceData) SetRelationships(v PlaceRelationships)`
+`func (o *PlaceData) SetRelationships(v PlaceDataRelationships)`
 
 SetRelationships sets Relationships field to given value.
 

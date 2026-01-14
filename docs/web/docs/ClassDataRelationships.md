@@ -4,13 +4,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Parent** | [**ClassDataRelationshipsParent**](ClassDataRelationshipsParent.md) |  | 
+**Parent** | Pointer to [**ClassDataRelationshipsParent**](ClassDataRelationshipsParent.md) |  | [optional] 
 
 ## Methods
 
 ### NewClassDataRelationships
 
-`func NewClassDataRelationships(parent ClassDataRelationshipsParent, ) *ClassDataRelationships`
+`func NewClassDataRelationships() *ClassDataRelationships`
 
 NewClassDataRelationships instantiates a new ClassDataRelationships object
 This constructor will assign default values to properties that have it defined,
@@ -44,6 +44,11 @@ and a boolean to check if the value has been set.
 
 SetParent sets Parent field to given value.
 
+### HasParent
+
+`func (o *ClassDataRelationships) HasParent() bool`
+
+HasParent returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -1,0 +1,27 @@
+type: object
+required:
+  - data
+properties:
+  data:
+    type: object
+    required:
+      - id
+      - type
+      - attributes
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: "The unique identifier for the replace place class operation"
+      type:
+        type: string
+        enum: [ replace_place_class ]
+      attributes:
+        type: object
+        required:
+          - class_replace_id
+        properties:
+          class_replace_id:
+            type: string
+            format: uuid
+            description: "The ID of the class to replace with"

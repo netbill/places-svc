@@ -2,15 +2,16 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 	"github.com/netbill/pagi"
 	"github.com/netbill/places-svc/internal/core/models"
-	"github.com/netbill/places-svc/internal/core/modules/class"
+	"github.com/netbill/places-svc/internal/core/modules/pclass"
 	"github.com/netbill/places-svc/internal/repository/pgdb"
 )
 
-func (s Service) CreatePlaceClass(ctx context.Context, params class.CreateParams) (models.PlaceClass, error) {
+func (s Service) CreatePlaceClass(ctx context.Context, params pclass.CreateParams) (models.PlaceClass, error) {
 	row, err := s.placeClassesQ(ctx).Insert(ctx, pgdb.PlaceClassesInsertInput{
 		ParentID:    params.ParentID,
 		Code:        params.Code,
@@ -25,7 +26,32 @@ func (s Service) CreatePlaceClass(ctx context.Context, params class.CreateParams
 	return toModel(row), nil
 }
 
-func (s Service) GetClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error) {
+func (s Service) GetPlaceClassByCode(ctx context.Context, code string) (models.PlaceClass, error) {
+	row, err := s.placeClassesQ(ctx).FilterByCode(code).Get(ctx)
+	if err != nil {
+		return models.PlaceClass{}, err
+	}
+
+	return toModel(row), nil
+}
+
+func (s Service) PlaceClassExists(ctx context.Context, id uuid.UUID) (bool, error) {
+	res, err := s.placeClassesQ(ctx).FilterByID(id).Exists(ctx)
+	if err != nil {
+		return false, err
+	}
+	return res, nil
+}
+
+func (s Service) PlaceClassExistsByCode(ctx context.Context, code string) (bool, error) {
+	res, err := s.placeClassesQ(ctx).FilterByCode(code).Exists(ctx)
+	if err != nil {
+		return false, err
+	}
+	return res, nil
+}
+
+func (s Service) GetPlaceClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error) {
 	row, err := s.placeClassesQ(ctx).FilterByID(id).Get(ctx)
 	if err != nil {
 		return models.PlaceClass{}, err
@@ -34,7 +60,7 @@ func (s Service) GetClass(ctx context.Context, id uuid.UUID) (models.PlaceClass,
 	return toModel(row), nil
 }
 
-func (s Service) GetClasses(ctx context.Context, params class.FilterParams, limit, offset uint) (pagi.Page[[]models.PlaceClass], error) {
+func (s Service) GetPlaceClasses(ctx context.Context, params pclass.FilterParams, limit, offset uint) (pagi.Page[[]models.PlaceClass], error) {
 	q := s.placeClassesQ(ctx)
 
 	if params.Name != nil {
@@ -43,11 +69,11 @@ func (s Service) GetClasses(ctx context.Context, params class.FilterParams, limi
 	if params.Description != nil {
 		q = q.FilterDescriptionLike(*params.Description)
 	}
-	if params.Text != nil {
-		q = q.FilterByText(*params.Text)
+	if params.BestMatch != nil {
+		q = q.FilterByText(*params.BestMatch)
 	}
 	if params.Parent != nil {
-		q = q.FilterByClassID(params.Parent.ParentID, params.Parent.Children, params.Parent.Parents)
+		q = q.FilterByClassID(params.Parent.ID, params.Parent.IncludedChildren, params.Parent.IncludedParents)
 	}
 
 	total, err := q.Count(ctx)
@@ -73,7 +99,15 @@ func (s Service) GetClasses(ctx context.Context, params class.FilterParams, limi
 	}, nil
 }
 
-func (s Service) UpdatePlaceClass(ctx context.Context, classID uuid.UUID, params class.UpdateParams) (models.PlaceClass, error) {
+func (s Service) PlaceExists(ctx context.Context, id uuid.UUID) (bool, error) {
+	res, err := s.placeQ(ctx).FilterByID(id).Exists(ctx)
+	if err != nil {
+		return false, err
+	}
+	return res, nil
+}
+
+func (s Service) UpdatePlaceClass(ctx context.Context, classID uuid.UUID, params pclass.UpdateParams) (models.PlaceClass, error) {
 	q := s.placeClassesQ(ctx).FilterByID(classID)
 	if params.Code != nil {
 		q = q.UpdateCode(*params.Code)
@@ -85,7 +119,18 @@ func (s Service) UpdatePlaceClass(ctx context.Context, classID uuid.UUID, params
 		q = q.UpdateDescription(*params.Description)
 	}
 	if params.Icon != nil {
-		q = q.UpdateIcon(params.Icon)
+		if *params.Icon == "" {
+			q = q.UpdateIcon(sql.NullString{Valid: false, String: ""})
+		} else {
+			q = q.UpdateIcon(sql.NullString{Valid: true, String: *params.Icon})
+		}
+	}
+	if params.ParentID != nil {
+		if *params.ParentID == uuid.Nil {
+			q = q.UpdateParent(uuid.NullUUID{Valid: false, UUID: uuid.Nil})
+		} else {
+			q = q.UpdateParent(uuid.NullUUID{Valid: true, UUID: *params.ParentID})
+		}
 	}
 
 	row, err := q.UpdateOne(ctx)
@@ -108,7 +153,7 @@ func (s Service) CheckParentCycle(ctx context.Context, classID, newParentID uuid
 	return false, nil
 }
 
-func (s Service) CheckClassHasChildren(ctx context.Context, classID uuid.UUID) (bool, error) {
+func (s Service) CheckPlaceClassHasChildren(ctx context.Context, classID uuid.UUID) (bool, error) {
 	res, err := s.placeClassesQ(ctx).FilterByClassID(classID, true, false).Exists(ctx)
 	if err != nil {
 		return false, err
@@ -134,18 +179,6 @@ func (s Service) CheckPlaceClassExists(ctx context.Context, classID uuid.UUID) (
 
 func (s Service) DeletePlaceClass(ctx context.Context, classID uuid.UUID) error {
 	return s.placeClassesQ(ctx).FilterByID(classID).Delete(ctx)
-}
-
-func (s Service) UpdatePlaceClassParent(ctx context.Context, classID uuid.UUID, parentID *uuid.UUID) (models.PlaceClass, error) {
-	row, err := s.placeClassesQ(ctx).
-		FilterByID(classID).
-		UpdateParent(parentID).
-		UpdateOne(ctx)
-	if err != nil {
-		return models.PlaceClass{}, err
-	}
-
-	return toModel(row), nil
 }
 
 func toModel(row pgdb.PlaceClass) models.PlaceClass {

@@ -18,7 +18,8 @@ generate-models:
 		-i $(API_BUNDLED) -g go \
 		-o $(OUTPUT_DIR) \
 		--additional-properties=packageName=resources \
-		--import-mappings uuid.UUID=github.com/google/uuid --type-mappings string+uuid=uuid.UUID
+		--import-mappings uuid.UUID=github.com/google/uuid --type-mappings string+uuid=uuid.UUID \
+		--import-mappings float64 --type-mappings number+float64=float64 \
 
 	mkdir -p $(RESOURCES_DIR)
 	find $(OUTPUT_DIR) -name '*.go' -exec mv {} $(RESOURCES_DIR)/ \;

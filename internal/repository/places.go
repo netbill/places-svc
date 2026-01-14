@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 	"github.com/netbill/pagi"
@@ -114,19 +115,39 @@ func (s Service) UpdatePlaceByID(ctx context.Context, id uuid.UUID, params place
 		upd = upd.UpdateName(*params.Name)
 	}
 	if params.Description != nil {
-		upd = upd.UpdateDescription(params.Description)
+		if *params.Description == "" {
+			upd = upd.UpdateDescription(sql.NullString{Valid: false, String: ""})
+		} else {
+			upd = upd.UpdateDescription(sql.NullString{Valid: true, String: *params.Description})
+		}
 	}
 	if params.Icon != nil {
-		upd = upd.UpdateIcon(params.Icon)
+		if *params.Icon == "" {
+			upd = upd.UpdateIcon(sql.NullString{Valid: false, String: ""})
+		} else {
+			upd = upd.UpdateIcon(sql.NullString{Valid: true, String: *params.Icon})
+		}
 	}
 	if params.Banner != nil {
-		upd = upd.UpdateBanner(params.Banner)
+		if *params.Banner == "" {
+			upd = upd.UpdateBanner(sql.NullString{Valid: false, String: ""})
+		} else {
+			upd = upd.UpdateBanner(sql.NullString{Valid: true, String: *params.Banner})
+		}
 	}
 	if params.Website != nil {
-		upd = upd.UpdateWebsite(params.Website)
+		if *params.Website == "" {
+			upd = upd.UpdateWebsite(sql.NullString{Valid: false, String: ""})
+		} else {
+			upd = upd.UpdateWebsite(sql.NullString{Valid: true, String: *params.Website})
+		}
 	}
 	if params.Phone != nil {
-		upd = upd.UpdatePhone(params.Phone)
+		if *params.Phone == "" {
+			upd = upd.UpdatePhone(sql.NullString{Valid: false, String: ""})
+		} else {
+			upd = upd.UpdatePhone(sql.NullString{Valid: true, String: *params.Phone})
+		}
 	}
 
 	row, err := upd.UpdateOne(ctx)
@@ -157,6 +178,18 @@ func (s Service) UpdatePlaceVerified(ctx context.Context, placeID uuid.UUID, ver
 
 func (s Service) UpdatePlaceStatusForOrg(ctx context.Context, organizationID uuid.UUID, status string) error {
 	if _, err := s.placeQ(ctx).FilterByOrganizationID(&organizationID).UpdateStatus(status).UpdateOne(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s Service) ReplacePlacesClassID(ctx context.Context, oldClassID, newClassID uuid.UUID) error {
+	_, err := s.placeQ(ctx).
+		FilterByClassID(oldClassID, false, false).
+		UpdateClassID(newClassID).
+		UpdateMany(ctx)
+	if err != nil {
 		return err
 	}
 

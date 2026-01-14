@@ -16,686 +16,510 @@ paths:
       - Test
 components:
   schemas:
-    Point:
+    CreatePlace:
       properties:
-        lon:
-          description: Longitude
-          format: double
-          type: number
-        lat:
-          description: Latitude
-          format: double
-          type: number
+        data:
+          $ref: "#/components/schemas/CreatePlace_data"
       required:
-      - lat
-      - lon
-    RelationshipLinks:
+      - data
+    UpdatePlace:
       properties:
-        self:
-          description: A link to the related resource
-          format: uri
-          type: string
-        related:
-          description: A link to the related resource
-          format: uri
-          type: string
+        data:
+          $ref: "#/components/schemas/UpdatePlace_data"
       required:
-      - related
-      - self
-    RelationshipDataObject:
+      - data
+    UpdateClassForPlace:
       properties:
-        type:
-          description: The type of the related resource
-          type: string
-        id:
-          description: The ID of the related resource
-          type: string
+        data:
+          $ref: "#/components/schemas/UpdateClassForPlace_data"
       required:
-      - id
-      - type
+      - data
+    VerifyPlace:
+      properties:
+        data:
+          $ref: "#/components/schemas/VerifyPlace_data"
+      required:
+      - data
+    UpdatePlaceStatus:
+      properties:
+        data:
+          $ref: "#/components/schemas/UpdatePlaceStatus_data"
+      required:
+      - data
+    CreatePlaceClass:
+      properties:
+        data:
+          $ref: "#/components/schemas/CreatePlaceClass_data"
+      required:
+      - data
+    UpdatePlaceClass:
+      properties:
+        data:
+          $ref: "#/components/schemas/UpdatePlaceClass_data"
+      required:
+      - data
+    ReplacePlaceClass:
+      properties:
+        data:
+          $ref: "#/components/schemas/ReplacePlaceClass_data"
+      required:
+      - data
     PaginationData:
       properties:
-        page_number:
-          description: The current page number.
-          example: 1
-          format: int64
-          type: integer
-        page_size:
-          description: The number of items per page.
-          example: 10
-          format: int64
-          type: integer
-        total_items:
-          description: The total number of items available.
-          example: 100
-          format: int64
-          type: integer
+        self:
+          description: link to the current page
+          format: uri
+          type: string
+        first:
+          description: link to the first page
+          format: uri
+          type: string
+        last:
+          description: link to the last page
+          format: uri
+          type: string
+        prev:
+          description: link to the previous page
+          format: uri
+          type: string
+        next:
+          description: link to the next page
+          format: uri
+          type: string
       required:
-      - page_number
-      - page_size
-      - total_items
+      - self
+    Place:
+      properties:
+        data:
+          $ref: "#/components/schemas/Place_data"
+      required:
+      - data
+    PlacesCollection:
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/Place/properties/data"
+          type: array
+        links:
+          $ref: "#/components/schemas/PaginationData"
+      required:
+      - data
+      - links
     Class:
       properties:
         data:
-          $ref: '#/components/schemas/Class_data'
+          $ref: "#/components/schemas/Class_data"
       required:
       - data
     ClassesCollection:
       properties:
         data:
           items:
-            $ref: '#/components/schemas/Class/properties/data'
+            $ref: "#/components/schemas/Class/properties/data"
           type: array
         links:
-          $ref: '#/components/schemas/PaginationData'
+          $ref: "#/components/schemas/PaginationData"
       required:
       - data
       - links
-    ClassRelationships:
+    point:
       properties:
-        parent:
-          $ref: '#/components/schemas/ClassRelationships_parent'
+        latitude:
+          description: The latitude coordinate of the place
+          format: float64
+          type: number
+        longitude:
+          description: The longitude coordinate of the place
+          format: float64
+          type: number
       required:
-      - parent
-    CreateClass:
-      properties:
-        data:
-          $ref: '#/components/schemas/CreateClass_data'
-      required:
-      - data
-    UpdateClass:
-      properties:
-        data:
-          $ref: '#/components/schemas/UpdateClass_data'
-      required:
-      - data
-    DeactivateClass:
-      properties:
-        data:
-          $ref: '#/components/schemas/DeactivateClass_data'
-      required:
-      - data
-    SetLocaleForClass:
-      properties:
-        data:
-          $ref: '#/components/schemas/SetLocaleForClass_data'
-      required:
-      - data
-    Place:
-      properties:
-        data:
-          $ref: '#/components/schemas/Place_data'
-        included:
-          description: Array of related resources
-          items:
-            $ref: '#/components/schemas/Timetable/properties/data'
-          type: array
-      required:
-      - data
-      - included
-    PlacesCollection:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/Place/properties/data'
-          type: array
-        included:
-          items:
-            $ref: '#/components/schemas/Timetable/properties/data'
-          type: array
-        links:
-          $ref: '#/components/schemas/PaginationData'
-      required:
-      - data
-      - included
-      - links
-    PlaceRelationships:
-      properties:
-        class:
-          $ref: '#/components/schemas/ClassRelationships_parent'
-        city:
-          $ref: '#/components/schemas/ClassRelationships_parent'
-        distributor:
-          $ref: '#/components/schemas/ClassRelationships_parent'
-      required:
-      - city
-      - class
-    CreatePlace:
-      properties:
-        data:
-          $ref: '#/components/schemas/CreatePlace_data'
-      required:
-      - data
-    UpdatePlace:
-      properties:
-        data:
-          $ref: '#/components/schemas/UpdatePlace_data'
-      required:
-      - data
-    PlaceLocale:
-      properties:
-        data:
-          $ref: '#/components/schemas/PlaceLocale_data'
-      required:
-      - data
-    PlaceLocalesCollection:
-      properties:
-        data:
-          items:
-            $ref: '#/components/schemas/RelationshipDataObject'
-          type: array
-        included:
-          items:
-            $ref: '#/components/schemas/PlaceLocale/properties/data'
-          type: array
-        links:
-          $ref: '#/components/schemas/PaginationData'
-      required:
-      - data
-      - included
-      - links
-    SetLocalesForPlace:
-      properties:
-        data:
-          $ref: '#/components/schemas/SetLocalesForPlace_data'
-      required:
-      - data
-    UpdatePlaceVerified:
-      properties:
-        data:
-          $ref: '#/components/schemas/UpdatePlaceVerified_data'
-      required:
-      - data
-    UpdatePlaceStatus:
-      properties:
-        data:
-          $ref: '#/components/schemas/UpdatePlaceStatus_data'
-      required:
-      - data
-    Timetable:
-      properties:
-        data:
-          $ref: '#/components/schemas/Timetable_data'
-      required:
-      - data
-    TimetableInterval:
-      properties:
-        from:
-          $ref: '#/components/schemas/TimeMoment'
-        to:
-          $ref: '#/components/schemas/TimeMoment'
-      required:
-      - from
-      - to
-    TimeMoment:
-      properties:
-        weekday:
-          description: Day of the week.
-          enum:
-          - monday
-          - tuesday
-          - wednesday
-          - thursday
-          - friday
-          - saturday
-          - sunday
-          type: string
-        time:
-          description: Time of the day in 24-hour format (HH:MM).
-          pattern: "^(?:[01]\\d|2[0-3]):[0-5]\\d$"
-          type: string
-      required:
-      - time
-      - weekday
-    SetPlaceTimetable:
-      properties:
-        data:
-          $ref: '#/components/schemas/Timetable_data'
-      required:
-      - data
+      - latitude
+      - longitude
     data:
       properties:
         id:
-          description: place_id + locale
-          format: string
-          pattern: "^[0-9a-fA-F-]{36}:[a-z]{2}(?:-[A-Z]{2})?$"
-          type: string
-        type:
-          enum:
-          - place_locale
-          type: string
-        attributes:
-          $ref: '#/components/schemas/PlaceLocale_data_attributes'
-      required:
-      - attributes
-      - id
-      - type
-    Class_data_attributes:
-      properties:
-        status:
-          description: class status
-          type: string
-        icon:
-          description: class icon
-          format: uri
-          type: string
-        name:
-          default: New Class
-          description: class name
-          type: string
-        created_at:
-          description: class creation date
-          format: date-time
-          type: string
-        updated_at:
-          description: class last update date
-          format: date-time
-          type: string
-      required:
-      - created_at
-      - icon
-      - name
-      - status
-      - updated_at
-    Class_data:
-      properties:
-        id:
-          description: class code
-          format: string
+          description: place ID
+          format: uuid
           type: string
         type:
           enum:
           - place_class
           type: string
         attributes:
-          $ref: '#/components/schemas/Class_data_attributes'
+          $ref: "#/components/schemas/Class_data_attributes"
         relationships:
-          $ref: '#/components/schemas/ClassRelationships'
+          $ref: "#/components/schemas/Class_data_relationships"
       required:
       - attributes
       - id
       - type
-    ClassRelationships_parent:
+    CreatePlace_data_attributes_point:
       properties:
-        links:
-          $ref: '#/components/schemas/RelationshipLinks'
-        data:
-          $ref: '#/components/schemas/RelationshipDataObject'
-    CreateClass_data_attributes:
-      properties:
-        icon:
-          description: class icon
-          format: uri
-          type: string
-        name:
-          default: New Class
-          description: class name at english
-          type: string
-        parent:
-          description: parent class code
-          type: string
+        latitude:
+          description: The latitude coordinate of the place
+          format: float64
+          type: number
+        longitude:
+          description: The longitude coordinate of the place
+          format: float64
+          type: number
       required:
-      - icon
-      - name
-    CreateClass_data:
+      - latitude
+      - longitude
+    CreatePlace_data_attributes:
       properties:
-        id:
-          description: class code
-          type: string
-        type:
-          description: Resource type
-          enum:
-          - place_class
-          type: string
-        attributes:
-          $ref: '#/components/schemas/CreateClass_data_attributes'
-      required:
-      - attributes
-      - id
-      - type
-    UpdateClass_data_attributes:
-      properties:
-        icon:
-          description: class icon
-          format: uri
-          type: string
-        name:
-          default: New Class
-          description: class name at english
-          type: string
-        parent:
-          description: parent class code
-          type: string
-    UpdateClass_data:
-      properties:
-        id:
-          description: class code
-          type: string
-        type:
-          description: Resource type
-          enum:
-          - classes
-          type: string
-        attributes:
-          $ref: '#/components/schemas/UpdateClass_data_attributes'
-      required:
-      - attributes
-      - id
-      - type
-    DeactivateClass_data_attributes:
-      properties:
-        replaced_class_code:
-          description: The class code that has replaced the deactivated class
-          example: advanced-yoga
-          type: string
-      required:
-      - replaced_class_code
-    DeactivateClass_data:
-      properties:
-        id:
-          description: class_code + locale
-          example: yoga:en
-          format: string
-          type: string
-        type:
-          enum:
-          - place_class
-          type: string
-        attributes:
-          $ref: '#/components/schemas/DeactivateClass_data_attributes'
-      required:
-      - attributes
-      - id
-      - type
-    SetLocaleForClass_data_attributes:
-      properties:
-        locale:
-          description: Locale code
-          type: string
-        name:
-          description: Locale name
-          type: string
-      required:
-      - locale
-      - name
-    SetLocaleForClass_data:
-      properties:
-        id:
-          description: class_code
-          format: string
-          type: string
-        type:
-          enum:
-          - place_class_locale
-          type: string
-        attributes:
-          $ref: '#/components/schemas/SetLocaleForClass_data_attributes'
-      required:
-      - attributes
-      - id
-      - type
-    Place_data_attributes:
-      properties:
-        city_id:
-          description: city id
+        class_id:
+          description: The ID of the class this place belongs to
           format: uuid
           type: string
-        place_id:
-          description: distributor id
+        organization_id:
+          description: The ID of the organization this place belongs to
           format: uuid
           type: string
-        class:
-          description: place class
-          type: string
-        status:
-          description: place status
-          type: string
-        verified:
-          description: is place verified
-          type: boolean
         point:
-          $ref: '#/components/schemas/Point'
-        locale:
-          description: place locale
+          $ref: "#/components/schemas/CreatePlace_data_attributes_point"
+        address:
+          description: The physical address of the place
           type: string
         name:
-          description: place name
-          type: string
-        address:
-          description: place address
+          description: The name of the place
           type: string
         description:
-          description: place description
+          description: A brief description of the place
+          type: string
+        icon:
+          description: A URL to an icon representing the place
+          format: uri
+          type: string
+        banner:
+          description: A URL to a banner image for the place
+          format: uri
           type: string
         website:
-          description: place website
+          description: The website URL of the place
           format: uri
           type: string
         phone:
-          description: place phone number
-          type: string
-        created_at:
-          description: place creation date
-          format: date-time
-          type: string
-        updated_at:
-          description: place last update date
-          format: date-time
+          description: The contact phone number of the place
           type: string
       required:
       - address
-      - city_id
-      - class
-      - created_at
-      - description
-      - locale
-      - name
-      - point
-      - status
-      - updated_at
-      - verified
-    Place_data:
-      properties:
-        id:
-          description: place id
-          format: uuid
-          type: string
-        type:
-          enum:
-          - place
-          type: string
-        attributes:
-          $ref: '#/components/schemas/Place_data_attributes'
-        relationships:
-          $ref: '#/components/schemas/PlaceRelationships'
-      required:
-      - attributes
-      - id
-      - relationships
-      - type
-    CreatePlace_data_attributes:
-      properties:
-        city_id:
-          description: city id
-          format: uuid
-          type: string
-        place_id:
-          description: distributor id
-          format: uuid
-          type: string
-        class:
-          description: place class
-          type: string
-        point:
-          $ref: '#/components/schemas/Point'
-        locale:
-          description: locale
-          type: string
-        name:
-          description: place name
-          type: string
-        description:
-          description: place description
-          type: string
-        website:
-          description: place website
-          format: uri
-          type: string
-        phone:
-          description: place phone number
-          type: string
-      required:
-      - city_id
-      - class
-      - description
-      - locale
+      - class_id
       - name
       - point
     CreatePlace_data:
       properties:
-        id:
-          description: place id
-          format: uuid
-          type: string
         type:
           enum:
-          - place
+          - create_place
           type: string
         attributes:
-          $ref: '#/components/schemas/CreatePlace_data_attributes'
+          $ref: "#/components/schemas/CreatePlace_data_attributes"
       required:
       - attributes
-      - id
       - type
     UpdatePlace_data_attributes:
       properties:
-        class:
-          description: place class
+        class_id:
+          description: The ID of the class this place belongs to
+          format: uuid
+          type: string
+        status:
+          description: "The status of the place (e.g., active, inactive)"
+          type: string
+        address:
+          description: The physical address of the place
+          type: string
+        name:
+          description: The name of the place
+          type: string
+        description:
+          description: A brief description of the place
+          type: string
+        icon:
+          description: A URL to an icon representing the place
+          format: uri
+          type: string
+        banner:
+          description: A URL to a banner image for the place
+          format: uri
           type: string
         website:
-          description: place website
+          description: The website URL of the place
           format: uri
           type: string
         phone:
-          description: place phone number
+          description: The contact phone number of the place
           type: string
     UpdatePlace_data:
       properties:
         id:
+          description: The unique identifier of the place to be updated
           format: uuid
           type: string
         type:
           enum:
-          - place
+          - update_place
           type: string
         attributes:
-          $ref: '#/components/schemas/UpdatePlace_data_attributes'
+          $ref: "#/components/schemas/UpdatePlace_data_attributes"
       required:
       - attributes
       - id
       - type
-    PlaceLocale_data_attributes:
+    UpdateClassForPlace_data_attributes:
       properties:
-        name:
-          description: Locale name
-          type: string
-        description:
-          description: Locale description
+        class_id:
+          description: The ID of the class this place belongs to
+          format: uuid
           type: string
       required:
-      - description
-      - name
-    PlaceLocale_data:
+      - class_id
+    UpdateClassForPlace_data:
       properties:
         id:
-          description: place_id + locale
-          format: string
-          pattern: "^[0-9a-fA-F-]{36}:[a-z]{2}(?:-[A-Z]{2})?$"
-          type: string
-        type:
-          enum:
-          - place_locale
-          type: string
-        attributes:
-          $ref: '#/components/schemas/PlaceLocale_data_attributes'
-      required:
-      - attributes
-      - id
-      - type
-    SetLocalesForPlace_data_attributes_locales_inner:
-      properties:
-        locale:
-          description: "Locale code (e.g. en, fr, de)"
-          type: string
-        name:
-          description: Locale name
-          type: string
-        description:
-          description: Locale description
-          type: string
-      required:
-      - description
-      - locale
-      - name
-    SetLocalesForPlace_data_attributes:
-      properties:
-        locales:
-          items:
-            $ref: '#/components/schemas/SetLocalesForPlace_data_attributes_locales_inner'
-          type: array
-      required:
-      - locales
-    SetLocalesForPlace_data:
-      properties:
-        id:
-          description: place_id
+          description: The ID of the place to update
           format: uuid
           type: string
         type:
           enum:
-          - place_locale
+          - update_place_class
           type: string
         attributes:
-          $ref: '#/components/schemas/SetLocalesForPlace_data_attributes'
+          $ref: "#/components/schemas/UpdateClassForPlace_data_attributes"
       required:
       - attributes
       - id
       - type
-    UpdatePlaceVerified_data_attributes:
+    VerifyPlace_data_attributes:
       properties:
-        verified:
-          description: place verification status
+        verify:
+          description: Indicates whether the place has been verified
           type: boolean
       required:
-      - verified
-    UpdatePlaceVerified_data:
+      - verify
+    VerifyPlace_data:
       properties:
-        id:
-          format: uuid
-          type: string
         type:
           enum:
-          - place
+          - update_place_verify
           type: string
         attributes:
-          $ref: '#/components/schemas/UpdatePlaceVerified_data_attributes'
+          $ref: "#/components/schemas/VerifyPlace_data_attributes"
       required:
       - attributes
-      - id
       - type
     UpdatePlaceStatus_data_attributes:
       properties:
         status:
-          description: place status
-          enum:
-          - active
-          - inactive
+          description: The new status of the place
           type: string
       required:
       - status
     UpdatePlaceStatus_data:
       properties:
         id:
+          description: The unique identifier of the place
+          format: uuid
+          type: string
+        type:
+          enum:
+          - update_place_status
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdatePlaceStatus_data_attributes"
+      required:
+      - attributes
+      - id
+      - type
+    CreatePlaceClass_data_attributes:
+      properties:
+        parent_id:
+          description: "The ID of the parent class, if any"
+          format: uuid
+          type: string
+        code:
+          description: The unique code of the class
+          example: japanese_cuisine
+          type: string
+        name:
+          description: The name of the class
+          type: string
+        description:
+          description: A brief description of the class
+          type: string
+        icon:
+          description: A URL to an icon representing the class
+          format: uri
+          type: string
+      required:
+      - code
+      - description
+      - name
+    CreatePlaceClass_data:
+      properties:
+        id:
+          description: place ID
+          format: uuid
+          type: string
+        type:
+          enum:
+          - place_class_create
+          type: string
+        attributes:
+          $ref: "#/components/schemas/CreatePlaceClass_data_attributes"
+      required:
+      - attributes
+      - id
+      - type
+    UpdatePlaceClass_data_attributes:
+      properties:
+        parent_id:
+          description: The ID of the parent class
+          format: uuid
+          type: string
+        code:
+          description: The unique code of the class
+          example: japanese_cuisine
+          type: string
+        name:
+          description: The name of the class
+          type: string
+        description:
+          description: A brief description of the class
+          type: string
+        icon:
+          description: A URL to an icon representing the class
+          format: uri
+          type: string
+    UpdatePlaceClass_data:
+      properties:
+        id:
+          description: place ID
+          format: uuid
+          type: string
+        type:
+          enum:
+          - place_class_update
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdatePlaceClass_data_attributes"
+      required:
+      - attributes
+      - id
+      - type
+    ReplacePlaceClass_data_attributes:
+      properties:
+        class_replace_id:
+          description: The ID of the class to replace with
+          format: uuid
+          type: string
+      required:
+      - class_replace_id
+    ReplacePlaceClass_data:
+      properties:
+        id:
+          description: The unique identifier for the replace place class operation
+          format: uuid
+          type: string
+        type:
+          enum:
+          - replace_place_class
+          type: string
+        attributes:
+          $ref: "#/components/schemas/ReplacePlaceClass_data_attributes"
+      required:
+      - attributes
+      - id
+      - type
+    Place_data_attributes:
+      properties:
+        status:
+          description: "The status of the place (e.g., active, inactive)"
+          type: string
+        verified:
+          description: Indicates if the place has been verified
+          type: boolean
+        point:
+          $ref: "#/components/schemas/CreatePlace/properties/data/properties/attributes/properties/point"
+        address:
+          description: The physical address of the place
+          type: string
+        name:
+          description: The name of the place
+          type: string
+        description:
+          description: A brief description of the place
+          type: string
+        icon:
+          description: A URL to an icon representing the place
+          format: uri
+          type: string
+        banner:
+          description: A URL to a banner image for the place
+          format: uri
+          type: string
+        website:
+          description: The website URL of the place
+          format: uri
+          type: string
+        phone:
+          description: The contact phone number of the place
+          type: string
+        created_at:
+          description: The date and time when the place was created
+          format: date-time
+          type: string
+        updated_at:
+          description: The date and time when the place was last updated
+          format: date-time
+          type: string
+      required:
+      - address
+      - created_at
+      - name
+      - point
+      - status
+      - updated_at
+      - verified
+    Place_data_relationships_organization:
+      properties:
+        id:
+          description: The ID of the organization associated with the place
+          format: uuid
+          type: string
+        type:
+          enum:
+          - organization
+          type: string
+      required:
+      - id
+      - type
+    Place_data_relationships_class:
+      properties:
+        id:
+          description: The ID of the class associated with the place
+          format: uuid
+          type: string
+        type:
+          enum:
+          - place_class
+          type: string
+      required:
+      - id
+      - type
+    Place_data_relationships:
+      properties:
+        organization:
+          $ref: "#/components/schemas/Place_data_relationships_organization"
+        class:
+          $ref: "#/components/schemas/Place_data_relationships_class"
+      required:
+      - class
+    Place_data:
+      properties:
+        id:
+          description: place ID
           format: uuid
           type: string
         type:
@@ -703,32 +527,75 @@ components:
           - place
           type: string
         attributes:
-          $ref: '#/components/schemas/UpdatePlaceStatus_data_attributes'
+          $ref: "#/components/schemas/Place_data_attributes"
+        relationships:
+          $ref: "#/components/schemas/Place_data_relationships"
       required:
       - attributes
       - id
+      - relationships
       - type
-    Timetable_data_attributes:
+    Class_data_attributes:
       properties:
-        table:
-          description: timetable table
-          items:
-            $ref: '#/components/schemas/TimetableInterval'
-          type: array
+        code:
+          description: The unique code of the class
+          example: japanese_cuisine
+          type: string
+        name:
+          description: The name of the class
+          type: string
+        description:
+          description: A brief description of the class
+          type: string
+        icon:
+          description: A URL to an icon representing the class
+          format: uri
+          type: string
+        updated_at:
+          description: The date and time when the class was last updated
+          format: date-time
+          type: string
+        created_at:
+          description: The date and time when the class was created
+          format: date-time
+          type: string
       required:
-      - table
-    Timetable_data:
+      - code
+      - created_at
+      - description
+      - name
+      - updated_at
+    Class_data_relationships_parent:
       properties:
         id:
-          description: place id
+          description: The ID of the parent class
           format: uuid
           type: string
         type:
           enum:
-          - place_timetable
+          - place_class
+          type: string
+      required:
+      - id
+      - type
+    Class_data_relationships:
+      properties:
+        parent:
+          $ref: "#/components/schemas/Class_data_relationships_parent"
+    Class_data:
+      properties:
+        id:
+          description: place ID
+          format: uuid
+          type: string
+        type:
+          enum:
+          - place_class
           type: string
         attributes:
-          $ref: '#/components/schemas/Timetable_data_attributes'
+          $ref: "#/components/schemas/Class_data_attributes"
+        relationships:
+          $ref: "#/components/schemas/Class_data_relationships"
       required:
       - attributes
       - id

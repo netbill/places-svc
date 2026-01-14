@@ -1,4 +1,4 @@
-package class
+package pclass
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
-func (s Service) GetClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error) {
-	class, err := s.repo.GetClass(ctx, id)
+func (s Service) GetPlaceClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error) {
+	class, err := s.repo.GetPlaceClass(ctx, id)
 	if err != nil {
 		return models.PlaceClass{}, errx.ErrorInternal.Raise(
 			fmt.Errorf("failed to get class %s: %w", id, err),
@@ -27,19 +27,19 @@ func (s Service) GetClass(ctx context.Context, id uuid.UUID) (models.PlaceClass,
 }
 
 type FilterParams struct {
-	Parent      *FilterClassParams
-	Text        *string
+	Parent      *FilterPlaceClassParams
+	BestMatch   *string
 	Name        *string
 	Description *string
 }
 
-type FilterClassParams struct {
-	ParentID uuid.UUID
-	Parents  bool
-	Children bool
+type FilterPlaceClassParams struct {
+	ID               uuid.UUID
+	IncludedParents  bool
+	IncludedChildren bool
 }
 
-func (s Service) GetClasses(ctx context.Context, params FilterParams, limit, offset uint) (pagi.Page[[]models.PlaceClass], error) {
+func (s Service) GetPlaceClasses(ctx context.Context, params FilterParams, limit, offset uint) (pagi.Page[[]models.PlaceClass], error) {
 	if limit == 0 {
 		limit = 20
 	}
@@ -47,7 +47,7 @@ func (s Service) GetClasses(ctx context.Context, params FilterParams, limit, off
 		limit = 100
 	}
 
-	classes, err := s.repo.GetClasses(ctx, params, limit, offset)
+	classes, err := s.repo.GetPlaceClasses(ctx, params, limit, offset)
 	if err != nil {
 		return pagi.Page[[]models.PlaceClass]{}, errx.ErrorInternal.Raise(
 			fmt.Errorf("failed to get classes: %w", err),

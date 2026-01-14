@@ -4,16 +4,16 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Id** | **string** | class code | 
+**Id** | [**uuid.UUID**](uuid.UUID.md) | place ID | 
 **Type** | **string** |  | 
 **Attributes** | [**ClassDataAttributes**](ClassDataAttributes.md) |  | 
-**Relationships** | Pointer to [**ClassRelationships**](ClassRelationships.md) |  | [optional] 
+**Relationships** | Pointer to [**ClassDataRelationships**](ClassDataRelationships.md) |  | [optional] 
 
 ## Methods
 
 ### NewClassData
 
-`func NewClassData(id string, type_ string, attributes ClassDataAttributes, ) *ClassData`
+`func NewClassData(id uuid.UUID, type_ string, attributes ClassDataAttributes, ) *ClassData`
 
 NewClassData instantiates a new ClassData object
 This constructor will assign default values to properties that have it defined,
@@ -30,20 +30,20 @@ but it doesn't guarantee that properties required by API are set
 
 ### GetId
 
-`func (o *ClassData) GetId() string`
+`func (o *ClassData) GetId() uuid.UUID`
 
 GetId returns the Id field if non-nil, zero value otherwise.
 
 ### GetIdOk
 
-`func (o *ClassData) GetIdOk() (*string, bool)`
+`func (o *ClassData) GetIdOk() (*uuid.UUID, bool)`
 
 GetIdOk returns a tuple with the Id field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetId
 
-`func (o *ClassData) SetId(v string)`
+`func (o *ClassData) SetId(v uuid.UUID)`
 
 SetId sets Id field to given value.
 
@@ -90,20 +90,20 @@ SetAttributes sets Attributes field to given value.
 
 ### GetRelationships
 
-`func (o *ClassData) GetRelationships() ClassRelationships`
+`func (o *ClassData) GetRelationships() ClassDataRelationships`
 
 GetRelationships returns the Relationships field if non-nil, zero value otherwise.
 
 ### GetRelationshipsOk
 
-`func (o *ClassData) GetRelationshipsOk() (*ClassRelationships, bool)`
+`func (o *ClassData) GetRelationshipsOk() (*ClassDataRelationships, bool)`
 
 GetRelationshipsOk returns a tuple with the Relationships field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetRelationships
 
-`func (o *ClassData) SetRelationships(v ClassRelationships)`
+`func (o *ClassData) SetRelationships(v ClassDataRelationships)`
 
 SetRelationships sets Relationships field to given value.
 

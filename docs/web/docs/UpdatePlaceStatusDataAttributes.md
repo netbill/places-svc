@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Status** | **string** | place status | 
+**Status** | **string** | The new status of the place | 
 
 ## Methods
 

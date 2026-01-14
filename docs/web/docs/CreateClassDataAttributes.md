@@ -4,15 +4,16 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Icon** | **string** | class icon | 
-**Name** | **string** | class name at english | [default to "New Class"]
-**Parent** | Pointer to **string** | parent class code | [optional] 
+**Code** | **string** | The unique code of the class | 
+**Name** | **string** | The name of the class | 
+**Description** | **string** | A brief description of the class | 
+**Icon** | Pointer to **string** | A URL to an icon representing the class | [optional] 
 
 ## Methods
 
 ### NewCreateClassDataAttributes
 
-`func NewCreateClassDataAttributes(icon string, name string, ) *CreateClassDataAttributes`
+`func NewCreateClassDataAttributes(code string, name string, description string, ) *CreateClassDataAttributes`
 
 NewCreateClassDataAttributes instantiates a new CreateClassDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -27,24 +28,24 @@ NewCreateClassDataAttributesWithDefaults instantiates a new CreateClassDataAttri
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetIcon
+### GetCode
 
-`func (o *CreateClassDataAttributes) GetIcon() string`
+`func (o *CreateClassDataAttributes) GetCode() string`
 
-GetIcon returns the Icon field if non-nil, zero value otherwise.
+GetCode returns the Code field if non-nil, zero value otherwise.
 
-### GetIconOk
+### GetCodeOk
 
-`func (o *CreateClassDataAttributes) GetIconOk() (*string, bool)`
+`func (o *CreateClassDataAttributes) GetCodeOk() (*string, bool)`
 
-GetIconOk returns a tuple with the Icon field if it's non-nil, zero value otherwise
+GetCodeOk returns a tuple with the Code field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetIcon
+### SetCode
 
-`func (o *CreateClassDataAttributes) SetIcon(v string)`
+`func (o *CreateClassDataAttributes) SetCode(v string)`
 
-SetIcon sets Icon field to given value.
+SetCode sets Code field to given value.
 
 
 ### GetName
@@ -67,30 +68,50 @@ and a boolean to check if the value has been set.
 SetName sets Name field to given value.
 
 
-### GetParent
+### GetDescription
 
-`func (o *CreateClassDataAttributes) GetParent() string`
+`func (o *CreateClassDataAttributes) GetDescription() string`
 
-GetParent returns the Parent field if non-nil, zero value otherwise.
+GetDescription returns the Description field if non-nil, zero value otherwise.
 
-### GetParentOk
+### GetDescriptionOk
 
-`func (o *CreateClassDataAttributes) GetParentOk() (*string, bool)`
+`func (o *CreateClassDataAttributes) GetDescriptionOk() (*string, bool)`
 
-GetParentOk returns a tuple with the Parent field if it's non-nil, zero value otherwise
+GetDescriptionOk returns a tuple with the Description field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetParent
+### SetDescription
 
-`func (o *CreateClassDataAttributes) SetParent(v string)`
+`func (o *CreateClassDataAttributes) SetDescription(v string)`
 
-SetParent sets Parent field to given value.
+SetDescription sets Description field to given value.
 
-### HasParent
 
-`func (o *CreateClassDataAttributes) HasParent() bool`
+### GetIcon
 
-HasParent returns a boolean if a field has been set.
+`func (o *CreateClassDataAttributes) GetIcon() string`
+
+GetIcon returns the Icon field if non-nil, zero value otherwise.
+
+### GetIconOk
+
+`func (o *CreateClassDataAttributes) GetIconOk() (*string, bool)`
+
+GetIconOk returns a tuple with the Icon field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetIcon
+
+`func (o *CreateClassDataAttributes) SetIcon(v string)`
+
+SetIcon sets Icon field to given value.
+
+### HasIcon
+
+`func (o *CreateClassDataAttributes) HasIcon() bool`
+
+HasIcon returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

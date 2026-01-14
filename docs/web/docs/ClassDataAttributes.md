@@ -4,17 +4,18 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Status** | **string** | class status | 
-**Icon** | **string** | class icon | 
-**Name** | **string** | class name | [default to "New Class"]
-**CreatedAt** | **time.Time** | class creation date | 
-**UpdatedAt** | **time.Time** | class last update date | 
+**Code** | **string** | The unique code of the class | 
+**Name** | **string** | The name of the class | 
+**Description** | **string** | A brief description of the class | 
+**Icon** | Pointer to **string** | A URL to an icon representing the class | [optional] 
+**UpdatedAt** | **time.Time** | The date and time when the class was last updated | 
+**CreatedAt** | **time.Time** | The date and time when the class was created | 
 
 ## Methods
 
 ### NewClassDataAttributes
 
-`func NewClassDataAttributes(status string, icon string, name string, createdAt time.Time, updatedAt time.Time, ) *ClassDataAttributes`
+`func NewClassDataAttributes(code string, name string, description string, updatedAt time.Time, createdAt time.Time, ) *ClassDataAttributes`
 
 NewClassDataAttributes instantiates a new ClassDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -29,44 +30,24 @@ NewClassDataAttributesWithDefaults instantiates a new ClassDataAttributes object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetStatus
+### GetCode
 
-`func (o *ClassDataAttributes) GetStatus() string`
+`func (o *ClassDataAttributes) GetCode() string`
 
-GetStatus returns the Status field if non-nil, zero value otherwise.
+GetCode returns the Code field if non-nil, zero value otherwise.
 
-### GetStatusOk
+### GetCodeOk
 
-`func (o *ClassDataAttributes) GetStatusOk() (*string, bool)`
+`func (o *ClassDataAttributes) GetCodeOk() (*string, bool)`
 
-GetStatusOk returns a tuple with the Status field if it's non-nil, zero value otherwise
+GetCodeOk returns a tuple with the Code field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetStatus
+### SetCode
 
-`func (o *ClassDataAttributes) SetStatus(v string)`
+`func (o *ClassDataAttributes) SetCode(v string)`
 
-SetStatus sets Status field to given value.
-
-
-### GetIcon
-
-`func (o *ClassDataAttributes) GetIcon() string`
-
-GetIcon returns the Icon field if non-nil, zero value otherwise.
-
-### GetIconOk
-
-`func (o *ClassDataAttributes) GetIconOk() (*string, bool)`
-
-GetIconOk returns a tuple with the Icon field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetIcon
-
-`func (o *ClassDataAttributes) SetIcon(v string)`
-
-SetIcon sets Icon field to given value.
+SetCode sets Code field to given value.
 
 
 ### GetName
@@ -89,25 +70,50 @@ and a boolean to check if the value has been set.
 SetName sets Name field to given value.
 
 
-### GetCreatedAt
+### GetDescription
 
-`func (o *ClassDataAttributes) GetCreatedAt() time.Time`
+`func (o *ClassDataAttributes) GetDescription() string`
 
-GetCreatedAt returns the CreatedAt field if non-nil, zero value otherwise.
+GetDescription returns the Description field if non-nil, zero value otherwise.
 
-### GetCreatedAtOk
+### GetDescriptionOk
 
-`func (o *ClassDataAttributes) GetCreatedAtOk() (*time.Time, bool)`
+`func (o *ClassDataAttributes) GetDescriptionOk() (*string, bool)`
 
-GetCreatedAtOk returns a tuple with the CreatedAt field if it's non-nil, zero value otherwise
+GetDescriptionOk returns a tuple with the Description field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetCreatedAt
+### SetDescription
 
-`func (o *ClassDataAttributes) SetCreatedAt(v time.Time)`
+`func (o *ClassDataAttributes) SetDescription(v string)`
 
-SetCreatedAt sets CreatedAt field to given value.
+SetDescription sets Description field to given value.
 
+
+### GetIcon
+
+`func (o *ClassDataAttributes) GetIcon() string`
+
+GetIcon returns the Icon field if non-nil, zero value otherwise.
+
+### GetIconOk
+
+`func (o *ClassDataAttributes) GetIconOk() (*string, bool)`
+
+GetIconOk returns a tuple with the Icon field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetIcon
+
+`func (o *ClassDataAttributes) SetIcon(v string)`
+
+SetIcon sets Icon field to given value.
+
+### HasIcon
+
+`func (o *ClassDataAttributes) HasIcon() bool`
+
+HasIcon returns a boolean if a field has been set.
 
 ### GetUpdatedAt
 
@@ -127,6 +133,26 @@ and a boolean to check if the value has been set.
 `func (o *ClassDataAttributes) SetUpdatedAt(v time.Time)`
 
 SetUpdatedAt sets UpdatedAt field to given value.
+
+
+### GetCreatedAt
+
+`func (o *ClassDataAttributes) GetCreatedAt() time.Time`
+
+GetCreatedAt returns the CreatedAt field if non-nil, zero value otherwise.
+
+### GetCreatedAtOk
+
+`func (o *ClassDataAttributes) GetCreatedAtOk() (*time.Time, bool)`
+
+GetCreatedAtOk returns a tuple with the CreatedAt field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetCreatedAt
+
+`func (o *ClassDataAttributes) SetCreatedAt(v time.Time)`
+
+SetCreatedAt sets CreatedAt field to given value.
 
 
 

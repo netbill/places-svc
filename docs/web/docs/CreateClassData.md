@@ -4,15 +4,15 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Id** | **string** | class code | 
-**Type** | **string** | Resource type | 
+**Id** | [**uuid.UUID**](uuid.UUID.md) | place ID | 
+**Type** | **string** |  | 
 **Attributes** | [**CreateClassDataAttributes**](CreateClassDataAttributes.md) |  | 
 
 ## Methods
 
 ### NewCreateClassData
 
-`func NewCreateClassData(id string, type_ string, attributes CreateClassDataAttributes, ) *CreateClassData`
+`func NewCreateClassData(id uuid.UUID, type_ string, attributes CreateClassDataAttributes, ) *CreateClassData`
 
 NewCreateClassData instantiates a new CreateClassData object
 This constructor will assign default values to properties that have it defined,
@@ -29,20 +29,20 @@ but it doesn't guarantee that properties required by API are set
 
 ### GetId
 
-`func (o *CreateClassData) GetId() string`
+`func (o *CreateClassData) GetId() uuid.UUID`
 
 GetId returns the Id field if non-nil, zero value otherwise.
 
 ### GetIdOk
 
-`func (o *CreateClassData) GetIdOk() (*string, bool)`
+`func (o *CreateClassData) GetIdOk() (*uuid.UUID, bool)`
 
 GetIdOk returns a tuple with the Id field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetId
 
-`func (o *CreateClassData) SetId(v string)`
+`func (o *CreateClassData) SetId(v uuid.UUID)`
 
 SetId sets Id field to given value.
 

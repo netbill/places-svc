@@ -4,14 +4,14 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Lon** | **float64** | Longitude | 
-**Lat** | **float64** | Latitude | 
+**Latitude** | **float64** | The latitude coordinate of the place | 
+**Longitude** | **float64** | The longitude coordinate of the place | 
 
 ## Methods
 
 ### NewPoint
 
-`func NewPoint(lon float64, lat float64, ) *Point`
+`func NewPoint(latitude float64, longitude float64, ) *Point`
 
 NewPoint instantiates a new Point object
 This constructor will assign default values to properties that have it defined,
@@ -26,44 +26,44 @@ NewPointWithDefaults instantiates a new Point object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetLon
+### GetLatitude
 
-`func (o *Point) GetLon() float64`
+`func (o *Point) GetLatitude() float64`
 
-GetLon returns the Lon field if non-nil, zero value otherwise.
+GetLatitude returns the Latitude field if non-nil, zero value otherwise.
 
-### GetLonOk
+### GetLatitudeOk
 
-`func (o *Point) GetLonOk() (*float64, bool)`
+`func (o *Point) GetLatitudeOk() (*float64, bool)`
 
-GetLonOk returns a tuple with the Lon field if it's non-nil, zero value otherwise
+GetLatitudeOk returns a tuple with the Latitude field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetLon
+### SetLatitude
 
-`func (o *Point) SetLon(v float64)`
+`func (o *Point) SetLatitude(v float64)`
 
-SetLon sets Lon field to given value.
+SetLatitude sets Latitude field to given value.
 
 
-### GetLat
+### GetLongitude
 
-`func (o *Point) GetLat() float64`
+`func (o *Point) GetLongitude() float64`
 
-GetLat returns the Lat field if non-nil, zero value otherwise.
+GetLongitude returns the Longitude field if non-nil, zero value otherwise.
 
-### GetLatOk
+### GetLongitudeOk
 
-`func (o *Point) GetLatOk() (*float64, bool)`
+`func (o *Point) GetLongitudeOk() (*float64, bool)`
 
-GetLatOk returns a tuple with the Lat field if it's non-nil, zero value otherwise
+GetLongitudeOk returns a tuple with the Longitude field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetLat
+### SetLongitude
 
-`func (o *Point) SetLat(v float64)`
+`func (o *Point) SetLongitude(v float64)`
 
-SetLat sets Lat field to given value.
+SetLongitude sets Longitude field to given value.
 
 
 

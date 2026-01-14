@@ -4,26 +4,24 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**CityId** | [**uuid.UUID**](uuid.UUID.md) | city id | 
-**DistributorId** | Pointer to [**uuid.UUID**](uuid.UUID.md) | distributor id | [optional] 
-**Class** | **string** | place class | 
-**Status** | **string** | place status | 
-**Verified** | **bool** | is place verified | 
+**Status** | **string** | The status of the place (e.g., active, inactive) | 
+**Verified** | **bool** | Indicates if the place has been verified | 
 **Point** | [**Point**](Point.md) |  | 
-**Locale** | **string** | place locale | 
-**Name** | **string** | place name | 
-**Address** | **string** | place address | 
-**Description** | **string** | place description | 
-**Website** | Pointer to **string** | place website | [optional] 
-**Phone** | Pointer to **string** | place phone number | [optional] 
-**CreatedAt** | **time.Time** | place creation date | 
-**UpdatedAt** | **time.Time** | place last update date | 
+**Address** | **string** | The physical address of the place | 
+**Name** | **string** | The name of the place | 
+**Description** | Pointer to **string** | A brief description of the place | [optional] 
+**Icon** | Pointer to **string** | A URL to an icon representing the place | [optional] 
+**Banner** | Pointer to **string** | A URL to a banner image for the place | [optional] 
+**Website** | Pointer to **string** | The website URL of the place | [optional] 
+**Phone** | Pointer to **string** | The contact phone number of the place | [optional] 
+**CreatedAt** | **time.Time** | The date and time when the place was created | 
+**UpdatedAt** | **time.Time** | The date and time when the place was last updated | 
 
 ## Methods
 
 ### NewPlaceDataAttributes
 
-`func NewPlaceDataAttributes(cityId uuid.UUID, class string, status string, verified bool, point Point, locale string, name string, address string, description string, createdAt time.Time, updatedAt time.Time, ) *PlaceDataAttributes`
+`func NewPlaceDataAttributes(status string, verified bool, point Point, address string, name string, createdAt time.Time, updatedAt time.Time, ) *PlaceDataAttributes`
 
 NewPlaceDataAttributes instantiates a new PlaceDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -37,71 +35,6 @@ will change when the set of required properties is changed
 NewPlaceDataAttributesWithDefaults instantiates a new PlaceDataAttributes object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
-
-### GetCityId
-
-`func (o *PlaceDataAttributes) GetCityId() uuid.UUID`
-
-GetCityId returns the CityId field if non-nil, zero value otherwise.
-
-### GetCityIdOk
-
-`func (o *PlaceDataAttributes) GetCityIdOk() (*uuid.UUID, bool)`
-
-GetCityIdOk returns a tuple with the CityId field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetCityId
-
-`func (o *PlaceDataAttributes) SetCityId(v uuid.UUID)`
-
-SetCityId sets CityId field to given value.
-
-
-### GetDistributorId
-
-`func (o *PlaceDataAttributes) GetDistributorId() uuid.UUID`
-
-GetDistributorId returns the DistributorId field if non-nil, zero value otherwise.
-
-### GetDistributorIdOk
-
-`func (o *PlaceDataAttributes) GetDistributorIdOk() (*uuid.UUID, bool)`
-
-GetDistributorIdOk returns a tuple with the DistributorId field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetDistributorId
-
-`func (o *PlaceDataAttributes) SetDistributorId(v uuid.UUID)`
-
-SetDistributorId sets DistributorId field to given value.
-
-### HasDistributorId
-
-`func (o *PlaceDataAttributes) HasDistributorId() bool`
-
-HasDistributorId returns a boolean if a field has been set.
-
-### GetClass
-
-`func (o *PlaceDataAttributes) GetClass() string`
-
-GetClass returns the Class field if non-nil, zero value otherwise.
-
-### GetClassOk
-
-`func (o *PlaceDataAttributes) GetClassOk() (*string, bool)`
-
-GetClassOk returns a tuple with the Class field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetClass
-
-`func (o *PlaceDataAttributes) SetClass(v string)`
-
-SetClass sets Class field to given value.
-
 
 ### GetStatus
 
@@ -163,24 +96,24 @@ and a boolean to check if the value has been set.
 SetPoint sets Point field to given value.
 
 
-### GetLocale
+### GetAddress
 
-`func (o *PlaceDataAttributes) GetLocale() string`
+`func (o *PlaceDataAttributes) GetAddress() string`
 
-GetLocale returns the Locale field if non-nil, zero value otherwise.
+GetAddress returns the Address field if non-nil, zero value otherwise.
 
-### GetLocaleOk
+### GetAddressOk
 
-`func (o *PlaceDataAttributes) GetLocaleOk() (*string, bool)`
+`func (o *PlaceDataAttributes) GetAddressOk() (*string, bool)`
 
-GetLocaleOk returns a tuple with the Locale field if it's non-nil, zero value otherwise
+GetAddressOk returns a tuple with the Address field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetLocale
+### SetAddress
 
-`func (o *PlaceDataAttributes) SetLocale(v string)`
+`func (o *PlaceDataAttributes) SetAddress(v string)`
 
-SetLocale sets Locale field to given value.
+SetAddress sets Address field to given value.
 
 
 ### GetName
@@ -203,26 +136,6 @@ and a boolean to check if the value has been set.
 SetName sets Name field to given value.
 
 
-### GetAddress
-
-`func (o *PlaceDataAttributes) GetAddress() string`
-
-GetAddress returns the Address field if non-nil, zero value otherwise.
-
-### GetAddressOk
-
-`func (o *PlaceDataAttributes) GetAddressOk() (*string, bool)`
-
-GetAddressOk returns a tuple with the Address field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetAddress
-
-`func (o *PlaceDataAttributes) SetAddress(v string)`
-
-SetAddress sets Address field to given value.
-
-
 ### GetDescription
 
 `func (o *PlaceDataAttributes) GetDescription() string`
@@ -242,6 +155,61 @@ and a boolean to check if the value has been set.
 
 SetDescription sets Description field to given value.
 
+### HasDescription
+
+`func (o *PlaceDataAttributes) HasDescription() bool`
+
+HasDescription returns a boolean if a field has been set.
+
+### GetIcon
+
+`func (o *PlaceDataAttributes) GetIcon() string`
+
+GetIcon returns the Icon field if non-nil, zero value otherwise.
+
+### GetIconOk
+
+`func (o *PlaceDataAttributes) GetIconOk() (*string, bool)`
+
+GetIconOk returns a tuple with the Icon field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetIcon
+
+`func (o *PlaceDataAttributes) SetIcon(v string)`
+
+SetIcon sets Icon field to given value.
+
+### HasIcon
+
+`func (o *PlaceDataAttributes) HasIcon() bool`
+
+HasIcon returns a boolean if a field has been set.
+
+### GetBanner
+
+`func (o *PlaceDataAttributes) GetBanner() string`
+
+GetBanner returns the Banner field if non-nil, zero value otherwise.
+
+### GetBannerOk
+
+`func (o *PlaceDataAttributes) GetBannerOk() (*string, bool)`
+
+GetBannerOk returns a tuple with the Banner field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetBanner
+
+`func (o *PlaceDataAttributes) SetBanner(v string)`
+
+SetBanner sets Banner field to given value.
+
+### HasBanner
+
+`func (o *PlaceDataAttributes) HasBanner() bool`
+
+HasBanner returns a boolean if a field has been set.
 
 ### GetWebsite
 

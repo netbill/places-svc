@@ -5,6 +5,8 @@ go 1.25.4
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/alecthomas/kingpin v2.2.6+incompatible
+	github.com/go-chi/chi/v5 v5.2.3
+	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.9
 	github.com/netbill/ape v0.1.0
@@ -12,6 +14,7 @@ require (
 	github.com/netbill/logium v0.1.0
 	github.com/netbill/pagi v0.1.2
 	github.com/netbill/pgx v0.1.0
+	github.com/netbill/restkit v0.1.0
 	github.com/paulmach/orb v0.12.0
 	github.com/pkg/errors v0.9.1
 	github.com/rubenv/sql-migrate v1.8.0
@@ -26,6 +29,7 @@ require (
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/jsonapi v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
@@ -48,3 +52,5 @@ require (
 	golang.org/x/text v0.26.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/netbill/ape => /home/trpdjke/go/src/github.com/netbill/ape
