@@ -4,12 +4,12 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/netbill/ape"
-	"github.com/netbill/ape/problems"
 	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/modules/pclass"
 	"github.com/netbill/places-svc/internal/rest/requests"
 	"github.com/netbill/places-svc/internal/rest/responses"
+	"github.com/netbill/restkit/ape"
+	"github.com/netbill/restkit/ape/problems"
 )
 
 func (c Controller) UpdatePlaceClass(w http.ResponseWriter, r *http.Request) {

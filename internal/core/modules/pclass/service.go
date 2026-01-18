@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/netbill/pagi"
 	"github.com/netbill/places-svc/internal/core/models"
+	"github.com/netbill/restkit/pagi"
 )
 
 type Service struct {

@@ -7,10 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/netbill/ape"
-	"github.com/netbill/ape/problems"
 	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/rest"
+	"github.com/netbill/restkit/ape"
+	"github.com/netbill/restkit/ape/problems"
 )
 
 func (c Controller) DeletePlace(w http.ResponseWriter, r *http.Request) {

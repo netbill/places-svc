@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/netbill/pagi"
 	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
+	"github.com/netbill/restkit/pagi"
 )
 
 func (s Service) GetPlaceClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error) {

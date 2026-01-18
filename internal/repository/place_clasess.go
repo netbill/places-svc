@@ -5,10 +5,10 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
-	"github.com/netbill/pagi"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/core/modules/pclass"
 	"github.com/netbill/places-svc/internal/repository/pgdb"
+	"github.com/netbill/restkit/pagi"
 )
 
 func (s Service) CreatePlaceClass(ctx context.Context, params pclass.CreateParams) (models.PlaceClass, error) {

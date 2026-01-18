@@ -3,9 +3,9 @@ package responses
 import (
 	"net/http"
 
-	"github.com/netbill/pagi"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/resources"
+	"github.com/netbill/restkit/pagi"
 )
 
 func PlaceClass(model models.PlaceClass) resources.PlaceClassData {

@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/netbill/logium"
 	"github.com/netbill/places-svc/internal"
-	"github.com/netbill/restkit/roles"
+	"github.com/netbill/restkit/token/roles"
 )
 
 type Handlers interface {
@@ -34,7 +34,7 @@ type Middlewares interface {
 	RoleGrant(allowedRoles map[string]bool) func(http.Handler) http.Handler
 }
 
-type Service struct {
+type Router struct {
 	handlers    Handlers
 	middlewares Middlewares
 	log         logium.Logger
@@ -44,15 +44,15 @@ func New(
 	log logium.Logger,
 	middlewares Middlewares,
 	handlers Handlers,
-) *Service {
-	return &Service{
+) *Router {
+	return &Router{
 		log:         log,
 		middlewares: middlewares,
 		handlers:    handlers,
 	}
 }
 
-func (s *Service) Run(ctx context.Context, cfg internal.Config) {
+func (s *Router) Run(ctx context.Context, cfg internal.Config) {
 	auth := s.middlewares.Auth()
 	sysadmin := s.middlewares.RoleGrant(map[string]bool{
 		roles.SystemAdmin: true,

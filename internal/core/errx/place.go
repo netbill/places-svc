@@ -1,6 +1,6 @@
 package errx
 
-import "github.com/netbill/ape"
+import "github.com/netbill/restkit/ape"
 
 var (
 	ErrorPlaceNotFound = ape.DeclareError("PLACE_NOT_FOUND")

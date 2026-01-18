@@ -5,10 +5,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/netbill/logium"
-	"github.com/netbill/pagi"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/core/modules/pclass"
 	"github.com/netbill/places-svc/internal/core/modules/place"
+	"github.com/netbill/restkit/pagi"
 )
 
 type placeSvc interface {
