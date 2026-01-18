@@ -8,7 +8,6 @@ import (
 	"github.com/netbill/evebox/box/inbox"
 	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
-	"github.com/netbill/places-svc/internal/core/modules/profile"
 	"github.com/netbill/places-svc/internal/messenger/contracts"
 )
 
@@ -22,7 +21,7 @@ func (i Inbound) AccountCreated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.CreateProfile(ctx, models.Profile{
+	if err := i.domain.UpsertProfile(ctx, models.Profile{
 		AccountID: payload.Account.ID,
 		Username:  payload.Account.Username,
 	}); err != nil {
@@ -79,10 +78,7 @@ func (i Inbound) AccountProfileUpdated(
 		return inbox.EventStatusFailed
 	}
 
-	if _, err := i.domain.UpdateProfile(ctx, payload.Profile.AccountID, profile.UpdateProfileParams{
-		Official:  payload.Profile.Official,
-		Pseudonym: payload.Profile.Pseudonym,
-	}); err != nil {
+	if err := i.domain.UpsertProfile(ctx, payload.Profile); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -109,7 +105,7 @@ func (i Inbound) AccountUsernameChanged(
 		return inbox.EventStatusFailed
 	}
 
-	if _, err := i.domain.UpdateUsername(ctx, payload.Account.ID, payload.Account.Username); err != nil {
+	if err := i.domain.UpdateProfileUsername(ctx, payload.Account.ID, payload.Account.Username); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(

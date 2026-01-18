@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/netbill/logium"
 	"github.com/netbill/places-svc/internal/core/models"
-	"github.com/netbill/places-svc/internal/core/modules/profile"
 )
 
 type Inbound struct {
@@ -30,10 +29,9 @@ func New(log logium.Logger, prof profileSvc, org organizationSvc) Inbound {
 }
 
 type profileSvc interface {
-	CreateProfile(ctx context.Context, profile models.Profile) error
+	UpsertProfile(ctx context.Context, profile models.Profile) error
 	DeleteProfile(ctx context.Context, accountID uuid.UUID) error
-	UpdateUsername(ctx context.Context, accountID uuid.UUID, username string) (models.Profile, error)
-	UpdateProfile(ctx context.Context, ID uuid.UUID, params profile.UpdateProfileParams) (models.Profile, error)
+	UpdateProfileUsername(ctx context.Context, accountID uuid.UUID, username string) error
 }
 
 type organizationSvc interface {

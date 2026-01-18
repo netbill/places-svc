@@ -53,7 +53,7 @@ func (s Service) GetPlaces(
 		q = q.FilterByOrganizationID(params.OrganizationID)
 	}
 	if params.Status != nil {
-		q = q.FilterByStatus(*params.Status)
+		q = q.FilterByStatus(params.Status...)
 	}
 	if params.BestMatch != nil {
 		q = q.FilterByText(*params.BestMatch)

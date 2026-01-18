@@ -44,11 +44,16 @@ type JWTConfig struct {
 	} `mapstructure:"service"`
 }
 
+type KafkaConfig struct {
+	Brokers []string `mapstructure:"brokers"`
+}
+
 type Config struct {
 	Service  ServeiceConfig `mapstructure:"service"`
 	Log      LogConfig      `mapstructure:"log"`
 	Rest     RestConfig     `mapstructure:"rest"`
 	JWT      JWTConfig      `mapstructure:"jwt"`
+	Kafka    KafkaConfig    `mapstructure:"kafka"`
 	Database DatabaseConfig `mapstructure:"database"`
 }
 

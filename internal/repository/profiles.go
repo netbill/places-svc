@@ -24,6 +24,15 @@ func (s Service) UpsertProfile(ctx context.Context, profile models.Profile) erro
 	return nil
 }
 
+func (s Service) UpdateProfileUsername(ctx context.Context, accountID uuid.UUID, username string) error {
+	_, err := s.profilesQ(ctx).FilterByAccountID(accountID).UpdateUsername(username).UpdateOne(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s Service) DeleteProfile(ctx context.Context, accountID uuid.UUID) error {
 	return s.profilesQ(ctx).FilterByAccountID(accountID).Delete(ctx)
 }

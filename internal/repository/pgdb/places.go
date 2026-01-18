@@ -174,13 +174,16 @@ func (q PlacesQ) FilterByOrganizationID(orgID *uuid.UUID) PlacesQ {
 	return q
 }
 
-// TODO remade this method
-func (q PlacesQ) FilterByClassID(includeChild, includeParent bool, classID ...uuid.UUID) PlacesQ {
+func (q PlacesQ) FilterByClassID(includeChild, includeParent bool, classIDs ...uuid.UUID) PlacesQ {
+	if len(classIDs) == 0 {
+		return q
+	}
+
 	if !includeChild && !includeParent {
-		q.selector = q.selector.Where(sq.Eq{"class_id": classID})
-		q.counter = q.counter.Where(sq.Eq{"class_id": classID})
-		q.deleter = q.deleter.Where(sq.Eq{"class_id": classID})
-		q.updater = q.updater.Where(sq.Eq{"class_id": classID})
+		q.selector = q.selector.Where(sq.Eq{"class_id": classIDs})
+		q.counter = q.counter.Where(sq.Eq{"class_id": classIDs})
+		q.deleter = q.deleter.Where(sq.Eq{"class_id": classIDs})
+		q.updater = q.updater.Where(sq.Eq{"class_id": classIDs})
 		return q
 	}
 
@@ -189,7 +192,7 @@ func (q PlacesQ) FilterByClassID(includeChild, includeParent bool, classID ...uu
 		anc AS (
 			SELECT id, parent_id
 			FROM place_classes
-			WHERE id = ?
+			WHERE id = ANY(?)
 			UNION ALL
 			SELECT pc.id, pc.parent_id
 			FROM place_classes pc
@@ -199,7 +202,7 @@ func (q PlacesQ) FilterByClassID(includeChild, includeParent bool, classID ...uu
 		des AS (
 			SELECT id
 			FROM place_classes
-			WHERE id = ?
+			WHERE id = ANY(?)
 			UNION ALL
 			SELECT pc.id
 			FROM place_classes pc
@@ -214,21 +217,22 @@ func (q PlacesQ) FilterByClassID(includeChild, includeParent bool, classID ...uu
 		) t
 	`
 
+	// Важно: чтобы ANY(?) работал, аргумент должен быть массивом для драйвера.
+	// Для pgx/stdlib обычно ок передать []uuid.UUID, но если будут проблемы — нужно pq.Array(...) (для lib/pq).
 	expr := sq.Expr(
 		"class_id IN ("+subSQL+")",
-		classID, includeParent,
-		classID, includeChild,
+		classIDs, includeParent,
+		classIDs, includeChild,
 	)
 
 	q.selector = q.selector.Where(expr)
 	q.counter = q.counter.Where(expr)
 	q.deleter = q.deleter.Where(expr)
 	q.updater = q.updater.Where(expr)
-
 	return q
 }
 
-func (q PlacesQ) FilterByStatus(status string) PlacesQ {
+func (q PlacesQ) FilterByStatus(status ...string) PlacesQ {
 	q.selector = q.selector.Where(sq.Eq{"status": status})
 	q.counter = q.counter.Where(sq.Eq{"status": status})
 	q.updater = q.updater.Where(sq.Eq{"status": status})
