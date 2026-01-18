@@ -44,7 +44,7 @@ components:
       $ref: './spec/components/schemas/Place.yaml'
     PlacesCollection:
       $ref: './spec/components/schemas/PlacesCollection.yaml'
-    Class:
+    PlaceClass:
       $ref: './spec/components/schemas/PlaceClass.yaml'
-    ClassesCollection:
+    PlaceClassesCollection:
       $ref: './spec/components/schemas/PlaceClassesCollection.yaml'

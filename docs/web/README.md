@@ -83,12 +83,6 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
- - [Class](docs/Class.md)
- - [ClassData](docs/ClassData.md)
- - [ClassDataAttributes](docs/ClassDataAttributes.md)
- - [ClassDataRelationships](docs/ClassDataRelationships.md)
- - [ClassDataRelationshipsParent](docs/ClassDataRelationshipsParent.md)
- - [ClassesCollection](docs/ClassesCollection.md)
  - [CreatePlace](docs/CreatePlace.md)
  - [CreatePlaceClass](docs/CreatePlaceClass.md)
  - [CreatePlaceClassData](docs/CreatePlaceClassData.md)
@@ -99,6 +93,12 @@ Class | Method | HTTP request | Description
  - [Data](docs/Data.md)
  - [PaginationData](docs/PaginationData.md)
  - [Place](docs/Place.md)
+ - [PlaceClass](docs/PlaceClass.md)
+ - [PlaceClassData](docs/PlaceClassData.md)
+ - [PlaceClassDataAttributes](docs/PlaceClassDataAttributes.md)
+ - [PlaceClassDataRelationships](docs/PlaceClassDataRelationships.md)
+ - [PlaceClassDataRelationshipsParent](docs/PlaceClassDataRelationshipsParent.md)
+ - [PlaceClassesCollection](docs/PlaceClassesCollection.md)
  - [PlaceData](docs/PlaceData.md)
  - [PlaceDataAttributes](docs/PlaceDataAttributes.md)
  - [PlaceDataRelationships](docs/PlaceDataRelationships.md)

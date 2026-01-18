@@ -10,7 +10,6 @@ import (
 	"github.com/netbill/ape"
 	"github.com/netbill/ape/problems"
 	"github.com/netbill/places-svc/internal/core/errx"
-	"github.com/netbill/places-svc/internal/rest/responses"
 )
 
 func (c Controller) GetPlace(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +20,7 @@ func (c Controller) GetPlace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := c.core.GetPlaceClass(r.Context(), placeID)
+	res, err := c.core.GetPlace(r.Context(), placeID)
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid place class")
 		switch {
@@ -32,5 +31,5 @@ func (c Controller) GetPlace(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	responses.PlaceClass(w, http.StatusOK, res)
+	ape.Render(w, http.StatusOK, res)
 }

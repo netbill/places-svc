@@ -25,8 +25,8 @@ type Data struct {
 	// place ID
 	Id uuid.UUID `json:"id"`
 	Type string `json:"type"`
-	Attributes ClassDataAttributes `json:"attributes"`
-	Relationships *ClassDataRelationships `json:"relationships,omitempty"`
+	Attributes PlaceClassDataAttributes `json:"attributes"`
+	Relationships *PlaceClassDataRelationships `json:"relationships,omitempty"`
 }
 
 type _Data Data
@@ -35,7 +35,7 @@ type _Data Data
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewData(id uuid.UUID, type_ string, attributes ClassDataAttributes) *Data {
+func NewData(id uuid.UUID, type_ string, attributes PlaceClassDataAttributes) *Data {
 	this := Data{}
 	this.Id = id
 	this.Type = type_
@@ -100,9 +100,9 @@ func (o *Data) SetType(v string) {
 }
 
 // GetAttributes returns the Attributes field value
-func (o *Data) GetAttributes() ClassDataAttributes {
+func (o *Data) GetAttributes() PlaceClassDataAttributes {
 	if o == nil {
-		var ret ClassDataAttributes
+		var ret PlaceClassDataAttributes
 		return ret
 	}
 
@@ -111,7 +111,7 @@ func (o *Data) GetAttributes() ClassDataAttributes {
 
 // GetAttributesOk returns a tuple with the Attributes field value
 // and a boolean to check if the value has been set.
-func (o *Data) GetAttributesOk() (*ClassDataAttributes, bool) {
+func (o *Data) GetAttributesOk() (*PlaceClassDataAttributes, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -119,14 +119,14 @@ func (o *Data) GetAttributesOk() (*ClassDataAttributes, bool) {
 }
 
 // SetAttributes sets field value
-func (o *Data) SetAttributes(v ClassDataAttributes) {
+func (o *Data) SetAttributes(v PlaceClassDataAttributes) {
 	o.Attributes = v
 }
 
 // GetRelationships returns the Relationships field value if set, zero value otherwise.
-func (o *Data) GetRelationships() ClassDataRelationships {
+func (o *Data) GetRelationships() PlaceClassDataRelationships {
 	if o == nil || IsNil(o.Relationships) {
-		var ret ClassDataRelationships
+		var ret PlaceClassDataRelationships
 		return ret
 	}
 	return *o.Relationships
@@ -134,7 +134,7 @@ func (o *Data) GetRelationships() ClassDataRelationships {
 
 // GetRelationshipsOk returns a tuple with the Relationships field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Data) GetRelationshipsOk() (*ClassDataRelationships, bool) {
+func (o *Data) GetRelationshipsOk() (*PlaceClassDataRelationships, bool) {
 	if o == nil || IsNil(o.Relationships) {
 		return nil, false
 	}
@@ -150,8 +150,8 @@ func (o *Data) HasRelationships() bool {
 	return false
 }
 
-// SetRelationships gets a reference to the given ClassDataRelationships and assigns it to the Relationships field.
-func (o *Data) SetRelationships(v ClassDataRelationships) {
+// SetRelationships gets a reference to the given PlaceClassDataRelationships and assigns it to the Relationships field.
+func (o *Data) SetRelationships(v PlaceClassDataRelationships) {
 	o.Relationships = &v
 }
 

@@ -17,42 +17,42 @@ import (
 	"fmt"
 )
 
-// checks if the ClassData type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &ClassData{}
+// checks if the PlaceClassData type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &PlaceClassData{}
 
-// ClassData struct for ClassData
-type ClassData struct {
+// PlaceClassData struct for PlaceClassData
+type PlaceClassData struct {
 	// place ID
 	Id uuid.UUID `json:"id"`
 	Type string `json:"type"`
-	Attributes ClassDataAttributes `json:"attributes"`
-	Relationships *ClassDataRelationships `json:"relationships,omitempty"`
+	Attributes PlaceClassDataAttributes `json:"attributes"`
+	Relationships *PlaceClassDataRelationships `json:"relationships,omitempty"`
 }
 
-type _ClassData ClassData
+type _PlaceClassData PlaceClassData
 
-// NewClassData instantiates a new ClassData object
+// NewPlaceClassData instantiates a new PlaceClassData object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewClassData(id uuid.UUID, type_ string, attributes ClassDataAttributes) *ClassData {
-	this := ClassData{}
+func NewPlaceClassData(id uuid.UUID, type_ string, attributes PlaceClassDataAttributes) *PlaceClassData {
+	this := PlaceClassData{}
 	this.Id = id
 	this.Type = type_
 	this.Attributes = attributes
 	return &this
 }
 
-// NewClassDataWithDefaults instantiates a new ClassData object
+// NewPlaceClassDataWithDefaults instantiates a new PlaceClassData object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewClassDataWithDefaults() *ClassData {
-	this := ClassData{}
+func NewPlaceClassDataWithDefaults() *PlaceClassData {
+	this := PlaceClassData{}
 	return &this
 }
 
 // GetId returns the Id field value
-func (o *ClassData) GetId() uuid.UUID {
+func (o *PlaceClassData) GetId() uuid.UUID {
 	if o == nil {
 		var ret uuid.UUID
 		return ret
@@ -63,7 +63,7 @@ func (o *ClassData) GetId() uuid.UUID {
 
 // GetIdOk returns a tuple with the Id field value
 // and a boolean to check if the value has been set.
-func (o *ClassData) GetIdOk() (*uuid.UUID, bool) {
+func (o *PlaceClassData) GetIdOk() (*uuid.UUID, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -71,12 +71,12 @@ func (o *ClassData) GetIdOk() (*uuid.UUID, bool) {
 }
 
 // SetId sets field value
-func (o *ClassData) SetId(v uuid.UUID) {
+func (o *PlaceClassData) SetId(v uuid.UUID) {
 	o.Id = v
 }
 
 // GetType returns the Type field value
-func (o *ClassData) GetType() string {
+func (o *PlaceClassData) GetType() string {
 	if o == nil {
 		var ret string
 		return ret
@@ -87,7 +87,7 @@ func (o *ClassData) GetType() string {
 
 // GetTypeOk returns a tuple with the Type field value
 // and a boolean to check if the value has been set.
-func (o *ClassData) GetTypeOk() (*string, bool) {
+func (o *PlaceClassData) GetTypeOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -95,14 +95,14 @@ func (o *ClassData) GetTypeOk() (*string, bool) {
 }
 
 // SetType sets field value
-func (o *ClassData) SetType(v string) {
+func (o *PlaceClassData) SetType(v string) {
 	o.Type = v
 }
 
 // GetAttributes returns the Attributes field value
-func (o *ClassData) GetAttributes() ClassDataAttributes {
+func (o *PlaceClassData) GetAttributes() PlaceClassDataAttributes {
 	if o == nil {
-		var ret ClassDataAttributes
+		var ret PlaceClassDataAttributes
 		return ret
 	}
 
@@ -111,7 +111,7 @@ func (o *ClassData) GetAttributes() ClassDataAttributes {
 
 // GetAttributesOk returns a tuple with the Attributes field value
 // and a boolean to check if the value has been set.
-func (o *ClassData) GetAttributesOk() (*ClassDataAttributes, bool) {
+func (o *PlaceClassData) GetAttributesOk() (*PlaceClassDataAttributes, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -119,14 +119,14 @@ func (o *ClassData) GetAttributesOk() (*ClassDataAttributes, bool) {
 }
 
 // SetAttributes sets field value
-func (o *ClassData) SetAttributes(v ClassDataAttributes) {
+func (o *PlaceClassData) SetAttributes(v PlaceClassDataAttributes) {
 	o.Attributes = v
 }
 
 // GetRelationships returns the Relationships field value if set, zero value otherwise.
-func (o *ClassData) GetRelationships() ClassDataRelationships {
+func (o *PlaceClassData) GetRelationships() PlaceClassDataRelationships {
 	if o == nil || IsNil(o.Relationships) {
-		var ret ClassDataRelationships
+		var ret PlaceClassDataRelationships
 		return ret
 	}
 	return *o.Relationships
@@ -134,7 +134,7 @@ func (o *ClassData) GetRelationships() ClassDataRelationships {
 
 // GetRelationshipsOk returns a tuple with the Relationships field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ClassData) GetRelationshipsOk() (*ClassDataRelationships, bool) {
+func (o *PlaceClassData) GetRelationshipsOk() (*PlaceClassDataRelationships, bool) {
 	if o == nil || IsNil(o.Relationships) {
 		return nil, false
 	}
@@ -142,7 +142,7 @@ func (o *ClassData) GetRelationshipsOk() (*ClassDataRelationships, bool) {
 }
 
 // HasRelationships returns a boolean if a field has been set.
-func (o *ClassData) HasRelationships() bool {
+func (o *PlaceClassData) HasRelationships() bool {
 	if o != nil && !IsNil(o.Relationships) {
 		return true
 	}
@@ -150,12 +150,12 @@ func (o *ClassData) HasRelationships() bool {
 	return false
 }
 
-// SetRelationships gets a reference to the given ClassDataRelationships and assigns it to the Relationships field.
-func (o *ClassData) SetRelationships(v ClassDataRelationships) {
+// SetRelationships gets a reference to the given PlaceClassDataRelationships and assigns it to the Relationships field.
+func (o *PlaceClassData) SetRelationships(v PlaceClassDataRelationships) {
 	o.Relationships = &v
 }
 
-func (o ClassData) MarshalJSON() ([]byte, error) {
+func (o PlaceClassData) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -163,7 +163,7 @@ func (o ClassData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o ClassData) ToMap() (map[string]interface{}, error) {
+func (o PlaceClassData) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["id"] = o.Id
 	toSerialize["type"] = o.Type
@@ -174,7 +174,7 @@ func (o ClassData) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-func (o *ClassData) UnmarshalJSON(data []byte) (err error) {
+func (o *PlaceClassData) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
@@ -198,53 +198,53 @@ func (o *ClassData) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varClassData := _ClassData{}
+	varPlaceClassData := _PlaceClassData{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varClassData)
+	err = decoder.Decode(&varPlaceClassData)
 
 	if err != nil {
 		return err
 	}
 
-	*o = ClassData(varClassData)
+	*o = PlaceClassData(varPlaceClassData)
 
 	return err
 }
 
-type NullableClassData struct {
-	value *ClassData
+type NullablePlaceClassData struct {
+	value *PlaceClassData
 	isSet bool
 }
 
-func (v NullableClassData) Get() *ClassData {
+func (v NullablePlaceClassData) Get() *PlaceClassData {
 	return v.value
 }
 
-func (v *NullableClassData) Set(val *ClassData) {
+func (v *NullablePlaceClassData) Set(val *PlaceClassData) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableClassData) IsSet() bool {
+func (v NullablePlaceClassData) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableClassData) Unset() {
+func (v *NullablePlaceClassData) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableClassData(val *ClassData) *NullableClassData {
-	return &NullableClassData{value: val, isSet: true}
+func NewNullablePlaceClassData(val *PlaceClassData) *NullablePlaceClassData {
+	return &NullablePlaceClassData{value: val, isSet: true}
 }
 
-func (v NullableClassData) MarshalJSON() ([]byte, error) {
+func (v NullablePlaceClassData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableClassData) UnmarshalJSON(src []byte) error {
+func (v *NullablePlaceClassData) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

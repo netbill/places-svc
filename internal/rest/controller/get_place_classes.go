@@ -36,28 +36,28 @@ func (c Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		params.Parent.ID = parentID
-	}
 
-	if _, ok := r.URL.Query()["with_parents"]; ok {
-		with, err := strconv.ParseBool(r.URL.Query().Get("with_parents"))
-		if err != nil {
-			c.log.WithError(err).Errorf("invalid with_parents value")
-			ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid with_parents value"))...)
-			return
+		if _, ok := r.URL.Query()["with_parents"]; ok {
+			with, err := strconv.ParseBool(r.URL.Query().Get("with_parents"))
+			if err != nil {
+				c.log.WithError(err).Errorf("invalid with_parents value")
+				ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid with_parents value"))...)
+				return
+			}
+
+			params.Parent.IncludedParents = with
 		}
 
-		params.Parent.IncludedParents = with
-	}
+		if _, ok := r.URL.Query()["with_child"]; ok {
+			with, err := strconv.ParseBool(r.URL.Query().Get("with_child"))
+			if err != nil {
+				c.log.WithError(err).Errorf("invalid with_child value")
+				ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid with_child value"))...)
+				return
+			}
 
-	if _, ok := r.URL.Query()["with_child"]; ok {
-		with, err := strconv.ParseBool(r.URL.Query().Get("with_child"))
-		if err != nil {
-			c.log.WithError(err).Errorf("invalid with_child value")
-			ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid with_child value"))...)
-			return
+			params.Parent.IncludedChildren = with
 		}
-
-		params.Parent.IncludedChildren = with
 	}
 
 	res, err := c.core.GetPlaceClasses(r.Context(), params, limit, offset)
@@ -67,5 +67,5 @@ func (c Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responses.PlaceClasses(r, w, http.StatusOK, res)
+	ape.Render(w, http.StatusOK, responses.PlaceClasses(r, res))
 }

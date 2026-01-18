@@ -44,5 +44,5 @@ func (c Controller) DeletePlace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	ape.Render(w, http.StatusOK)
 }

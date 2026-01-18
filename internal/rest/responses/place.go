@@ -3,13 +3,12 @@ package responses
 import (
 	"net/http"
 
-	"github.com/netbill/ape"
 	"github.com/netbill/pagi"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/resources"
 )
 
-func placeData(model models.Place) resources.PlaceData {
+func Place(model models.Place) resources.PlaceData {
 	data := resources.PlaceData{
 		Id:   model.ID,
 		Type: "place",
@@ -48,21 +47,16 @@ func placeData(model models.Place) resources.PlaceData {
 
 	return data
 }
-func Place(w http.ResponseWriter, status int, model models.Place) {
-	ape.Render(w, status, resources.Place{
-		Data: placeData(model),
-	})
-}
 
-func Places(r *http.Request, w http.ResponseWriter, status int, page pagi.Page[[]models.Place]) {
+func Places(r *http.Request, page pagi.Page[[]models.Place]) resources.PlacesCollection {
 	data := make([]resources.PlaceData, len(page.Data))
 	for i, mod := range page.Data {
-		data[i] = placeData(mod)
+		data[i] = Place(mod)
 	}
 
 	links := pagi.BuildPageLinks(r, page.Page, page.Size, page.Total)
 
-	response := resources.PlacesCollection{
+	return resources.PlacesCollection{
 		Data: data,
 		Links: resources.PaginationData{
 			First: links.First,
@@ -73,5 +67,4 @@ func Places(r *http.Request, w http.ResponseWriter, status int, page pagi.Page[[
 		},
 	}
 
-	ape.Render(w, status, response)
 }

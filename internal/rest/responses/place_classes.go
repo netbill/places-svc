@@ -3,17 +3,16 @@ package responses
 import (
 	"net/http"
 
-	"github.com/netbill/ape"
 	"github.com/netbill/pagi"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/resources"
 )
 
-func classData(model models.PlaceClass) resources.ClassData {
-	data := resources.ClassData{
+func PlaceClass(model models.PlaceClass) resources.PlaceClassData {
+	data := resources.PlaceClassData{
 		Id:   model.ID,
 		Type: "class",
-		Attributes: resources.ClassDataAttributes{
+		Attributes: resources.PlaceClassDataAttributes{
 			Code:        model.Code,
 			Name:        model.Name,
 			Description: model.Description,
@@ -23,8 +22,8 @@ func classData(model models.PlaceClass) resources.ClassData {
 		},
 	}
 	if model.ParentID != nil {
-		data.Relationships = &resources.ClassDataRelationships{
-			Parent: &resources.ClassDataRelationshipsParent{
+		data.Relationships = &resources.PlaceClassDataRelationships{
+			Parent: &resources.PlaceClassDataRelationshipsParent{
 				Id:   *model.ParentID,
 				Type: "class",
 			},
@@ -34,21 +33,15 @@ func classData(model models.PlaceClass) resources.ClassData {
 	return data
 }
 
-func PlaceClass(w http.ResponseWriter, status int, model models.PlaceClass) {
-	ape.Render(w, status, resources.Class{
-		Data: classData(model),
-	})
-}
-
-func PlaceClasses(r *http.Request, w http.ResponseWriter, status int, page pagi.Page[[]models.PlaceClass]) {
-	data := make([]resources.ClassData, len(page.Data))
+func PlaceClasses(r *http.Request, page pagi.Page[[]models.PlaceClass]) resources.PlaceClassesCollection {
+	data := make([]resources.PlaceClassData, len(page.Data))
 	for i, mod := range page.Data {
-		data[i] = classData(mod)
+		data[i] = PlaceClass(mod)
 	}
 
 	links := pagi.BuildPageLinks(r, page.Page, page.Size, page.Total)
 
-	ape.Render(w, status, resources.ClassesCollection{
+	return resources.PlaceClassesCollection{
 		Data: data,
 		Links: resources.PaginationData{
 			First: links.First,
@@ -56,5 +49,5 @@ func PlaceClasses(r *http.Request, w http.ResponseWriter, status int, page pagi.
 			Prev:  links.Prev,
 			Next:  links.Next,
 		},
-	})
+	}
 }

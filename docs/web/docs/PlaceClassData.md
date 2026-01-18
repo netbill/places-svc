@@ -1,4 +1,4 @@
-# Data
+# PlaceClassData
 
 ## Properties
 
@@ -11,105 +11,105 @@ Name | Type | Description | Notes
 
 ## Methods
 
-### NewData
+### NewPlaceClassData
 
-`func NewData(id uuid.UUID, type_ string, attributes PlaceClassDataAttributes, ) *Data`
+`func NewPlaceClassData(id uuid.UUID, type_ string, attributes PlaceClassDataAttributes, ) *PlaceClassData`
 
-NewData instantiates a new Data object
+NewPlaceClassData instantiates a new PlaceClassData object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewDataWithDefaults
+### NewPlaceClassDataWithDefaults
 
-`func NewDataWithDefaults() *Data`
+`func NewPlaceClassDataWithDefaults() *PlaceClassData`
 
-NewDataWithDefaults instantiates a new Data object
+NewPlaceClassDataWithDefaults instantiates a new PlaceClassData object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetId
 
-`func (o *Data) GetId() uuid.UUID`
+`func (o *PlaceClassData) GetId() uuid.UUID`
 
 GetId returns the Id field if non-nil, zero value otherwise.
 
 ### GetIdOk
 
-`func (o *Data) GetIdOk() (*uuid.UUID, bool)`
+`func (o *PlaceClassData) GetIdOk() (*uuid.UUID, bool)`
 
 GetIdOk returns a tuple with the Id field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetId
 
-`func (o *Data) SetId(v uuid.UUID)`
+`func (o *PlaceClassData) SetId(v uuid.UUID)`
 
 SetId sets Id field to given value.
 
 
 ### GetType
 
-`func (o *Data) GetType() string`
+`func (o *PlaceClassData) GetType() string`
 
 GetType returns the Type field if non-nil, zero value otherwise.
 
 ### GetTypeOk
 
-`func (o *Data) GetTypeOk() (*string, bool)`
+`func (o *PlaceClassData) GetTypeOk() (*string, bool)`
 
 GetTypeOk returns a tuple with the Type field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetType
 
-`func (o *Data) SetType(v string)`
+`func (o *PlaceClassData) SetType(v string)`
 
 SetType sets Type field to given value.
 
 
 ### GetAttributes
 
-`func (o *Data) GetAttributes() PlaceClassDataAttributes`
+`func (o *PlaceClassData) GetAttributes() PlaceClassDataAttributes`
 
 GetAttributes returns the Attributes field if non-nil, zero value otherwise.
 
 ### GetAttributesOk
 
-`func (o *Data) GetAttributesOk() (*PlaceClassDataAttributes, bool)`
+`func (o *PlaceClassData) GetAttributesOk() (*PlaceClassDataAttributes, bool)`
 
 GetAttributesOk returns a tuple with the Attributes field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetAttributes
 
-`func (o *Data) SetAttributes(v PlaceClassDataAttributes)`
+`func (o *PlaceClassData) SetAttributes(v PlaceClassDataAttributes)`
 
 SetAttributes sets Attributes field to given value.
 
 
 ### GetRelationships
 
-`func (o *Data) GetRelationships() PlaceClassDataRelationships`
+`func (o *PlaceClassData) GetRelationships() PlaceClassDataRelationships`
 
 GetRelationships returns the Relationships field if non-nil, zero value otherwise.
 
 ### GetRelationshipsOk
 
-`func (o *Data) GetRelationshipsOk() (*PlaceClassDataRelationships, bool)`
+`func (o *PlaceClassData) GetRelationshipsOk() (*PlaceClassDataRelationships, bool)`
 
 GetRelationshipsOk returns a tuple with the Relationships field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetRelationships
 
-`func (o *Data) SetRelationships(v PlaceClassDataRelationships)`
+`func (o *PlaceClassData) SetRelationships(v PlaceClassDataRelationships)`
 
 SetRelationships sets Relationships field to given value.
 
 ### HasRelationships
 
-`func (o *Data) HasRelationships() bool`
+`func (o *PlaceClassData) HasRelationships() bool`
 
 HasRelationships returns a boolean if a field has been set.
 

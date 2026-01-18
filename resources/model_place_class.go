@@ -16,38 +16,38 @@ import (
 	"fmt"
 )
 
-// checks if the Class type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &Class{}
+// checks if the PlaceClass type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &PlaceClass{}
 
-// Class struct for Class
-type Class struct {
-	Data ClassData `json:"data"`
+// PlaceClass struct for PlaceClass
+type PlaceClass struct {
+	Data PlaceClassData `json:"data"`
 }
 
-type _Class Class
+type _PlaceClass PlaceClass
 
-// NewClass instantiates a new Class object
+// NewPlaceClass instantiates a new PlaceClass object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewClass(data ClassData) *Class {
-	this := Class{}
+func NewPlaceClass(data PlaceClassData) *PlaceClass {
+	this := PlaceClass{}
 	this.Data = data
 	return &this
 }
 
-// NewClassWithDefaults instantiates a new Class object
+// NewPlaceClassWithDefaults instantiates a new PlaceClass object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewClassWithDefaults() *Class {
-	this := Class{}
+func NewPlaceClassWithDefaults() *PlaceClass {
+	this := PlaceClass{}
 	return &this
 }
 
 // GetData returns the Data field value
-func (o *Class) GetData() ClassData {
+func (o *PlaceClass) GetData() PlaceClassData {
 	if o == nil {
-		var ret ClassData
+		var ret PlaceClassData
 		return ret
 	}
 
@@ -56,7 +56,7 @@ func (o *Class) GetData() ClassData {
 
 // GetDataOk returns a tuple with the Data field value
 // and a boolean to check if the value has been set.
-func (o *Class) GetDataOk() (*ClassData, bool) {
+func (o *PlaceClass) GetDataOk() (*PlaceClassData, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -64,11 +64,11 @@ func (o *Class) GetDataOk() (*ClassData, bool) {
 }
 
 // SetData sets field value
-func (o *Class) SetData(v ClassData) {
+func (o *PlaceClass) SetData(v PlaceClassData) {
 	o.Data = v
 }
 
-func (o Class) MarshalJSON() ([]byte, error) {
+func (o PlaceClass) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -76,13 +76,13 @@ func (o Class) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o Class) ToMap() (map[string]interface{}, error) {
+func (o PlaceClass) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["data"] = o.Data
 	return toSerialize, nil
 }
 
-func (o *Class) UnmarshalJSON(data []byte) (err error) {
+func (o *PlaceClass) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
@@ -104,53 +104,53 @@ func (o *Class) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varClass := _Class{}
+	varPlaceClass := _PlaceClass{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varClass)
+	err = decoder.Decode(&varPlaceClass)
 
 	if err != nil {
 		return err
 	}
 
-	*o = Class(varClass)
+	*o = PlaceClass(varPlaceClass)
 
 	return err
 }
 
-type NullableClass struct {
-	value *Class
+type NullablePlaceClass struct {
+	value *PlaceClass
 	isSet bool
 }
 
-func (v NullableClass) Get() *Class {
+func (v NullablePlaceClass) Get() *PlaceClass {
 	return v.value
 }
 
-func (v *NullableClass) Set(val *Class) {
+func (v *NullablePlaceClass) Set(val *PlaceClass) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableClass) IsSet() bool {
+func (v NullablePlaceClass) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableClass) Unset() {
+func (v *NullablePlaceClass) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableClass(val *Class) *NullableClass {
-	return &NullableClass{value: val, isSet: true}
+func NewNullablePlaceClass(val *PlaceClass) *NullablePlaceClass {
+	return &NullablePlaceClass{value: val, isSet: true}
 }
 
-func (v NullableClass) MarshalJSON() ([]byte, error) {
+func (v NullablePlaceClass) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableClass) UnmarshalJSON(src []byte) error {
+func (v *NullablePlaceClass) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

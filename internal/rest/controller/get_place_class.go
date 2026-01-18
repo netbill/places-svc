@@ -33,5 +33,5 @@ func (c Controller) GetPlaceClass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responses.PlaceClass(w, http.StatusOK, res)
+	ape.Render(w, http.StatusOK, responses.PlaceClass(res))
 }

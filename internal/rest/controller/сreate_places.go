@@ -59,5 +59,5 @@ func (c Controller) CreatePlace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responses.Place(w, http.StatusCreated, res)
+	ape.Render(w, http.StatusCreated, responses.Place(res))
 }

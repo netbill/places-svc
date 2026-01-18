@@ -41,5 +41,5 @@ func (c Controller) UpdatePlaceClass(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	responses.PlaceClass(w, http.StatusOK, res)
+	ape.Render(w, http.StatusOK, responses.PlaceClass(res))
 }

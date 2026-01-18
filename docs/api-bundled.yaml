@@ -502,7 +502,7 @@ components:
             $ref: '#/components/schemas/Place/properties/data'
         links:
           $ref: '#/components/schemas/PaginationData'
-    Class:
+    PlaceClass:
       type: object
       required:
         - data
@@ -570,7 +570,7 @@ components:
                       type: string
                       enum:
                         - place_class
-    ClassesCollection:
+    PlaceClassesCollection:
       type: object
       required:
         - data
@@ -579,6 +579,6 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Class/properties/data'
+            $ref: '#/components/schemas/PlaceClass/properties/data'
         links:
           $ref: '#/components/schemas/PaginationData'

@@ -16,40 +16,40 @@ import (
 	"fmt"
 )
 
-// checks if the ClassesCollection type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &ClassesCollection{}
+// checks if the PlaceClassesCollection type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &PlaceClassesCollection{}
 
-// ClassesCollection struct for ClassesCollection
-type ClassesCollection struct {
-	Data []ClassData `json:"data"`
+// PlaceClassesCollection struct for PlaceClassesCollection
+type PlaceClassesCollection struct {
+	Data []PlaceClassData `json:"data"`
 	Links PaginationData `json:"links"`
 }
 
-type _ClassesCollection ClassesCollection
+type _PlaceClassesCollection PlaceClassesCollection
 
-// NewClassesCollection instantiates a new ClassesCollection object
+// NewPlaceClassesCollection instantiates a new PlaceClassesCollection object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewClassesCollection(data []ClassData, links PaginationData) *ClassesCollection {
-	this := ClassesCollection{}
+func NewPlaceClassesCollection(data []PlaceClassData, links PaginationData) *PlaceClassesCollection {
+	this := PlaceClassesCollection{}
 	this.Data = data
 	this.Links = links
 	return &this
 }
 
-// NewClassesCollectionWithDefaults instantiates a new ClassesCollection object
+// NewPlaceClassesCollectionWithDefaults instantiates a new PlaceClassesCollection object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewClassesCollectionWithDefaults() *ClassesCollection {
-	this := ClassesCollection{}
+func NewPlaceClassesCollectionWithDefaults() *PlaceClassesCollection {
+	this := PlaceClassesCollection{}
 	return &this
 }
 
 // GetData returns the Data field value
-func (o *ClassesCollection) GetData() []ClassData {
+func (o *PlaceClassesCollection) GetData() []PlaceClassData {
 	if o == nil {
-		var ret []ClassData
+		var ret []PlaceClassData
 		return ret
 	}
 
@@ -58,7 +58,7 @@ func (o *ClassesCollection) GetData() []ClassData {
 
 // GetDataOk returns a tuple with the Data field value
 // and a boolean to check if the value has been set.
-func (o *ClassesCollection) GetDataOk() ([]ClassData, bool) {
+func (o *PlaceClassesCollection) GetDataOk() ([]PlaceClassData, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -66,12 +66,12 @@ func (o *ClassesCollection) GetDataOk() ([]ClassData, bool) {
 }
 
 // SetData sets field value
-func (o *ClassesCollection) SetData(v []ClassData) {
+func (o *PlaceClassesCollection) SetData(v []PlaceClassData) {
 	o.Data = v
 }
 
 // GetLinks returns the Links field value
-func (o *ClassesCollection) GetLinks() PaginationData {
+func (o *PlaceClassesCollection) GetLinks() PaginationData {
 	if o == nil {
 		var ret PaginationData
 		return ret
@@ -82,7 +82,7 @@ func (o *ClassesCollection) GetLinks() PaginationData {
 
 // GetLinksOk returns a tuple with the Links field value
 // and a boolean to check if the value has been set.
-func (o *ClassesCollection) GetLinksOk() (*PaginationData, bool) {
+func (o *PlaceClassesCollection) GetLinksOk() (*PaginationData, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -90,11 +90,11 @@ func (o *ClassesCollection) GetLinksOk() (*PaginationData, bool) {
 }
 
 // SetLinks sets field value
-func (o *ClassesCollection) SetLinks(v PaginationData) {
+func (o *PlaceClassesCollection) SetLinks(v PaginationData) {
 	o.Links = v
 }
 
-func (o ClassesCollection) MarshalJSON() ([]byte, error) {
+func (o PlaceClassesCollection) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -102,14 +102,14 @@ func (o ClassesCollection) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o ClassesCollection) ToMap() (map[string]interface{}, error) {
+func (o PlaceClassesCollection) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["data"] = o.Data
 	toSerialize["links"] = o.Links
 	return toSerialize, nil
 }
 
-func (o *ClassesCollection) UnmarshalJSON(data []byte) (err error) {
+func (o *PlaceClassesCollection) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
@@ -132,53 +132,53 @@ func (o *ClassesCollection) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varClassesCollection := _ClassesCollection{}
+	varPlaceClassesCollection := _PlaceClassesCollection{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varClassesCollection)
+	err = decoder.Decode(&varPlaceClassesCollection)
 
 	if err != nil {
 		return err
 	}
 
-	*o = ClassesCollection(varClassesCollection)
+	*o = PlaceClassesCollection(varPlaceClassesCollection)
 
 	return err
 }
 
-type NullableClassesCollection struct {
-	value *ClassesCollection
+type NullablePlaceClassesCollection struct {
+	value *PlaceClassesCollection
 	isSet bool
 }
 
-func (v NullableClassesCollection) Get() *ClassesCollection {
+func (v NullablePlaceClassesCollection) Get() *PlaceClassesCollection {
 	return v.value
 }
 
-func (v *NullableClassesCollection) Set(val *ClassesCollection) {
+func (v *NullablePlaceClassesCollection) Set(val *PlaceClassesCollection) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableClassesCollection) IsSet() bool {
+func (v NullablePlaceClassesCollection) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableClassesCollection) Unset() {
+func (v *NullablePlaceClassesCollection) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableClassesCollection(val *ClassesCollection) *NullableClassesCollection {
-	return &NullableClassesCollection{value: val, isSet: true}
+func NewNullablePlaceClassesCollection(val *PlaceClassesCollection) *NullablePlaceClassesCollection {
+	return &NullablePlaceClassesCollection{value: val, isSet: true}
 }
 
-func (v NullableClassesCollection) MarshalJSON() ([]byte, error) {
+func (v NullablePlaceClassesCollection) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableClassesCollection) UnmarshalJSON(src []byte) error {
+func (v *NullablePlaceClassesCollection) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

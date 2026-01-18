@@ -111,17 +111,17 @@ components:
       required:
       - data
       - links
-    Class:
+    PlaceClass:
       properties:
         data:
-          $ref: "#/components/schemas/Class_data"
+          $ref: "#/components/schemas/PlaceClass_data"
       required:
       - data
-    ClassesCollection:
+    PlaceClassesCollection:
       properties:
         data:
           items:
-            $ref: "#/components/schemas/Class/properties/data"
+            $ref: "#/components/schemas/PlaceClass/properties/data"
           type: array
         links:
           $ref: "#/components/schemas/PaginationData"
@@ -152,9 +152,9 @@ components:
           - place_class
           type: string
         attributes:
-          $ref: "#/components/schemas/Class_data_attributes"
+          $ref: "#/components/schemas/PlaceClass_data_attributes"
         relationships:
-          $ref: "#/components/schemas/Class_data_relationships"
+          $ref: "#/components/schemas/PlaceClass_data_relationships"
       required:
       - attributes
       - id
@@ -564,7 +564,7 @@ components:
       - id
       - relationships
       - type
-    Class_data_attributes:
+    PlaceClass_data_attributes:
       properties:
         code:
           description: The unique code of the class
@@ -594,7 +594,7 @@ components:
       - description
       - name
       - updated_at
-    Class_data_relationships_parent:
+    PlaceClass_data_relationships_parent:
       properties:
         id:
           description: The ID of the parent class
@@ -607,11 +607,11 @@ components:
       required:
       - id
       - type
-    Class_data_relationships:
+    PlaceClass_data_relationships:
       properties:
         parent:
-          $ref: "#/components/schemas/Class_data_relationships_parent"
-    Class_data:
+          $ref: "#/components/schemas/PlaceClass_data_relationships_parent"
+    PlaceClass_data:
       properties:
         id:
           description: place ID
@@ -622,9 +622,9 @@ components:
           - place_class
           type: string
         attributes:
-          $ref: "#/components/schemas/Class_data_attributes"
+          $ref: "#/components/schemas/PlaceClass_data_attributes"
         relationships:
-          $ref: "#/components/schemas/Class_data_relationships"
+          $ref: "#/components/schemas/PlaceClass_data_relationships"
       required:
       - attributes
       - id

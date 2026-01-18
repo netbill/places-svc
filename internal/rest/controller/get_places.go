@@ -58,6 +58,7 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 		for _, classID := range classIDs {
 			id, err := uuid.Parse(classID)
 			if err != nil {
+				c.log.WithError(err).Errorf("invalid class_id %s", classID)
 				ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid class_id"))...)
 				return
 			}
@@ -67,6 +68,7 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 		if incParentStr := r.URL.Query().Get("include_parent"); incParentStr != "" {
 			value, err := strconv.ParseBool(incParentStr)
 			if err != nil {
+				c.log.WithError(err).Errorf("invalid include_parent flag")
 				ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid include_parent"))...)
 				return
 			}
@@ -77,6 +79,7 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 		if includeChildStr := r.URL.Query().Get("include_children"); includeChildStr != "" {
 			value, err := strconv.ParseBool(includeChildStr)
 			if err != nil {
+				c.log.WithError(err).Errorf("invalid include_children")
 				ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid include_children"))...)
 				return
 			}
@@ -87,13 +90,7 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 		params.Class.ClassID = ids
 	}
 
-	if lon := r.URL.Query().Get("lon"); lon != "" {
-		lon, err := strconv.ParseFloat(lon, 64)
-		if err != nil {
-			ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid lon"))...)
-			return
-		}
-
+	if lon, err := strconv.ParseFloat(r.URL.Query().Get("lon"), 64); err == nil {
 		params.Near.Point[0] = lon
 
 		lat, err := strconv.ParseFloat(r.URL.Query().Get("lat"), 64)
@@ -101,7 +98,6 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 			ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid lat"))...)
 			return
 		}
-
 		params.Near.Point[1] = lat
 
 		radius, err := strconv.ParseUint(r.URL.Query().Get("radius"), 10, 64)
@@ -109,7 +105,6 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 			ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid radius"))...)
 			return
 		}
-
 		params.Near.RadiusM = uint(radius)
 	}
 
@@ -119,5 +114,5 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 		ape.RenderErr(w, problems.InternalError())
 	}
 
-	responses.Places(r, w, http.StatusOK, res)
+	ape.Render(w, http.StatusOK, responses.Places(r, res))
 }

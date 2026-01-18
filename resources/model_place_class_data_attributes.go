@@ -17,11 +17,11 @@ import (
 	"fmt"
 )
 
-// checks if the ClassDataAttributes type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &ClassDataAttributes{}
+// checks if the PlaceClassDataAttributes type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &PlaceClassDataAttributes{}
 
-// ClassDataAttributes struct for ClassDataAttributes
-type ClassDataAttributes struct {
+// PlaceClassDataAttributes struct for PlaceClassDataAttributes
+type PlaceClassDataAttributes struct {
 	// The unique code of the class
 	Code string `json:"code"`
 	// The name of the class
@@ -36,14 +36,14 @@ type ClassDataAttributes struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type _ClassDataAttributes ClassDataAttributes
+type _PlaceClassDataAttributes PlaceClassDataAttributes
 
-// NewClassDataAttributes instantiates a new ClassDataAttributes object
+// NewPlaceClassDataAttributes instantiates a new PlaceClassDataAttributes object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewClassDataAttributes(code string, name string, description string, updatedAt time.Time, createdAt time.Time) *ClassDataAttributes {
-	this := ClassDataAttributes{}
+func NewPlaceClassDataAttributes(code string, name string, description string, updatedAt time.Time, createdAt time.Time) *PlaceClassDataAttributes {
+	this := PlaceClassDataAttributes{}
 	this.Code = code
 	this.Name = name
 	this.Description = description
@@ -52,16 +52,16 @@ func NewClassDataAttributes(code string, name string, description string, update
 	return &this
 }
 
-// NewClassDataAttributesWithDefaults instantiates a new ClassDataAttributes object
+// NewPlaceClassDataAttributesWithDefaults instantiates a new PlaceClassDataAttributes object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewClassDataAttributesWithDefaults() *ClassDataAttributes {
-	this := ClassDataAttributes{}
+func NewPlaceClassDataAttributesWithDefaults() *PlaceClassDataAttributes {
+	this := PlaceClassDataAttributes{}
 	return &this
 }
 
 // GetCode returns the Code field value
-func (o *ClassDataAttributes) GetCode() string {
+func (o *PlaceClassDataAttributes) GetCode() string {
 	if o == nil {
 		var ret string
 		return ret
@@ -72,7 +72,7 @@ func (o *ClassDataAttributes) GetCode() string {
 
 // GetCodeOk returns a tuple with the Code field value
 // and a boolean to check if the value has been set.
-func (o *ClassDataAttributes) GetCodeOk() (*string, bool) {
+func (o *PlaceClassDataAttributes) GetCodeOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -80,12 +80,12 @@ func (o *ClassDataAttributes) GetCodeOk() (*string, bool) {
 }
 
 // SetCode sets field value
-func (o *ClassDataAttributes) SetCode(v string) {
+func (o *PlaceClassDataAttributes) SetCode(v string) {
 	o.Code = v
 }
 
 // GetName returns the Name field value
-func (o *ClassDataAttributes) GetName() string {
+func (o *PlaceClassDataAttributes) GetName() string {
 	if o == nil {
 		var ret string
 		return ret
@@ -96,7 +96,7 @@ func (o *ClassDataAttributes) GetName() string {
 
 // GetNameOk returns a tuple with the Name field value
 // and a boolean to check if the value has been set.
-func (o *ClassDataAttributes) GetNameOk() (*string, bool) {
+func (o *PlaceClassDataAttributes) GetNameOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -104,12 +104,12 @@ func (o *ClassDataAttributes) GetNameOk() (*string, bool) {
 }
 
 // SetName sets field value
-func (o *ClassDataAttributes) SetName(v string) {
+func (o *PlaceClassDataAttributes) SetName(v string) {
 	o.Name = v
 }
 
 // GetDescription returns the Description field value
-func (o *ClassDataAttributes) GetDescription() string {
+func (o *PlaceClassDataAttributes) GetDescription() string {
 	if o == nil {
 		var ret string
 		return ret
@@ -120,7 +120,7 @@ func (o *ClassDataAttributes) GetDescription() string {
 
 // GetDescriptionOk returns a tuple with the Description field value
 // and a boolean to check if the value has been set.
-func (o *ClassDataAttributes) GetDescriptionOk() (*string, bool) {
+func (o *PlaceClassDataAttributes) GetDescriptionOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -128,12 +128,12 @@ func (o *ClassDataAttributes) GetDescriptionOk() (*string, bool) {
 }
 
 // SetDescription sets field value
-func (o *ClassDataAttributes) SetDescription(v string) {
+func (o *PlaceClassDataAttributes) SetDescription(v string) {
 	o.Description = v
 }
 
 // GetIcon returns the Icon field value if set, zero value otherwise.
-func (o *ClassDataAttributes) GetIcon() string {
+func (o *PlaceClassDataAttributes) GetIcon() string {
 	if o == nil || IsNil(o.Icon) {
 		var ret string
 		return ret
@@ -143,7 +143,7 @@ func (o *ClassDataAttributes) GetIcon() string {
 
 // GetIconOk returns a tuple with the Icon field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ClassDataAttributes) GetIconOk() (*string, bool) {
+func (o *PlaceClassDataAttributes) GetIconOk() (*string, bool) {
 	if o == nil || IsNil(o.Icon) {
 		return nil, false
 	}
@@ -151,7 +151,7 @@ func (o *ClassDataAttributes) GetIconOk() (*string, bool) {
 }
 
 // HasIcon returns a boolean if a field has been set.
-func (o *ClassDataAttributes) HasIcon() bool {
+func (o *PlaceClassDataAttributes) HasIcon() bool {
 	if o != nil && !IsNil(o.Icon) {
 		return true
 	}
@@ -160,12 +160,12 @@ func (o *ClassDataAttributes) HasIcon() bool {
 }
 
 // SetIcon gets a reference to the given string and assigns it to the Icon field.
-func (o *ClassDataAttributes) SetIcon(v string) {
+func (o *PlaceClassDataAttributes) SetIcon(v string) {
 	o.Icon = &v
 }
 
 // GetUpdatedAt returns the UpdatedAt field value
-func (o *ClassDataAttributes) GetUpdatedAt() time.Time {
+func (o *PlaceClassDataAttributes) GetUpdatedAt() time.Time {
 	if o == nil {
 		var ret time.Time
 		return ret
@@ -176,7 +176,7 @@ func (o *ClassDataAttributes) GetUpdatedAt() time.Time {
 
 // GetUpdatedAtOk returns a tuple with the UpdatedAt field value
 // and a boolean to check if the value has been set.
-func (o *ClassDataAttributes) GetUpdatedAtOk() (*time.Time, bool) {
+func (o *PlaceClassDataAttributes) GetUpdatedAtOk() (*time.Time, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -184,12 +184,12 @@ func (o *ClassDataAttributes) GetUpdatedAtOk() (*time.Time, bool) {
 }
 
 // SetUpdatedAt sets field value
-func (o *ClassDataAttributes) SetUpdatedAt(v time.Time) {
+func (o *PlaceClassDataAttributes) SetUpdatedAt(v time.Time) {
 	o.UpdatedAt = v
 }
 
 // GetCreatedAt returns the CreatedAt field value
-func (o *ClassDataAttributes) GetCreatedAt() time.Time {
+func (o *PlaceClassDataAttributes) GetCreatedAt() time.Time {
 	if o == nil {
 		var ret time.Time
 		return ret
@@ -200,7 +200,7 @@ func (o *ClassDataAttributes) GetCreatedAt() time.Time {
 
 // GetCreatedAtOk returns a tuple with the CreatedAt field value
 // and a boolean to check if the value has been set.
-func (o *ClassDataAttributes) GetCreatedAtOk() (*time.Time, bool) {
+func (o *PlaceClassDataAttributes) GetCreatedAtOk() (*time.Time, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -208,11 +208,11 @@ func (o *ClassDataAttributes) GetCreatedAtOk() (*time.Time, bool) {
 }
 
 // SetCreatedAt sets field value
-func (o *ClassDataAttributes) SetCreatedAt(v time.Time) {
+func (o *PlaceClassDataAttributes) SetCreatedAt(v time.Time) {
 	o.CreatedAt = v
 }
 
-func (o ClassDataAttributes) MarshalJSON() ([]byte, error) {
+func (o PlaceClassDataAttributes) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -220,7 +220,7 @@ func (o ClassDataAttributes) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o ClassDataAttributes) ToMap() (map[string]interface{}, error) {
+func (o PlaceClassDataAttributes) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["code"] = o.Code
 	toSerialize["name"] = o.Name
@@ -233,7 +233,7 @@ func (o ClassDataAttributes) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-func (o *ClassDataAttributes) UnmarshalJSON(data []byte) (err error) {
+func (o *PlaceClassDataAttributes) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
@@ -259,53 +259,53 @@ func (o *ClassDataAttributes) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varClassDataAttributes := _ClassDataAttributes{}
+	varPlaceClassDataAttributes := _PlaceClassDataAttributes{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varClassDataAttributes)
+	err = decoder.Decode(&varPlaceClassDataAttributes)
 
 	if err != nil {
 		return err
 	}
 
-	*o = ClassDataAttributes(varClassDataAttributes)
+	*o = PlaceClassDataAttributes(varPlaceClassDataAttributes)
 
 	return err
 }
 
-type NullableClassDataAttributes struct {
-	value *ClassDataAttributes
+type NullablePlaceClassDataAttributes struct {
+	value *PlaceClassDataAttributes
 	isSet bool
 }
 
-func (v NullableClassDataAttributes) Get() *ClassDataAttributes {
+func (v NullablePlaceClassDataAttributes) Get() *PlaceClassDataAttributes {
 	return v.value
 }
 
-func (v *NullableClassDataAttributes) Set(val *ClassDataAttributes) {
+func (v *NullablePlaceClassDataAttributes) Set(val *PlaceClassDataAttributes) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableClassDataAttributes) IsSet() bool {
+func (v NullablePlaceClassDataAttributes) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableClassDataAttributes) Unset() {
+func (v *NullablePlaceClassDataAttributes) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableClassDataAttributes(val *ClassDataAttributes) *NullableClassDataAttributes {
-	return &NullableClassDataAttributes{value: val, isSet: true}
+func NewNullablePlaceClassDataAttributes(val *PlaceClassDataAttributes) *NullablePlaceClassDataAttributes {
+	return &NullablePlaceClassDataAttributes{value: val, isSet: true}
 }
 
-func (v NullableClassDataAttributes) MarshalJSON() ([]byte, error) {
+func (v NullablePlaceClassDataAttributes) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableClassDataAttributes) UnmarshalJSON(src []byte) error {
+func (v *NullablePlaceClassDataAttributes) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
