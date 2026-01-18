@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Verify** | **bool** | place verification status | 
+**Verify** | **bool** | The new verify status of the place | 
 
 ## Methods
 

@@ -27,6 +27,8 @@ components:
       $ref: './spec/components/schemas/VerifyPlace.yaml'
     UpdatePlaceStatus:
       $ref: './spec/components/schemas/UpdatePlaceStatus.yaml'
+    UpdatePlaceVerify:
+      $ref: './spec/components/schemas/UpdatePlaceVerify.yaml'
 
     CreatePlaceClass:
       $ref: './spec/components/schemas/CreatePlaceClass.yaml'

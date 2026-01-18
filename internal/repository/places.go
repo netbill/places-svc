@@ -55,8 +55,8 @@ func (s Service) GetPlaces(
 	if params.Status != nil {
 		q = q.FilterByStatus(*params.Status)
 	}
-	if params.FilterByText != nil {
-		q = q.FilterByText(*params.FilterByText)
+	if params.BestMatch != nil {
+		q = q.FilterByText(*params.BestMatch)
 	}
 	if params.Verified != nil {
 		q = q.FilterByVerified(*params.Verified)
@@ -72,7 +72,7 @@ func (s Service) GetPlaces(
 	}
 
 	if params.Class != nil {
-		q = q.FilterByClassID(params.Class.ClassID, params.Class.Children, params.Class.Parents)
+		q = q.FilterByClassID(params.Class.Children, params.Class.Parents, params.Class.ClassID...)
 	}
 	if params.Near != nil {
 		q = q.FilterByRadius(params.Near.Point, params.Near.RadiusM)
@@ -102,7 +102,7 @@ func (s Service) GetPlaces(
 
 }
 
-func (s Service) UpdatePlaceByID(ctx context.Context, id uuid.UUID, params place.UpdatePlaceParams) (models.Place, error) {
+func (s Service) UpdatePlaceByID(ctx context.Context, id uuid.UUID, params place.UpdateParams) (models.Place, error) {
 	upd := s.placeQ(ctx).FilterByID(id)
 
 	if params.ClassID != nil {
@@ -186,7 +186,7 @@ func (s Service) UpdatePlaceStatusForOrg(ctx context.Context, organizationID uui
 
 func (s Service) ReplacePlacesClassID(ctx context.Context, oldClassID, newClassID uuid.UUID) error {
 	_, err := s.placeQ(ctx).
-		FilterByClassID(oldClassID, false, false).
+		FilterByClassID(false, false, oldClassID).
 		UpdateClassID(newClassID).
 		UpdateMany(ctx)
 	if err != nil {

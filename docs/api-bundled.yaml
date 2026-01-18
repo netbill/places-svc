@@ -217,6 +217,34 @@ components:
                 status:
                   type: string
                   description: The new status of the place
+    UpdatePlaceVerify:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - id
+            - type
+            - attributes
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: The unique identifier of the place
+            type:
+              type: string
+              enum:
+                - update_place_verify
+            attributes:
+              type: object
+              required:
+                - verify
+              properties:
+                verify:
+                  type: boolean
+                  description: The new verify status of the place
     CreatePlaceClass:
       type: object
       required:

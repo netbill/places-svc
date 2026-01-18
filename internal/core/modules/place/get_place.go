@@ -26,10 +26,10 @@ type FilterParams struct {
 	Class          *FilterClassParams
 	Near           *FilterNearParams
 	OrganizationID *uuid.UUID
-	Status         *string
+	Status         []string
 	Verified       *bool
 
-	FilterByText *string
+	BestMatch *string
 
 	Address     *string
 	Name        *string
@@ -40,7 +40,7 @@ type FilterParams struct {
 }
 
 type FilterClassParams struct {
-	ClassID  uuid.UUID
+	ClassID  []uuid.UUID
 	Parents  bool
 	Children bool
 }

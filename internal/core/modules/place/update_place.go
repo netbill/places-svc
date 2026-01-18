@@ -9,7 +9,7 @@ import (
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
-type UpdatePlaceParams struct {
+type UpdateParams struct {
 	ClassID     *uuid.UUID
 	Address     *string
 	Name        *string
@@ -23,7 +23,7 @@ type UpdatePlaceParams struct {
 func (s Service) UpdatePlace(
 	ctx context.Context,
 	initiatorID, placeID uuid.UUID,
-	params UpdatePlaceParams,
+	params UpdateParams,
 ) (place models.Place, err error) {
 	place, err = s.repo.GetPlaceByID(ctx, placeID)
 	if err != nil {
@@ -38,14 +38,24 @@ func (s Service) UpdatePlace(
 	}
 
 	if place.OrganizationID != nil {
-		err = s.chekPermissionForManagePlace(ctx, initiatorID, *place.OrganizationID)
-		if err != nil {
-			return models.Place{}, errx.ErrorNotEnoughRights.Raise(
-				fmt.Errorf("initiator %s has no rights to manage place %s", initiatorID, placeID),
-			)
+		if err = s.chekPermissionForManagePlace(ctx, initiatorID, *place.OrganizationID); err != nil {
+			return models.Place{}, err
 		}
 	}
 
+	if params.ClassID != nil {
+		classExists, err := s.repo.CheckPlaceClassExists(ctx, *params.ClassID)
+		if err != nil {
+			return models.Place{}, errx.ErrorInternal.Raise(
+				fmt.Errorf("failed to check place class exists: %w", err),
+			)
+		}
+		if !classExists {
+			return models.Place{}, errx.ErrorPlaceClassNotFound.Raise(
+				fmt.Errorf("place class %v not found", params.ClassID),
+			)
+		}
+	}
 	err = s.repo.Transaction(ctx, func(txCtx context.Context) error {
 		place, err = s.repo.UpdatePlaceByID(ctx, placeID, params)
 		if err != nil {
@@ -58,67 +68,6 @@ func (s Service) UpdatePlace(
 		if err != nil {
 			return errx.ErrorInternal.Raise(
 				fmt.Errorf("failed to publish update place %s: %w", placeID, err),
-			)
-		}
-
-		return nil
-	})
-
-	return place, nil
-}
-
-func (s Service) UpdatePlaceClassID(
-	ctx context.Context,
-	initiatorID, placeID uuid.UUID,
-	classID uuid.UUID,
-) (place models.Place, err error) {
-	place, err = s.repo.GetPlaceByID(ctx, placeID)
-	if err != nil {
-		return models.Place{}, errx.ErrorInternal.Raise(
-			fmt.Errorf("failed to get place by id %s: %w", placeID, err),
-		)
-	}
-	if place.IsNil() {
-		return models.Place{}, errx.ErrorPlaceNotFound.Raise(
-			fmt.Errorf("place %s not found", placeID),
-		)
-	}
-
-	if place.OrganizationID != nil {
-		err = s.chekPermissionForManagePlace(ctx, initiatorID, *place.OrganizationID)
-		if err != nil {
-			return models.Place{}, errx.ErrorNotEnoughRights.Raise(
-				fmt.Errorf("initiator %s has no rights to manage place %s", initiatorID, placeID),
-			)
-		}
-	}
-
-	classExists, err := s.repo.CheckPlaceClassExists(ctx, classID)
-	if err != nil {
-		return models.Place{}, errx.ErrorInternal.Raise(
-			fmt.Errorf("failed to check place class exists: %w", err),
-		)
-	}
-	if !classExists {
-		return models.Place{}, errx.ErrorPlaceClassNotFound.Raise(
-			fmt.Errorf("place class %v not found", classID),
-		)
-	}
-
-	err = s.repo.Transaction(ctx, func(txCtx context.Context) error {
-		place, err = s.repo.UpdatePlaceByID(ctx, placeID, UpdatePlaceParams{
-			ClassID: &classID,
-		})
-		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to update place %s class id: %w", placeID, err),
-			)
-		}
-
-		err = s.messanger.PublishUpdatePlaceClassID(ctx, place)
-		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to publish update place %s class id: %w", placeID, err),
 			)
 		}
 

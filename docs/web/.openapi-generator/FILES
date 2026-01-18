@@ -44,6 +44,9 @@ docs/UpdatePlaceDataAttributes.md
 docs/UpdatePlaceStatus.md
 docs/UpdatePlaceStatusData.md
 docs/UpdatePlaceStatusDataAttributes.md
+docs/UpdatePlaceVerify.md
+docs/UpdatePlaceVerifyData.md
+docs/UpdatePlaceVerifyDataAttributes.md
 docs/VerifyPlace.md
 docs/VerifyPlaceData.md
 docs/VerifyPlaceDataAttributes.md
@@ -88,6 +91,9 @@ model_update_place_data_attributes.go
 model_update_place_status.go
 model_update_place_status_data.go
 model_update_place_status_data_attributes.go
+model_update_place_verify.go
+model_update_place_verify_data.go
+model_update_place_verify_data_attributes.go
 model_verify_place.go
 model_verify_place_data.go
 model_verify_place_data_attributes.go

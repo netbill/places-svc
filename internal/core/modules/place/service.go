@@ -36,7 +36,7 @@ type repo interface {
 	GetPlaceByID(ctx context.Context, id uuid.UUID) (models.Place, error)
 	GetPlaces(ctx context.Context, params FilterParams, limit, offset uint) (pagi.Page[[]models.Place], error)
 
-	UpdatePlaceByID(ctx context.Context, id uuid.UUID, params UpdatePlaceParams) (models.Place, error)
+	UpdatePlaceByID(ctx context.Context, id uuid.UUID, params UpdateParams) (models.Place, error)
 	UpdatePlaceStatus(ctx context.Context, placeID uuid.UUID, status string) (models.Place, error)
 	UpdatePlaceVerified(ctx context.Context, placeID uuid.UUID, verified bool) (models.Place, error)
 

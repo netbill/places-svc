@@ -46,6 +46,12 @@ components:
           $ref: "#/components/schemas/UpdatePlaceStatus_data"
       required:
       - data
+    UpdatePlaceVerify:
+      properties:
+        data:
+          $ref: "#/components/schemas/UpdatePlaceVerify_data"
+      required:
+      - data
     CreatePlaceClass:
       properties:
         data:
@@ -328,6 +334,29 @@ components:
           type: string
         attributes:
           $ref: "#/components/schemas/UpdatePlaceStatus_data_attributes"
+      required:
+      - attributes
+      - id
+      - type
+    UpdatePlaceVerify_data_attributes:
+      properties:
+        verify:
+          description: The new verify status of the place
+          type: boolean
+      required:
+      - verify
+    UpdatePlaceVerify_data:
+      properties:
+        id:
+          description: The unique identifier of the place
+          format: uuid
+          type: string
+        type:
+          enum:
+          - update_place_verify
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdatePlaceVerify_data_attributes"
       required:
       - attributes
       - id

@@ -13,10 +13,10 @@ import (
 )
 
 func (c Controller) DeletePlaceClass(w http.ResponseWriter, r *http.Request) {
-	classID, err := uuid.Parse(chi.URLParam(r, "class_id"))
+	classID, err := uuid.Parse(chi.URLParam(r, "place_class_id"))
 	if err != nil {
-		c.log.WithError(err).Errorf("invalid class id")
-		ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid class id"))...)
+		c.log.WithError(err).Errorf("invalid place class id")
+		ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid place class id"))...)
 		return
 	}
 

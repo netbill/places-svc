@@ -174,10 +174,13 @@ func (q PlacesQ) FilterByOrganizationID(orgID *uuid.UUID) PlacesQ {
 	return q
 }
 
-func (q PlacesQ) FilterByClassID(classID uuid.UUID, includeChild, includeParent bool) PlacesQ {
+// TODO remade this method
+func (q PlacesQ) FilterByClassID(includeChild, includeParent bool, classID ...uuid.UUID) PlacesQ {
 	if !includeChild && !includeParent {
 		q.selector = q.selector.Where(sq.Eq{"class_id": classID})
 		q.counter = q.counter.Where(sq.Eq{"class_id": classID})
+		q.deleter = q.deleter.Where(sq.Eq{"class_id": classID})
+		q.updater = q.updater.Where(sq.Eq{"class_id": classID})
 		return q
 	}
 
@@ -219,6 +222,9 @@ func (q PlacesQ) FilterByClassID(classID uuid.UUID, includeChild, includeParent 
 
 	q.selector = q.selector.Where(expr)
 	q.counter = q.counter.Where(expr)
+	q.deleter = q.deleter.Where(expr)
+	q.updater = q.updater.Where(expr)
+
 	return q
 }
 

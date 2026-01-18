@@ -15,9 +15,18 @@ import (
 type Handlers interface {
 	CreatePlaceClass(w http.ResponseWriter, r *http.Request)
 	GetPlaceClass(w http.ResponseWriter, r *http.Request)
+	GetPlaceClasses(w http.ResponseWriter, r *http.Request)
 	UpdatePlaceClass(w http.ResponseWriter, r *http.Request)
 	DeletePlaceClass(w http.ResponseWriter, r *http.Request)
 	ReplacePlaceClass(w http.ResponseWriter, r *http.Request)
+
+	CreatePlace(w http.ResponseWriter, r *http.Request)
+	GetPlace(w http.ResponseWriter, r *http.Request)
+	GetPlaces(w http.ResponseWriter, r *http.Request)
+	UpdatePlace(w http.ResponseWriter, r *http.Request)
+	UpdatePlaceStatus(w http.ResponseWriter, r *http.Request)
+	UpdatePlaceVerify(w http.ResponseWriter, r *http.Request)
+	DeletePlace(w http.ResponseWriter, r *http.Request)
 }
 
 type Middlewares interface {
@@ -62,7 +71,7 @@ func (s *Service) Run(ctx context.Context, cfg internal.Config) {
 					r.Get("/", s.handlers.GetPlaceClasses)
 					r.With(auth, sysadmin).Post("/", s.handlers.CreatePlaceClass)
 
-					r.Route("/{class_id}", func(r chi.Router) {
+					r.Route("/{place_class_id}", func(r chi.Router) {
 						r.Get("/", s.handlers.GetPlaceClass)
 						r.With(auth, sysadmin).Put("/", s.handlers.UpdatePlaceClass)
 						r.With(auth, sysadmin).Delete("/", s.handlers.DeletePlaceClass)
@@ -72,7 +81,7 @@ func (s *Service) Run(ctx context.Context, cfg internal.Config) {
 				})
 
 				r.Get("/", s.handlers.GetPlaces)
-				r.With(auth).Post("/", s.handlers.CreatePlaces)
+				r.With(auth).Post("/", s.handlers.CreatePlace)
 
 				r.Route("/{place_id}", func(r chi.Router) {
 					r.Get("/", s.handlers.GetPlace)
@@ -80,8 +89,7 @@ func (s *Service) Run(ctx context.Context, cfg internal.Config) {
 					r.With(auth).Delete("/", s.handlers.DeletePlace)
 
 					r.With(auth).Patch("/status", s.handlers.UpdatePlaceStatus)
-					r.With(sysadmin).Patch("/class", s.handlers.UpdatePlacesClass)
-					r.With(auth, sysmoder).Patch("/verify", s.handlers.VerifyPlace)
+					r.With(auth, sysmoder).Patch("/verify", s.handlers.UpdatePlaceVerify)
 				})
 			})
 		})

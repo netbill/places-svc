@@ -8,9 +8,40 @@ import (
 	"github.com/netbill/pagi"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/core/modules/pclass"
+	"github.com/netbill/places-svc/internal/core/modules/place"
 )
 
 type placeSvc interface {
+	CreatePlace(
+		ctx context.Context,
+		initiatorID uuid.UUID,
+		params place.CreateParams,
+	) (place models.Place, err error)
+
+	GetPlace(ctx context.Context, placeID uuid.UUID) (models.Place, error)
+	GetPlaces(
+		ctx context.Context,
+		params place.FilterParams,
+		limit, offset uint,
+	) (places pagi.Page[[]models.Place], err error)
+
+	UpdatePlace(
+		ctx context.Context,
+		initiatorID, placeID uuid.UUID,
+		params place.UpdateParams,
+	) (place models.Place, err error)
+	UpdatePlaceStatus(
+		ctx context.Context,
+		initiatorID, placeID uuid.UUID,
+		status string,
+	) (place models.Place, err error)
+	UpdatePlaceVerified(
+		ctx context.Context,
+		placeID uuid.UUID,
+		verified bool,
+	) (place models.Place, err error)
+
+	DeletePlace(ctx context.Context, initiatorID, placeID uuid.UUID) error
 }
 
 type placeClassSvc interface {
