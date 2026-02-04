@@ -18,6 +18,7 @@ type Organization struct {
 	Verified bool      `json:"verified"`
 	Name     string    `json:"name"`
 	Icon     *string   `json:"icon"`
+	Banner   *string   `json:"banner"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

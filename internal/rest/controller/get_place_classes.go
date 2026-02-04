@@ -6,11 +6,11 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/netbill/ape"
 	"github.com/netbill/places-svc/internal/core/modules/pclass"
 	"github.com/netbill/places-svc/internal/rest/responses"
-	"github.com/netbill/restkit/ape"
-	"github.com/netbill/restkit/ape/problems"
 	"github.com/netbill/restkit/pagi"
+	"github.com/netbill/restkit/problems"
 )
 
 func (c Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {

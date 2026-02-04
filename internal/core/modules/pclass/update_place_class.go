@@ -9,73 +9,104 @@ import (
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
-type UpdateParams struct {
-	ParentID    *uuid.UUID `json:"parent_id,omitempty"`
-	Code        *string    `json:"code"`
-	Name        *string    `json:"name"`
-	Description *string    `json:"description"`
-	Icon        *string    `json:"icon,omitempty"`
+func (m *Module) OpenUpdatePlaceClassSession(
+	ctx context.Context,
+	initiator models.InitiatorData,
+	placeClassID uuid.UUID,
+) (models.PlaceClass, models.UpdatePlaceClassMedia, error) {
+	org, err := m.GetPlaceClass(ctx, placeClassID)
+	if err != nil {
+		return models.PlaceClass{}, models.UpdatePlaceClassMedia{}, err
+	}
+
+	uploadSessionID := uuid.New()
+	links, err := m.bucket.GeneratePreloadLinkForPlaceClassMedia(ctx, org.ID, uploadSessionID)
+	if err != nil {
+		return models.PlaceClass{}, models.UpdatePlaceClassMedia{}, err
+	}
+
+	uploadToken, err := m.token.NewUploadPlaceClassMediaToken(
+		initiator.AccountID,
+		placeClassID,
+		uploadSessionID,
+	)
+	if err != nil {
+		return models.PlaceClass{}, models.UpdatePlaceClassMedia{}, err
+	}
+
+	return org, models.UpdatePlaceClassMedia{
+		Links: models.PlaceClassUploadMediaLinks{
+			IconUploadURL: links.IconUploadURL,
+			IconGetURL:    links.IconGetURL,
+		},
+		UploadSessionID: uploadSessionID,
+		UploadToken:     uploadToken,
+	}, nil
 }
 
-func (s Service) UpdatePlaceClass(
+type UpdateParams struct {
+	ParentID    *uuid.UUID `json:"parent_id,omitempty"`
+	Code        string     `json:"code"`
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+
+	Media UpdateMediaParams `json:"media"`
+}
+
+type UpdateMediaParams struct {
+	UploadSessionID uuid.UUID `json:"upload_session_id"`
+
+	icon       *string
+	DeleteIcon bool `json:"delete_icon"`
+}
+
+func (p UpdateParams) GetUpdatedIcon() *string {
+	if p.Media.DeleteIcon {
+		return nil
+	}
+	return p.Media.icon
+}
+
+func (m *Module) UpdatePlaceClass(
 	ctx context.Context,
 	ID uuid.UUID,
 	params UpdateParams,
 ) (class models.PlaceClass, err error) {
-	class, err = s.repo.GetPlaceClass(ctx, ID)
+	class, err = m.repo.GetPlaceClass(ctx, ID)
 	if err != nil {
-		return models.PlaceClass{}, errx.ErrorInternal.Raise(
-			fmt.Errorf("failed to get class %s: %w", ID.String(), err),
-		)
-	}
-	if class.IsNil() {
-		return models.PlaceClass{}, errx.ErrorPlaceClassNotFound.Raise(
-			fmt.Errorf("place class %s not found", ID.String()),
-		)
+		return models.PlaceClass{}, err
 	}
 
 	if params.ParentID != nil {
-		if *params.ParentID != uuid.Nil {
-			exist, err := s.repo.CheckParentCycle(ctx, class.ID, *class.ParentID)
-			if err != nil {
-				return models.PlaceClass{}, errx.ErrorInternal.Raise(
-					fmt.Errorf("failed to check parent cycle for class %s and parent %s: %w", class.ID, *class.ParentID, err),
-				)
-			}
-			if exist {
-				return models.PlaceClass{}, errx.ErrorPlaceClassParentCycle.Raise(
-					fmt.Errorf("setting parent %s for class %s would create a cycle", *class.ParentID, class.ID),
-				)
-			}
-		}
-	}
-
-	if params.Code != nil {
-		codeIsUsed, err := s.repo.PlaceClassExistsByCode(ctx, *params.Code)
+		exist, err := m.repo.CheckParentCycle(ctx, class.ID, *class.ParentID)
 		if err != nil {
-			return models.PlaceClass{}, errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to check place class code uniqueness: %w", err),
-			)
+			return models.PlaceClass{}, err
 		}
-		if codeIsUsed {
-			return models.PlaceClass{}, errx.ErrorPlaceClassCodeExists.Raise(
-				fmt.Errorf("place class code already in use"),
+		if exist {
+			return models.PlaceClass{}, errx.ErrorPlaceClassParentCycle.Raise(
+				fmt.Errorf("setting parent %s for class %s would create a cycle", *class.ParentID, class.ID),
 			)
 		}
 	}
 
-	if err = s.repo.Transaction(ctx, func(ctx context.Context) error {
-		class, err = s.repo.UpdatePlaceClass(ctx, ID, params)
+	codeIsUsed, err := m.repo.PlaceClassExistsByCode(ctx, params.Code)
+	if err != nil {
+		return models.PlaceClass{}, err
+	}
+	if codeIsUsed {
+		return models.PlaceClass{}, errx.ErrorPlaceClassCodeExists.Raise(
+			fmt.Errorf("place class code already in use"),
+		)
+	}
+
+	if err = m.repo.Transaction(ctx, func(ctx context.Context) error {
+		class, err = m.repo.UpdatePlaceClass(ctx, ID, params)
 		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to update class %s: %w", ID.String(), err),
-			)
+			return err
 		}
 
-		if err = s.messanger.PublishPlaceClassUpdated(ctx, class); err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to publish class %s updated event: %w", ID.String(), err),
-			)
+		if err = m.messanger.PublishPlaceClassUpdated(ctx, class); err != nil {
+			return err
 		}
 
 		return nil

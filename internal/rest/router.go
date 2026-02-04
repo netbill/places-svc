@@ -8,8 +8,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/netbill/logium"
-	"github.com/netbill/places-svc/internal"
-	"github.com/netbill/restkit/token/roles"
+	"github.com/netbill/places-svc/cmd"
+	"github.com/netbill/restkit/tokens"
 )
 
 type Handlers interface {
@@ -30,8 +30,10 @@ type Handlers interface {
 }
 
 type Middlewares interface {
-	Auth() func(http.Handler) http.Handler
-	RoleGrant(allowedRoles map[string]bool) func(http.Handler) http.Handler
+	AccountAuth(
+		allowedRoles ...string,
+	) func(next http.Handler) http.Handler
+	UpdatePlaces() func(next http.Handler) http.Handler
 }
 
 type Router struct {
@@ -52,15 +54,11 @@ func New(
 	}
 }
 
-func (s *Router) Run(ctx context.Context, cfg internal.Config) {
-	auth := s.middlewares.Auth()
-	sysadmin := s.middlewares.RoleGrant(map[string]bool{
-		roles.SystemAdmin: true,
-	})
-	sysmoder := s.middlewares.RoleGrant(map[string]bool{
-		roles.SystemAdmin: true,
-		roles.SystemModer: true,
-	})
+func (s *Router) Run(ctx context.Context, cfg cmd.Config) {
+	auth := s.middlewares.AccountAuth()
+	sysadmin := s.middlewares.AccountAuth(tokens.AccountRoleAdmin)
+	sysmoder := s.middlewares.AccountAuth(tokens.AccountRoleAdmin, tokens.AccountRoleModerator)
+	//updPlace := s.middlewares.UpdatePlaces()
 
 	r := chi.NewRouter()
 
@@ -69,14 +67,14 @@ func (s *Router) Run(ctx context.Context, cfg internal.Config) {
 			r.Route("/places", func(r chi.Router) {
 				r.Route("/classes", func(r chi.Router) {
 					r.Get("/", s.handlers.GetPlaceClasses)
-					r.With(auth, sysadmin).Post("/", s.handlers.CreatePlaceClass)
+					r.With(sysadmin).Post("/", s.handlers.CreatePlaceClass)
 
 					r.Route("/{place_class_id}", func(r chi.Router) {
 						r.Get("/", s.handlers.GetPlaceClass)
-						r.With(auth, sysadmin).Put("/", s.handlers.UpdatePlaceClass)
-						r.With(auth, sysadmin).Delete("/", s.handlers.DeletePlaceClass)
+						r.With(sysadmin).Put("/", s.handlers.UpdatePlaceClass)
+						r.With(sysadmin).Delete("/", s.handlers.DeletePlaceClass)
 
-						r.With(auth, sysadmin).Put("/replace", s.handlers.ReplacePlaceClass)
+						r.With(sysadmin).Put("/replace", s.handlers.ReplacePlaceClass)
 					})
 				})
 
@@ -89,7 +87,7 @@ func (s *Router) Run(ctx context.Context, cfg internal.Config) {
 					r.With(auth).Delete("/", s.handlers.DeletePlace)
 
 					r.With(auth).Patch("/status", s.handlers.UpdatePlaceStatus)
-					r.With(auth, sysmoder).Patch("/verify", s.handlers.UpdatePlaceVerify)
+					r.With(sysmoder).Patch("/verify", s.handlers.UpdatePlaceVerify)
 				})
 			})
 		})

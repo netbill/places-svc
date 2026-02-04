@@ -17,38 +17,16 @@ type CreateParams struct {
 	Icon        *string    `json:"icon,omitempty"`
 }
 
-func (s Service) CreatePlaceClass(ctx context.Context, params CreateParams) (class models.PlaceClass, err error) {
+func (m *Module) CreatePlaceClass(ctx context.Context, params CreateParams) (class models.PlaceClass, err error) {
 	if params.ParentID != nil {
-		parent, err := s.repo.GetPlaceClass(ctx, *params.ParentID)
-		if err != nil {
-			return models.PlaceClass{}, errx.ErrorInternal.Raise(
-				fmt.Errorf("parent place class not found: %w", err),
-			)
-		}
-		if parent.IsNil() {
-			return models.PlaceClass{}, errx.ErrorPlaceClassNotFound.Raise(
-				fmt.Errorf("parent place class not found"),
-			)
-		}
-
-		cycle, err := s.repo.CheckParentCycle(ctx, uuid.Nil, *params.ParentID)
-		if err != nil {
-			return models.PlaceClass{}, errx.ErrorInternal.Raise(
-				fmt.Errorf("parent cycle check failed: %w", err),
-			)
-		}
-		if cycle {
-			return models.PlaceClass{}, errx.ErrorPlaceClassParentCycle.Raise(
-				fmt.Errorf("parent cycle detected"),
-			)
+		if _, err = m.repo.GetPlaceClass(ctx, *params.ParentID); err != nil {
+			return models.PlaceClass{}, err
 		}
 	}
 
-	codeIsUsed, err := s.repo.PlaceClassExistsByCode(ctx, params.Code)
+	codeIsUsed, err := m.repo.PlaceClassExistsByCode(ctx, params.Code)
 	if err != nil {
-		return models.PlaceClass{}, errx.ErrorInternal.Raise(
-			fmt.Errorf("failed to check place class code uniqueness: %w", err),
-		)
+		return models.PlaceClass{}, err
 	}
 	if codeIsUsed {
 		return models.PlaceClass{}, errx.ErrorPlaceClassCodeExists.Raise(
@@ -56,19 +34,15 @@ func (s Service) CreatePlaceClass(ctx context.Context, params CreateParams) (cla
 		)
 	}
 
-	if err = s.repo.Transaction(ctx, func(ctx context.Context) error {
-		class, err = s.repo.CreatePlaceClass(ctx, params)
+	if err = m.repo.Transaction(ctx, func(ctx context.Context) error {
+		class, err = m.repo.CreatePlaceClass(ctx, params)
 		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to create place class: %w", err),
-			)
+			return err
 		}
 
-		err = s.messanger.PublishPlaceClassCreated(ctx, class)
+		err = m.messanger.PublishPlaceClassCreated(ctx, class)
 		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to publish place class created event: %w", err),
-			)
+			return err
 		}
 
 		return nil

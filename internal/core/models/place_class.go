@@ -17,6 +17,17 @@ type PlaceClass struct {
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
-func (c PlaceClass) IsNil() bool {
-	return c.ID == uuid.Nil
+type PlaceClassMedia struct {
+	Icon *string `json:"icon,omitempty"`
+}
+
+type PlaceClassUploadMediaLinks struct {
+	IconUploadURL string `json:"icon_upload_url"`
+	IconGetURL    string `json:"icon_get_url"`
+}
+
+type UpdatePlaceClassMedia struct {
+	Links           PlaceClassUploadMediaLinks `json:"links"`
+	UploadSessionID uuid.UUID                  `json:"upload_sessian_id"`
+	UploadToken     string                     `json:"upload_token"`
 }

@@ -18,35 +18,31 @@ type CreateParams struct {
 	Name           string     `json:"name"`
 
 	Description *string `json:"description"`
-	Icon        *string `json:"icon"`
-	Banner      *string `json:"banner"`
 	Website     *string `json:"website"`
 	Phone       *string `json:"phone"`
 }
 
-func (s Service) CreatePlace(
+func (m *Module) CreatePlace(
 	ctx context.Context,
-	initiatorID uuid.UUID,
+	initiator models.InitiatorData,
 	params CreateParams,
 ) (place models.Place, err error) {
 	if params.OrganizationID != nil {
-		err = s.chekPermissionForManagePlace(ctx, initiatorID, *params.OrganizationID)
+		err = m.chekPermissionForManagePlace(ctx, initiator, *params.OrganizationID)
 		if err != nil {
 			return models.Place{}, err
 		}
 	}
 
-	if !s.territory.ContainsLatLng(params.Point[1], params.Point[0]) {
+	if !m.territory.ContainsLatLng(params.Point[1], params.Point[0]) {
 		return models.Place{}, errx.ErrorPlaceOutOfTerritory.Raise(
 			fmt.Errorf("place point %v is out of allowed territory", params.Point),
 		)
 	}
 
-	classExists, err := s.repo.CheckPlaceClassExists(ctx, params.ClassID)
+	classExists, err := m.repo.CheckPlaceClassExists(ctx, params.ClassID)
 	if err != nil {
-		return models.Place{}, errx.ErrorInternal.Raise(
-			fmt.Errorf("failed to check place class exists: %w", err),
-		)
+		return models.Place{}, err
 	}
 	if !classExists {
 		return models.Place{}, errx.ErrorPlaceClassNotFound.Raise(
@@ -54,19 +50,15 @@ func (s Service) CreatePlace(
 		)
 	}
 
-	err = s.repo.Transaction(ctx, func(txCtx context.Context) error {
-		place, err = s.repo.CreatePlace(ctx, params)
+	err = m.repo.Transaction(ctx, func(txCtx context.Context) error {
+		place, err = m.repo.CreatePlace(ctx, params)
 		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to create place: %w", err),
-			)
+			return err
 		}
 
-		err = s.messanger.PublishCreatePlace(txCtx, place)
+		err = m.messanger.PublishCreatePlace(txCtx, place)
 		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to publish create place message: %w", err),
-			)
+			return err
 		}
 
 		return nil

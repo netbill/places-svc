@@ -8,7 +8,6 @@ import (
 	"github.com/netbill/evebox/box/inbox"
 	"github.com/netbill/evebox/box/outbox"
 	"github.com/netbill/logium"
-	"github.com/netbill/places-svc/internal"
 	"github.com/netbill/places-svc/internal/core/modules/organization"
 	"github.com/netbill/places-svc/internal/core/modules/pclass"
 	"github.com/netbill/places-svc/internal/core/modules/place"
@@ -19,10 +18,9 @@ import (
 	"github.com/netbill/places-svc/internal/repository"
 	"github.com/netbill/places-svc/internal/rest"
 	"github.com/netbill/places-svc/internal/rest/controller"
-	"github.com/netbill/restkit/mdlv"
 )
 
-func StartServices(ctx context.Context, cfg internal.Config, log logium.Logger, wg *sync.WaitGroup) {
+func StartServices(ctx context.Context, cfg Config, log logium.Logger, wg *sync.WaitGroup) {
 	run := func(f func()) {
 		wg.Add(1)
 		go func() {

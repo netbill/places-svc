@@ -2,50 +2,37 @@ package place
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core/errx"
+	"github.com/netbill/places-svc/internal/core/models"
 )
 
-func (s Service) DeletePlace(
+func (m *Module) DeletePlace(
 	ctx context.Context,
-	initiatorID, placeID uuid.UUID,
+	initiator models.InitiatorData,
+	placeID uuid.UUID,
 ) error {
-	place, err := s.repo.GetPlaceByID(ctx, placeID)
+	place, err := m.repo.GetPlaceByID(ctx, placeID)
 	if err != nil {
-		return errx.ErrorInternal.Raise(
-			fmt.Errorf("failed to get place by id %s: %w", placeID, err),
-		)
-	}
-	if place.IsNil() {
-		return errx.ErrorPlaceNotFound.Raise(
-			fmt.Errorf("place %s not found", placeID),
-		)
+		return err
 	}
 
 	if place.OrganizationID != nil {
-		err = s.chekPermissionForManagePlace(ctx, initiatorID, *place.OrganizationID)
+		err = m.chekPermissionForManagePlace(ctx, initiator, *place.OrganizationID)
 		if err != nil {
-			return errx.ErrorNotEnoughRights.Raise(
-				fmt.Errorf("initiator %s has no rights to manage place %s", initiatorID, placeID),
-			)
+			return err
 		}
 	}
 
-	return s.repo.Transaction(ctx, func(txCtx context.Context) error {
-		err = s.repo.DeletePlaceByID(ctx, placeID)
+	return m.repo.Transaction(ctx, func(txCtx context.Context) error {
+		err = m.repo.DeletePlaceByID(ctx, placeID)
 		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to delete place %s: %w", placeID, err),
-			)
+			return err
 		}
 
-		err = s.messanger.PublishDeletePlace(ctx, placeID)
+		err = m.messanger.PublishDeletePlace(ctx, placeID)
 		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to publish delete place %s: %w", placeID, err),
-			)
+			return err
 		}
 
 		return nil

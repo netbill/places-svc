@@ -9,66 +9,166 @@ import (
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
-type UpdateParams struct {
-	ClassID     *uuid.UUID
-	Address     *string
-	Name        *string
-	Description *string
-	Icon        *string
-	Banner      *string
-	Website     *string
-	Phone       *string
+func (m *Module) OpenUpdatePlaceSession(
+	ctx context.Context,
+	initiator models.InitiatorData,
+	placeID uuid.UUID,
+) (models.Place, models.UpdatePlaceMedia, error) {
+	org, err := m.GetPlace(ctx, placeID)
+	if err != nil {
+		return models.Place{}, models.UpdatePlaceMedia{}, err
+	}
+
+	err = m.chekPermissionForManagePlace(ctx, initiator, org.ID)
+	if err != nil {
+		return models.Place{}, models.UpdatePlaceMedia{}, err
+	}
+
+	uploadSessionID := uuid.New()
+	links, err := m.bucket.GeneratePreloadLinkForPlaceMedia(ctx, org.ID, uploadSessionID)
+	if err != nil {
+		return models.Place{}, models.UpdatePlaceMedia{}, err
+	}
+
+	uploadToken, err := m.token.NewUploadPlaceMediaToken(
+		initiator.AccountID,
+		placeID,
+		uploadSessionID,
+	)
+	if err != nil {
+		return models.Place{}, models.UpdatePlaceMedia{}, err
+	}
+
+	return org, models.UpdatePlaceMedia{
+		Links: models.PlaceUploadMediaLinks{
+			IconUploadURL:   links.IconUploadURL,
+			IconGetURL:      links.IconGetURL,
+			BannerUploadURL: links.BannerUploadURL,
+			BannerGetURL:    links.BannerGetURL,
+		},
+		UploadSessionID: uploadSessionID,
+		UploadToken:     uploadToken,
+	}, nil
 }
 
-func (s Service) UpdatePlace(
+type UpdateParams struct {
+	ClassID     uuid.UUID
+	Address     string
+	Name        string
+	Description *string
+	Website     *string
+	Phone       *string
+
+	Media UpdateMediaParams
+}
+
+type UpdateMediaParams struct {
+	UploadSessionID uuid.UUID
+
+	DeleteIcon   bool
+	icon         *string
+	DeleteBanner bool
+	banner       *string
+}
+
+func (p UpdateParams) GetUpdatedIcon() *string {
+	if p.Media.DeleteIcon {
+		return nil
+	}
+	return p.Media.icon
+}
+
+func (p UpdateParams) GetUpdatedBanner() *string {
+	if p.Media.DeleteBanner {
+		return nil
+	}
+	return p.Media.banner
+}
+
+func (m *Module) UpdatePlace(
 	ctx context.Context,
-	initiatorID, placeID uuid.UUID,
+	initiator models.InitiatorData,
+	placeID uuid.UUID,
 	params UpdateParams,
 ) (place models.Place, err error) {
-	place, err = s.repo.GetPlaceByID(ctx, placeID)
+	place, err = m.repo.GetPlaceByID(ctx, placeID)
 	if err != nil {
-		return models.Place{}, errx.ErrorInternal.Raise(
-			fmt.Errorf("failed to get place by id %s: %w", placeID, err),
-		)
+		return models.Place{}, err
 	}
-	if place.IsNil() {
-		return models.Place{}, errx.ErrorPlaceNotFound.Raise(
-			fmt.Errorf("place %s not found", placeID),
+
+	params.Media.icon = place.Icon
+	params.Media.banner = place.Banner
+
+	if params.Media.DeleteIcon == true {
+		if err = m.bucket.DeletePlaceIcon(
+			ctx,
+			placeID,
+		); err != nil {
+			return models.Place{}, err
+		}
+
+		params.Media.icon = nil
+	}
+
+	if params.Media.DeleteBanner == true {
+		if err = m.bucket.DeletePlaceBanner(
+			ctx,
+			placeID,
+		); err != nil {
+			return models.Place{}, err
+		}
+
+		params.Media.banner = nil
+	}
+
+	if !(params.Media.DeleteBanner == params.Media.DeleteIcon == true) {
+		links, err := m.bucket.AcceptUpdatePlaceMedia(
+			ctx,
+			placeID,
+			params.Media.UploadSessionID,
 		)
+		if err != nil {
+			return models.Place{}, err
+		}
+
+		params.Media.icon = links.Icon
+		params.Media.banner = links.Banner
+	}
+
+	err = m.bucket.CleanPlaceMediaSession(
+		ctx,
+		placeID,
+		params.Media.UploadSessionID,
+	)
+	if err != nil {
+		return models.Place{}, err
 	}
 
 	if place.OrganizationID != nil {
-		if err = s.chekPermissionForManagePlace(ctx, initiatorID, *place.OrganizationID); err != nil {
+		if err = m.chekPermissionForManagePlace(ctx, initiator, *place.OrganizationID); err != nil {
 			return models.Place{}, err
 		}
 	}
 
-	if params.ClassID != nil {
-		classExists, err := s.repo.CheckPlaceClassExists(ctx, *params.ClassID)
-		if err != nil {
-			return models.Place{}, errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to check place class exists: %w", err),
-			)
-		}
-		if !classExists {
-			return models.Place{}, errx.ErrorPlaceClassNotFound.Raise(
-				fmt.Errorf("place class %v not found", params.ClassID),
-			)
-		}
+	classExists, err := m.repo.CheckPlaceClassExists(ctx, params.ClassID)
+	if err != nil {
+		return models.Place{}, err
 	}
-	err = s.repo.Transaction(ctx, func(txCtx context.Context) error {
-		place, err = s.repo.UpdatePlaceByID(ctx, placeID, params)
+	if !classExists {
+		return models.Place{}, errx.ErrorPlaceClassNotFound.Raise(
+			fmt.Errorf("place class %v not found", params.ClassID),
+		)
+	}
+
+	err = m.repo.Transaction(ctx, func(txCtx context.Context) error {
+		place, err = m.repo.UpdatePlaceByID(ctx, placeID, params)
 		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to update place %s: %w", placeID, err),
-			)
+			return err
 		}
 
-		err = s.messanger.PublishUpdatePlace(ctx, place)
+		err = m.messanger.PublishUpdatePlace(ctx, place)
 		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to publish update place %s: %w", placeID, err),
-			)
+			return err
 		}
 
 		return nil
@@ -77,104 +177,36 @@ func (s Service) UpdatePlace(
 	return place, nil
 }
 
-func (s Service) UpdatePlaceStatus(
+func (m *Module) DeleteUpdatePlaceIconInSession(
 	ctx context.Context,
-	initiatorID, placeID uuid.UUID,
-	status string,
-) (place models.Place, err error) {
-	place, err = s.repo.GetPlaceByID(ctx, placeID)
+	initiator models.InitiatorData,
+	placeID, uploadSessionID uuid.UUID,
+) error {
+	err := m.chekPermissionForManagePlace(ctx, initiator, placeID)
 	if err != nil {
-		return models.Place{}, errx.ErrorInternal.Raise(
-			fmt.Errorf("failed to get place by id %s: %w", placeID, err),
-		)
-	}
-	if place.IsNil() {
-		return models.Place{}, errx.ErrorPlaceNotFound.Raise(
-			fmt.Errorf("place %s not found", placeID),
-		)
+		return err
 	}
 
-	if place.Status == models.OrganizationStatusSuspended {
-		return models.Place{}, errx.ErrorPlaceStatusSuspended.Raise(
-			fmt.Errorf("place %s is suspended and status cannot be changed", placeID),
-		)
-	}
-	if status == models.OrganizationStatusSuspended {
-		return models.Place{}, errx.ErrorCannotSetPlaceStatusSuspend.Raise(
-			fmt.Errorf("place %s status cannot be changed to suspended", placeID),
-		)
-	}
-	if place.Status == status {
-		return place, nil
-	}
-
-	if place.OrganizationID != nil {
-		err = s.chekPermissionForManagePlace(ctx, initiatorID, *place.OrganizationID)
-		if err != nil {
-			return models.Place{}, errx.ErrorNotEnoughRights.Raise(
-				fmt.Errorf("initiator %s has no rights to manage place %s", initiatorID, placeID),
-			)
-		}
-	}
-
-	err = s.repo.Transaction(ctx, func(txCtx context.Context) error {
-		place, err = s.repo.UpdatePlaceStatus(ctx, placeID, status)
-		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to update place %s status: %w", placeID, err),
-			)
-		}
-
-		err = s.messanger.PublishUpdatePlaceStatus(ctx, place)
-		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to publish update place %s status: %w", placeID, err),
-			)
-		}
-
-		return nil
-	})
-
-	return place, nil
+	return m.bucket.CancelUpdatePlaceIcon(
+		ctx,
+		placeID,
+		uploadSessionID,
+	)
 }
 
-func (s Service) UpdatePlaceVerified(
+func (m *Module) DeleteUpdatePlaceBannerInSession(
 	ctx context.Context,
-	placeID uuid.UUID,
-	verified bool,
-) (place models.Place, err error) {
-	place, err = s.repo.GetPlaceByID(ctx, placeID)
+	initiator models.InitiatorData,
+	placeID, uploadSessionID uuid.UUID,
+) error {
+	err := m.chekPermissionForManagePlace(ctx, initiator, placeID)
 	if err != nil {
-		return models.Place{}, errx.ErrorInternal.Raise(
-			fmt.Errorf("failed to get place by id %s: %w", placeID, err),
-		)
-	}
-	if place.IsNil() {
-		return models.Place{}, errx.ErrorPlaceNotFound.Raise(
-			fmt.Errorf("place %s not found", placeID),
-		)
-	}
-	if place.Verified == verified {
-		return place, nil
+		return err
 	}
 
-	err = s.repo.Transaction(ctx, func(txCtx context.Context) error {
-		place, err = s.repo.UpdatePlaceVerified(ctx, placeID, verified)
-		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to update place %s verified: %w", placeID, err),
-			)
-		}
-
-		err = s.messanger.PublishUpdatePlaceVerified(ctx, place)
-		if err != nil {
-			return errx.ErrorInternal.Raise(
-				fmt.Errorf("failed to publish update place %s verified: %w", placeID, err),
-			)
-		}
-
-		return nil
-	})
-
-	return place, nil
+	return m.bucket.CancelUpdatePlaceBanner(
+		ctx,
+		placeID,
+		uploadSessionID,
+	)
 }

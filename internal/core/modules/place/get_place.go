@@ -2,21 +2,17 @@ package place
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/restkit/pagi"
 	"github.com/paulmach/orb"
 )
 
-func (s Service) GetPlace(ctx context.Context, placeID uuid.UUID) (models.Place, error) {
-	place, err := s.repo.GetPlaceByID(ctx, placeID)
+func (m *Module) GetPlace(ctx context.Context, placeID uuid.UUID) (models.Place, error) {
+	place, err := m.repo.GetPlaceByID(ctx, placeID)
 	if err != nil {
-		return models.Place{}, errx.ErrorInternal.Raise(
-			fmt.Errorf("place with id %v not found", placeID),
-		)
+		return models.Place{}, err
 	}
 
 	return place, nil
@@ -50,19 +46,10 @@ type FilterNearParams struct {
 	RadiusM uint
 }
 
-func (s Service) GetPlaces(ctx context.Context, params FilterParams, limit, offset uint) (pagi.Page[[]models.Place], error) {
-	if limit == 0 {
-		limit = 20
-	}
-	if limit > 100 {
-		limit = 100
-	}
-
-	res, err := s.repo.GetPlaces(ctx, params, limit, offset)
+func (m *Module) GetPlaces(ctx context.Context, params FilterParams, limit, offset uint) (pagi.Page[[]models.Place], error) {
+	res, err := m.repo.GetPlaces(ctx, params, limit, offset)
 	if err != nil {
-		return pagi.Page[[]models.Place]{}, errx.ErrorInternal.Raise(
-			fmt.Errorf("failed to filter places: %w", err),
-		)
+		return pagi.Page[[]models.Place]{}, err
 	}
 
 	return res, nil

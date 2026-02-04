@@ -2,22 +2,15 @@ package organization
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core/errx"
+	"github.com/netbill/places-svc/internal/core/models"
 )
 
-func (s Service) UpdateOrgRolePermissions(
+func (m *Module) UpdateOrgRolePermissions(
 	ctx context.Context,
 	roleID uuid.UUID,
-	permissions map[string]bool,
+	permissions []models.OrgRolePermissionLink,
 ) error {
-	if err := s.repo.UpdateOrgRolePermissions(ctx, roleID, permissions); err != nil {
-		return errx.ErrorInternal.Raise(
-			fmt.Errorf("failed to set role permissions: %w", err),
-		)
-	}
-
-	return nil
+	return m.repo.UpdateOrgRolePermissions(ctx, roleID, permissions)
 }

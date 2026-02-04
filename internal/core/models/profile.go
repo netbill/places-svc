@@ -11,10 +11,15 @@ type Profile struct {
 	Username  string    `json:"username"`
 	Official  bool      `json:"official"`
 	Pseudonym *string   `json:"pseudonym"`
+	Avatar    *string   `json:"avatar"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (p Profile) IsNil() bool {
 	return p.AccountID == uuid.Nil
+}
+
+type InitiatorData struct {
+	AccountID uuid.UUID `json:"account_id"`
 }

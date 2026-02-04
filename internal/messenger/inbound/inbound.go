@@ -2,10 +2,13 @@ package inbound
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/netbill/logium"
 	"github.com/netbill/places-svc/internal/core/models"
+	"github.com/netbill/places-svc/internal/core/modules/organization"
+	"github.com/netbill/places-svc/internal/core/modules/profile"
 )
 
 type Inbound struct {
@@ -13,10 +16,10 @@ type Inbound struct {
 	domain domain
 }
 
-type domain struct {
-	profileSvc
-	organizationSvc
-}
+//type domain struct {
+//	profileSvc
+//	organizationSvc
+//}
 
 func New(log logium.Logger, prof profileSvc, org organizationSvc) Inbound {
 	return Inbound{
@@ -29,29 +32,35 @@ func New(log logium.Logger, prof profileSvc, org organizationSvc) Inbound {
 }
 
 type profileSvc interface {
-	UpsertProfile(ctx context.Context, profile models.Profile) error
+	CreateProfile(ctx context.Context, profile models.Profile) error
+	UpdateProfile(ctx context.Context, accountID uuid.UUID, params profile.UpdateParams) error
 	DeleteProfile(ctx context.Context, accountID uuid.UUID) error
-	UpdateProfileUsername(ctx context.Context, accountID uuid.UUID, username string) error
 }
 
 type organizationSvc interface {
-	UpsertOrganization(ctx context.Context, params models.Organization) error
-	DeleteOrganization(ctx context.Context, ID uuid.UUID) error
-	UpdateOrganizationStatus(ctx context.Context, org models.Organization) error
+	CreateOrganization(ctx context.Context, params models.Organization) error
+	UpdateOrganization(ctx context.Context, organizationID uuid.UUID, params organization.UpdateParams) error
+	DeleteOrganization(ctx context.Context, organizationID uuid.UUID) error
+	DeactivateOrganization(
+		ctx context.Context,
+		orgID uuid.UUID,
+		updatedAt time.Time,
+	) error
 
-	UpsertOrgMember(ctx context.Context, member models.Member) error
+	CreateOrgMember(ctx context.Context, member models.OrgMember) error
+	UpdateOrgMember(ctx context.Context, memberID uuid.UUID, params organization.UpdateMemberParams) (models.OrgMember, error)
 	DeleteOrgMember(ctx context.Context, ID uuid.UUID) error
 
-	AddOrgMemberRole(ctx context.Context, memberID, roleID uuid.UUID) error
+	AddOrgMemberRole(ctx context.Context, memberID, roleID uuid.UUID, addedAT time.Time) error
 	RemoveOrgMemberRole(ctx context.Context, memberID, roleID uuid.UUID) error
 
-	UpsertOrgRole(ctx context.Context, role models.OrgRole) error
+	CreateOrgRole(ctx context.Context, role models.OrgRole) error
 	DeleteOrgRole(ctx context.Context, ID uuid.UUID) error
 
 	UpdateOrgRolePermissions(
 		ctx context.Context,
 		roleID uuid.UUID,
-		permissions map[string]bool,
+		permissions []models.OrgRolePermissionLink,
 	) error
 
 	UpdateOrgRolesRanks(

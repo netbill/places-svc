@@ -1,6 +1,6 @@
 package errx
 
-import "github.com/netbill/restkit/ape"
+import "github.com/netbill/ape"
 
 var (
 	ErrorPlaceClassNotFound = ape.DeclareError("CLASS_NOT_FOUND")

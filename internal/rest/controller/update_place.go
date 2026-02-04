@@ -4,13 +4,13 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/netbill/ape"
 	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/modules/place"
 	"github.com/netbill/places-svc/internal/rest"
 	"github.com/netbill/places-svc/internal/rest/requests"
 	"github.com/netbill/places-svc/internal/rest/responses"
-	"github.com/netbill/restkit/ape"
-	"github.com/netbill/restkit/ape/problems"
+	"github.com/netbill/restkit/problems"
 )
 
 func (c Controller) UpdatePlace(w http.ResponseWriter, r *http.Request) {
