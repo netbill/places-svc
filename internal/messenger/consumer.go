@@ -87,13 +87,13 @@ type Inbound interface {
 
 type Consumer struct {
 	addr     []string
-	log      logium.Logger
+	log      *logium.Logger
 	inbox    inbox.Box
 	handlers Inbound
 }
 
 func NewConsumer(
-	log logium.Logger,
+	log *logium.Logger,
 	inbox inbox.Box,
 	handlers Inbound,
 	addr ...string,

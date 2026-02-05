@@ -69,13 +69,13 @@ type core struct {
 
 type Controller struct {
 	core core
-	log  logium.Logger
+	log  *logium.Logger
 }
 
 func New(
 	placeSvc placeSvc,
 	placeClassSvc placeClassSvc,
-	log logium.Logger,
+	log *logium.Logger,
 ) Controller {
 	return Controller{
 		core: core{

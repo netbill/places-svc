@@ -7,6 +7,7 @@ import (
 
 	"github.com/netbill/evebox/box/inbox"
 	"github.com/netbill/places-svc/internal/core/errx"
+	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/messenger/contracts"
 )
 
@@ -20,7 +21,12 @@ func (i Inbound) OrgRoleCreated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.UpsertOrgRole(ctx, payload.Role); err != nil {
+	if err := i.domain.CreateOrgRole(ctx, models.OrgRole{
+		ID:             payload.RoleID,
+		OrganizationID: payload.OrganizationID,
+		Rank:           payload.Rank,
+		CreatedAt:      payload.CreatedAt,
+	}); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -50,7 +56,7 @@ func (i Inbound) OrgRoleDeleted(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.DeleteOrgRole(ctx, payload.Role.ID); err != nil {
+	if err := i.domain.DeleteOrgRole(ctx, payload.RoleID); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(

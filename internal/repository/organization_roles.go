@@ -50,5 +50,76 @@ type OrgRolesQ interface {
 	FilterByOrganizationID(organizationID ...uuid.UUID) OrgRolesQ
 	FilterByRank(rank uint) OrgRolesQ
 
+	OrderByRank(asc bool) OrgRolesQ
+
+	UpdateRolesRanks(
+		ctx context.Context,
+		organizationID uuid.UUID,
+		order map[uuid.UUID]uint,
+		updatedAt time.Time,
+	) error
+
 	Delete(ctx context.Context) error
+}
+
+func (r *Repository) CreateOrgRole(
+	ctx context.Context,
+	role models.OrgRole,
+) (models.OrgRole, error) {
+	row, err := r.OrgRolesQ.New().Insert(ctx, OrgRoleRow{
+		ID:             role.ID,
+		OrganizationID: role.OrganizationID,
+		Rank:           role.Rank,
+	})
+	if err != nil {
+		return models.OrgRole{}, err
+	}
+	return row.ToModel(), nil
+}
+
+func (r *Repository) UpdateOrgRole(
+	ctx context.Context,
+	role models.OrgRole,
+) (models.OrgRole, error) {
+	row, err := r.OrgRolesQ.New().
+		FilterByID(role.ID).
+		UpdateOne(ctx)
+	if err != nil {
+		return models.OrgRole{}, err
+	}
+	return row.ToModel(), nil
+}
+
+func (r *Repository) UpdateOrgRolesRanks(
+	ctx context.Context,
+	organizationID uuid.UUID,
+	order map[uuid.UUID]uint,
+	updatedAt time.Time,
+) error {
+	return r.OrgRolesQ.New().UpdateRolesRanks(
+		ctx,
+		organizationID,
+		order,
+		updatedAt,
+	)
+}
+
+func (r *Repository) UpdateOrgRolePermissions(
+	ctx context.Context,
+	roleID uuid.UUID,
+	permissions map[string]bool,
+	updatedAt time.Time,
+) error {
+	//TODO: implement
+
+	return nil
+}
+
+func (r *Repository) DeleteOrgRole(
+	ctx context.Context,
+	roleID uuid.UUID,
+) error {
+	return r.OrgRolesQ.New().
+		FilterByID(roleID).
+		Delete(ctx)
 }

@@ -19,35 +19,59 @@ func New(repo repo) *Module {
 }
 
 type repo interface {
-	CreateOrganization(ctx context.Context, params models.Organization) error
-	UpdateOrganization(ctx context.Context, orgID uuid.UUID, params UpdateParams) error
+	CreateOrganization(
+		ctx context.Context,
+		params models.Organization,
+	) (models.Organization, error)
+	UpdateOrganization(
+		ctx context.Context,
+		orgID uuid.UUID,
+		params UpdateParams,
+	) (models.Organization, error)
 	UpdateOrgStatus(
 		ctx context.Context,
 		orgID uuid.UUID,
 		status string,
 		updatedAt time.Time,
-	) error
+	) (models.Organization, error)
 	DeleteOrganization(ctx context.Context, ID uuid.UUID) error
 
-	CreateOrgMember(ctx context.Context, member models.OrgMember) error
-	UpdateOrgMember(ctx context.Context, orgMemberID uuid.UUID, member UpdateMemberParams) (models.OrgMember, error)
+	CreateOrgMember(
+		ctx context.Context,
+		member models.OrgMember,
+	) (models.OrgMember, error)
 	DeleteOrgMember(ctx context.Context, memberID uuid.UUID) error
 
-	RemoveOrgMemberRole(ctx context.Context, memberID, roleID uuid.UUID) error
-	AddOrgMemberRole(ctx context.Context, memberID, roleID uuid.UUID, addedAt time.Time) error
+	RemoveOrgMemberRole(
+		ctx context.Context,
+		memberID, roleID uuid.UUID,
+	) error
+	AddOrgMemberRole(
+		ctx context.Context,
+		memberID, roleID uuid.UUID,
+		addedAt time.Time,
+	) error
 
-	CreateOrgRole(ctx context.Context, params models.OrgRole) error
-	DeleteOrgRole(ctx context.Context, roleID uuid.UUID) error
+	CreateOrgRole(
+		ctx context.Context,
+		params models.OrgRole,
+	) (models.OrgRole, error)
+	DeleteOrgRole(
+		ctx context.Context,
+		roleID uuid.UUID,
+	) error
 
 	UpdateOrgRolesRanks(
 		ctx context.Context,
 		organizationID uuid.UUID,
 		order map[uuid.UUID]uint,
+		updatedAt time.Time,
 	) error
 	UpdateOrgRolePermissions(
 		ctx context.Context,
 		roleID uuid.UUID,
-		permissions []models.OrgRolePermissionLink,
+		permissions map[string]bool,
+		updatedAt time.Time,
 	) error
 
 	UpdatePlaceStatusForOrg(

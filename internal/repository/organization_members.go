@@ -9,13 +9,10 @@ import (
 )
 
 type OrgMemberRow struct {
-	ID             uuid.UUID `db:"id"`
-	AccountID      uuid.UUID `db:"account_id"`
-	OrganizationID uuid.UUID `db:"organization_id"`
-	Head           bool      `db:"head"`
-	Position       *string   `db:"position,omitempty"`
-	Label          *string   `db:"label,omitempty"`
-
+	ID               uuid.UUID `db:"id"`
+	AccountID        uuid.UUID `db:"account_id"`
+	OrganizationID   uuid.UUID `db:"organization_id"`
+	Head             bool      `db:"head"`
 	SourceCreatedAt  time.Time `db:"source_created_at"`
 	SourceUpdatedAt  time.Time `db:"source_updated_at"`
 	ReplicaCreatedAt time.Time `db:"replica_created_at"`
@@ -32,8 +29,6 @@ func (r OrgMemberRow) ToModel() models.OrgMember {
 		AccountID:      r.AccountID,
 		OrganizationID: r.OrganizationID,
 		Head:           r.Head,
-		Position:       r.Position,
-		Label:          r.Label,
 		CreatedAt:      r.SourceCreatedAt,
 		UpdatedAt:      r.SourceUpdatedAt,
 	}
@@ -46,18 +41,33 @@ type OrgMembersQ interface {
 	Get(ctx context.Context) (OrgMemberRow, error)
 	Select(ctx context.Context) ([]OrgMemberRow, error)
 
-	UpdateMany(ctx context.Context) (int64, error)
-	UpdateOne(ctx context.Context) (OrgMemberRow, error)
-
-	UpdateHead(head bool) OrgMembersQ
-	UpdatePosition(position *string) OrgMembersQ
-	UpdateLabel(label *string) OrgMembersQ
-	UpdateSourceUpdatedAt(v time.Time) OrgMembersQ
-
 	FilterByID(id ...uuid.UUID) OrgMembersQ
 	FilterByAccountID(accountID ...uuid.UUID) OrgMembersQ
 	FilterByOrganizationID(organizationID ...uuid.UUID) OrgMembersQ
 	FilterByHead(head bool) OrgMembersQ
 
 	Delete(ctx context.Context) error
+}
+
+func (r *Repository) CreateOrgMember(
+	ctx context.Context,
+	member models.OrgMember,
+) (models.OrgMember, error) {
+	row, err := r.OrgMembersQ.New().Insert(ctx, OrgMemberRow{
+		ID:             member.ID,
+		AccountID:      member.AccountID,
+		OrganizationID: member.OrganizationID,
+		Head:           member.Head,
+	})
+	if err != nil {
+		return models.OrgMember{}, err
+	}
+
+	return row.ToModel(), nil
+}
+
+func (r *Repository) DeleteOrgMember(ctx context.Context, memberID uuid.UUID) error {
+	return r.OrgMembersQ.New().
+		FilterByID(memberID).
+		Delete(ctx)
 }

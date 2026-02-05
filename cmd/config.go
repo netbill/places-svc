@@ -1,15 +1,30 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"time"
 
-	"github.com/pkg/errors"
+	_ "github.com/lib/pq" // postgres driver don`t delete
 	"github.com/spf13/viper"
 )
 
-type ServeiceConfig struct {
+type AuthConfig struct {
+	Account struct {
+		Token struct {
+			Access struct {
+				SecretKey string `mapstructure:"secret_key"`
+			} `mapstructure:"access"`
+		} `mapstructure:"token"`
+	} `mapstructure:"account"`
+}
+
+type ServerConfig struct {
 	Name string `mapstructure:"name"`
+}
+
+type ProfileConfig struct {
+	Url string `mapstructure:"url"`
 }
 
 type LogConfig struct {
@@ -33,45 +48,82 @@ type DatabaseConfig struct {
 	} `mapstructure:"sql"`
 }
 
-type JWTConfig struct {
-	User struct {
-		AccessToken struct {
-			SecretKey string `mapstructure:"secret_key"`
-		} `mapstructure:"access_token"`
-	} `mapstructure:"user"`
-	Service struct {
-		SecretKey string `mapstructure:"secret_key"`
-	} `mapstructure:"service"`
-}
-
 type KafkaConfig struct {
 	Brokers []string `mapstructure:"brokers"`
 }
 
-type Config struct {
-	Service  ServeiceConfig `mapstructure:"service"`
-	Log      LogConfig      `mapstructure:"log"`
-	Rest     RestConfig     `mapstructure:"rest"`
-	JWT      JWTConfig      `mapstructure:"jwt"`
-	Kafka    KafkaConfig    `mapstructure:"kafka"`
-	Database DatabaseConfig `mapstructure:"database"`
+type S3Config struct {
+	AWS struct {
+		BucketName      string `mapstructure:"bucket_name"`
+		Region          string `mapstructure:"region"`
+		AccessKeyID     string `mapstructure:"access_key_id"`
+		SecretAccessKey string `mapstructure:"secret_access_key"`
+	} `mapstructure:"aws"`
+
+	Upload struct {
+		Token struct {
+			SecretKey string `mapstructure:"secret_key"`
+			TTL       struct {
+				Place      time.Duration `mapstructure:"place"`
+				PlaceClass time.Duration `mapstructure:"place_class"`
+			} `mapstructure:"ttl"`
+		} `mapstructure:"token"`
+
+		Place struct {
+			Icon struct {
+				AllowedContentTypes []string `mapstructure:"allowed_content_types"`
+				AllowedFormats      []string `mapstructure:"allowed_formats"`
+				MaxWidth            uint     `mapstructure:"max_width"`
+				MaxHeight           uint     `mapstructure:"max_height"`
+				ContentLengthMax    uint     `mapstructure:"content_length_max"`
+			} `mapstructure:"icon"`
+			Banner struct {
+				AllowedContentTypes []string `mapstructure:"allowed_content_types"`
+				AllowedFormats      []string `mapstructure:"allowed_formats"`
+				MaxWidth            uint     `mapstructure:"max_width"`
+				MaxHeight           uint     `mapstructure:"max_height"`
+				ContentLengthMax    uint     `mapstructure:"content_length_max"`
+			} `mapstructure:"banner"`
+		} `mapstructure:"place"`
+
+		PlaceClass struct {
+			Icon struct {
+				AllowedContentTypes []string `mapstructure:"allowed_content_types"`
+				AllowedFormats      []string `mapstructure:"allowed_formats"`
+				MaxWidth            uint     `mapstructure:"max_width"`
+				MaxHeight           uint     `mapstructure:"max_height"`
+				ContentLengthMax    uint     `mapstructure:"content_length_max"`
+			} `mapstructure:"icon"`
+		} `mapstructure:"place_class"`
+	} `mapstructure:"upload"`
 }
 
-func LoadConfig() (Config, error) {
+type Config struct {
+	Service  ServerConfig   `mapstructure:"service"`
+	Profile  ProfileConfig  `mapstructure:"profile"`
+	Log      LogConfig      `mapstructure:"log"`
+	Rest     RestConfig     `mapstructure:"rest"`
+	Auth     AuthConfig     `mapstructure:"auth"`
+	Kafka    KafkaConfig    `mapstructure:"kafka"`
+	Database DatabaseConfig `mapstructure:"database"`
+	S3       S3Config       `mapstructure:"s3"`
+}
+
+func LoadConfig() Config {
 	configPath := os.Getenv("KV_VIPER_FILE")
 	if configPath == "" {
-		return Config{}, errors.New("KV_VIPER_FILE env var is not set")
+		panic(fmt.Errorf("KV_VIPER_FILE env var is not set"))
 	}
 	viper.SetConfigFile(configPath)
 
 	if err := viper.ReadInConfig(); err != nil {
-		return Config{}, errors.Errorf("error reading config file: %s", err)
+		panic(fmt.Errorf("error reading config file: %s", err))
 	}
 
 	var config Config
 	if err := viper.Unmarshal(&config); err != nil {
-		return Config{}, errors.Errorf("error unmarshalling config: %s", err)
+		panic(fmt.Errorf("error unmarshalling config: %s", err))
 	}
 
-	return config, nil
+	return config
 }

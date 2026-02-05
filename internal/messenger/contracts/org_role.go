@@ -38,7 +38,7 @@ type OrgRoleDeletedPayload struct {
 
 const OrgRolesRanksUpdatedEvent = "roles.ranks.updated"
 
-type RolesRanksUpdatedPayload struct {
+type OrgRolesRanksUpdatedPayload struct {
 	OrganizationID uuid.UUID          `json:"organization_id"`
 	Ranks          map[uuid.UUID]uint `json:"ranks"`
 	UpdatedAt      time.Time          `json:"updated_at"`

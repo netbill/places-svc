@@ -1,29 +1,57 @@
 package models
 
-import (
-	"github.com/google/uuid"
-)
+type OrgRolePermissionCode string
 
 const (
-	RolePermissionManageOrganization = "organization.manage"
-	RolePermissionManageInvites      = "invites.manage"
-	RolePermissionManageMembers      = "members.manage"
-	RolePermissionManageRoles        = "roles.manage"
+	RolePermissionPlaceCreate = "place.create"
+	RolePermissionPlaceDelete = "place.delete"
+	RolePermissionPlaceUpdate = "place.update"
 )
 
-var AllRolePermissions = []string{
-	RolePermissionManageOrganization,
-	RolePermissionManageRoles,
-	RolePermissionManageInvites,
-	RolePermissionManageMembers,
+var allRolePermissions = []string{
+	RolePermissionPlaceCreate,
+	RolePermissionPlaceDelete,
+	RolePermissionPlaceUpdate,
 }
 
-type Permission struct {
-	ID          uuid.UUID `json:"id"`
-	Code        string    `json:"code"`
-	Description string    `json:"description"`
+type OrgRolePermission struct {
+	Code        string `json:"code"`
+	Description string `json:"description"`
 }
 
-func (p Permission) IsNil() bool {
-	return p.ID == uuid.Nil
+type OrgRolePermissionDetails struct {
+	Description string `json:"description"`
+	Enabled     bool   `json:"enabled"`
+}
+
+type OrgRolePermissionAccess struct {
+	PlaceCreate bool `json:"create.place"`
+	PlaceDelete bool `json:"delete.place"`
+	PlaceUpdate bool `json:"update.place"`
+}
+
+func (p OrgRolePermissionAccess) ToMap() map[string]bool {
+	perms := make(map[string]bool)
+
+	perms[RolePermissionPlaceCreate] = p.PlaceCreate
+	perms[RolePermissionPlaceDelete] = p.PlaceDelete
+	perms[RolePermissionPlaceUpdate] = p.PlaceUpdate
+
+	return perms
+}
+
+type OrgRolePermissionDictWithDetails struct {
+	PlaceCreate OrgRolePermissionDetails `json:"place.create"`
+	PlaceDelete OrgRolePermissionDetails `json:"place.delete"`
+	PlaceUpdate OrgRolePermissionDetails `json:"place.update"`
+}
+
+func (p OrgRolePermissionDictWithDetails) ToMap() map[string]OrgRolePermissionDetails {
+	perms := make(map[string]OrgRolePermissionDetails)
+
+	perms[RolePermissionPlaceCreate] = p.PlaceCreate
+	perms[RolePermissionPlaceDelete] = p.PlaceDelete
+	perms[RolePermissionPlaceUpdate] = p.PlaceUpdate
+
+	return perms
 }

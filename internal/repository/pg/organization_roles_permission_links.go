@@ -45,7 +45,7 @@ type organizationRolePermissionLinks struct {
 	counter  sq.SelectBuilder
 }
 
-func NewOrganizationRolePermissionLinksQ(db *pgdbx.DB) repository.OrgRolePermissionLinksQ {
+func NewOrgRolePermissionLinksQ(db *pgdbx.DB) repository.OrgRolePermissionLinksQ {
 	b := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	return &organizationRolePermissionLinks{
 		db:       db,
@@ -58,7 +58,7 @@ func NewOrganizationRolePermissionLinksQ(db *pgdbx.DB) repository.OrgRolePermiss
 }
 
 func (q *organizationRolePermissionLinks) New() repository.OrgRolePermissionLinksQ {
-	return NewOrganizationRolePermissionLinksQ(q.db)
+	return NewOrgRolePermissionLinksQ(q.db)
 }
 
 func (q *organizationRolePermissionLinks) Insert(

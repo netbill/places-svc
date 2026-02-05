@@ -7,6 +7,7 @@ import (
 
 	"github.com/netbill/evebox/box/inbox"
 	"github.com/netbill/places-svc/internal/core/errx"
+	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/messenger/contracts"
 )
 
@@ -20,13 +21,16 @@ func (i Inbound) OrgMemberCreated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.UpsertOrgMember(ctx, payload.Member); err != nil {
+	if err := i.domain.CreateOrgMember(ctx, models.OrgMember{
+		ID:             payload.MemberID,
+		AccountID:      payload.AccountID,
+		OrganizationID: payload.OrganizationID,
+		Head:           payload.Head,
+		CreatedAt:      payload.CreatedAt,
+	}); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
-			i.log.Errorf(
-				"failed to handle member created, key %s, id: %s, error: %v",
-				event.Key, event.ID, err,
-			)
+			i.log.Errorf("failed to handle member created, key %s, id: %s, error: %v", event.Key, event.ID, err)
 			return inbox.EventStatusPending
 		default:
 			i.log.Errorf("failed to handle member created, key %s, id: %s, error: %v", event.Key, event.ID, err)
@@ -47,7 +51,7 @@ func (i Inbound) OrgMemberDeleted(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.DeleteOrgMember(ctx, payload.Member.ID); err != nil {
+	if err := i.domain.DeleteOrgMember(ctx, payload.MemberID); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -74,7 +78,7 @@ func (i Inbound) OrgMemberAddedRole(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.AddOrgMemberRole(ctx, payload.MemberID, payload.RoleID); err != nil {
+	if err := i.domain.AddOrgMemberRole(ctx, payload.MemberID, payload.RoleID, payload.AddedAt); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(

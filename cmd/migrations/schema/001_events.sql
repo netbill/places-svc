@@ -8,8 +8,8 @@ CREATE TYPE inbox_event_status AS ENUM (
 );
 
 CREATE TABLE inbox_events (
-    id       UUID   PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4(),
-    seq      BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
+    id  UUID   PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4(),
+    seq BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
 
     topic    TEXT   NOT NULL,
     key      TEXT   NOT NULL,
@@ -71,8 +71,8 @@ CREATE TYPE outbox_event_status AS ENUM (
 );
 
 CREATE TABLE outbox_events (
-    id       UUID   PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4(),
-    seq      BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
+    id  UUID   PRIMARY KEY NOT NULL DEFAULT uuid_generate_v4(),
+    seq BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
 
     topic    TEXT   NOT NULL,
     key      TEXT   NOT NULL,
@@ -104,9 +104,9 @@ CREATE INDEX idx_outbox_sent_at
     WHERE status = 'sent';
 
 CREATE TABLE outbox_key_locks (
-    key        TEXT PRIMARY KEY,
-    owner      TEXT NOT NULL,
-    locked_at  TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+    key       TEXT PRIMARY KEY,
+    owner     TEXT NOT NULL,
+    locked_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
     stale_at  TIMESTAMPTZ NOT NULL DEFAULT ((now() AT TIME ZONE 'UTC') + interval '5 minutes')
 );
 

@@ -33,7 +33,7 @@ func (b Bucket) GeneratePreloadLinkForPlaceMedia(
 	uploadBannerURL, getBannerURL, err := b.s3.PresignPut(
 		ctx,
 		CreateTempPlaceBannerKey(placeID, sessionID),
-		b.tokensTTL.Org,
+		b.tokensTTL.Place,
 	)
 	if err != nil {
 		return models.PlaceUploadMediaLinks{}, fmt.Errorf("presigning put for place banner: %w", err)
@@ -42,7 +42,7 @@ func (b Bucket) GeneratePreloadLinkForPlaceMedia(
 	uploadIconURL, getIconURL, err := b.s3.PresignPut(
 		ctx,
 		CreateTempPlaceIconKey(placeID, sessionID),
-		b.tokensTTL.Org,
+		b.tokensTTL.Place,
 	)
 	if err != nil {
 		return models.PlaceUploadMediaLinks{}, fmt.Errorf("presigning put for place icon: %w", err)
@@ -126,7 +126,7 @@ func (b Bucket) ValidatePlaceIconUpload(
 		return fmt.Errorf("failed to read icon probe bytes: %w", err)
 	}
 
-	valid, err := b.OrgIconValidator.ValidateImageSize(uint(size))
+	valid, err := b.placeIconValidator.ValidateImageSize(uint(size))
 	if err != nil {
 		return fmt.Errorf("failed to validate place icon image size: %w", err)
 	}
@@ -136,7 +136,7 @@ func (b Bucket) ValidatePlaceIconUpload(
 		)
 	}
 
-	valid, err = b.OrgIconValidator.ValidateImageContentType(probe)
+	valid, err = b.placeIconValidator.ValidateImageContentType(probe)
 	if err != nil {
 		return fmt.Errorf("failed to validate place icon content type: %w", err)
 	}
@@ -146,7 +146,7 @@ func (b Bucket) ValidatePlaceIconUpload(
 		)
 	}
 
-	valid, err = b.OrgIconValidator.ValidateImageFormat(probe)
+	valid, err = b.placeIconValidator.ValidateImageFormat(probe)
 	if err != nil {
 		return fmt.Errorf("failed to validate place icon image format: %w", err)
 	}
@@ -156,7 +156,7 @@ func (b Bucket) ValidatePlaceIconUpload(
 		)
 	}
 
-	valid, err = b.OrgIconValidator.ValidateImageResolution(probe)
+	valid, err = b.placeIconValidator.ValidateImageResolution(probe)
 	if err != nil {
 		return fmt.Errorf("failed to validate place icon image resolution: %w", err)
 	}
@@ -178,7 +178,7 @@ func (b Bucket) ValidatePlaceBannerUpload(
 		return fmt.Errorf("failed to read banner probe bytes: %w", err)
 	}
 
-	valid, err := b.OrgBannerValidator.ValidateImageSize(uint(size))
+	valid, err := b.placeBannerValidator.ValidateImageSize(uint(size))
 	if err != nil {
 		return fmt.Errorf("failed to validate place banner image size: %w", err)
 	}
@@ -188,7 +188,7 @@ func (b Bucket) ValidatePlaceBannerUpload(
 		)
 	}
 
-	valid, err = b.OrgBannerValidator.ValidateImageContentType(probe)
+	valid, err = b.placeBannerValidator.ValidateImageContentType(probe)
 	if err != nil {
 		return fmt.Errorf("failed to validate place banner content type: %w", err)
 	}
@@ -198,7 +198,7 @@ func (b Bucket) ValidatePlaceBannerUpload(
 		)
 	}
 
-	valid, err = b.OrgBannerValidator.ValidateImageFormat(probe)
+	valid, err = b.placeBannerValidator.ValidateImageFormat(probe)
 	if err != nil {
 		return fmt.Errorf("failed to validate place banner image format: %w", err)
 	}
@@ -208,7 +208,7 @@ func (b Bucket) ValidatePlaceBannerUpload(
 		)
 	}
 
-	valid, err = b.OrgBannerValidator.ValidateImageResolution(probe)
+	valid, err = b.placeBannerValidator.ValidateImageResolution(probe)
 	if err != nil {
 		return fmt.Errorf("failed to validate place banner image resolution: %w", err)
 	}

@@ -18,15 +18,6 @@ type OrgMemberCreatedPayload struct {
 	CreatedAt      time.Time `json:"created_at"`
 }
 
-const OrgMemberUpdatedEvent = "member.updated"
-
-type OrgMemberUpdatedPayload struct {
-	MemberID  uuid.UUID `json:"member_id"`
-	Position  *string   `json:"position,omitempty"`
-	Label     *string   `json:"label,omitempty"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
 const OrgMemberDeletedEvent = "member.deleted"
 
 type OrgMemberDeletedPayload struct {

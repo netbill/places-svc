@@ -9,7 +9,6 @@ import (
 type OrgRole struct {
 	ID             uuid.UUID `json:"id"`
 	OrganizationID uuid.UUID `json:"organization_id"`
-	Head           bool      `json:"head"`
 	Rank           uint      `json:"rank"`
 
 	CreatedAt time.Time `json:"created_at"`
@@ -28,14 +27,4 @@ type OrgMemberRolesLink struct {
 
 func (r OrgMemberRolesLink) IsNil() bool {
 	return r.MemberID == uuid.Nil
-}
-
-type OrgRolePermissionLink struct {
-	RoleID         uuid.UUID `json:"role_id"`
-	PermissionCode string    `json:"permission_code"`
-	CreatedAt      time.Time `json:"created_at"`
-}
-
-func (r OrgRolePermissionLink) IsNil() bool {
-	return r.RoleID == uuid.Nil
 }

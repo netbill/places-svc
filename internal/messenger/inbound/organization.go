@@ -7,6 +7,7 @@ import (
 
 	"github.com/netbill/evebox/box/inbox"
 	"github.com/netbill/places-svc/internal/core/errx"
+	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/messenger/contracts"
 )
 
@@ -20,7 +21,12 @@ func (i Inbound) OrganizationCreated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.UpsertOrganization(ctx, payload.Organization); err != nil {
+	if err := i.domain.CreateOrganization(ctx, models.Organization{
+		ID:        payload.OrganizationID,
+		Status:    payload.Status,
+		Name:      payload.Name,
+		CreatedAt: payload.CreatedAt,
+	}); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -50,7 +56,7 @@ func (i Inbound) OrganizationDeleted(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.DeleteOrganization(ctx, payload.Organization.ID); err != nil {
+	if err := i.domain.DeleteOrganization(ctx, payload.OrganizationID); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -80,9 +86,10 @@ func (i Inbound) OrganizationActivated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.UpdateOrganizationStatus(
+	if err := i.domain.ActivateOrganization(
 		ctx,
-		payload.Organization,
+		payload.OrganizationID,
+		payload.ActivatedAt,
 	); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
@@ -113,9 +120,10 @@ func (i Inbound) OrganizationDeactivated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.UpdateOrganizationStatus(
+	if err := i.domain.DeactivateOrganization(
 		ctx,
-		payload.Organization,
+		payload.OrganizationID,
+		payload.DeactivatedAt,
 	); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
@@ -127,39 +135,6 @@ func (i Inbound) OrganizationDeactivated(
 		default:
 			i.log.Errorf(
 				"failed to handle organization deactivated, key %s, id: %s, error: %v",
-				event.Key, event.ID, err,
-			)
-			return inbox.EventStatusFailed
-		}
-	}
-
-	return inbox.EventStatusProcessed
-}
-
-func (i Inbound) OrganizationSuspended(
-	ctx context.Context,
-	event inbox.Event,
-) inbox.EventStatus {
-	var payload contracts.OrganizationSuspendedPayload
-	if err := json.Unmarshal(event.Payload, &payload); err != nil {
-		i.log.Errorf("bad payload for %s, key %s, id: %s, error: %v", event.Type, event.Key, event.ID, err)
-		return inbox.EventStatusFailed
-	}
-
-	if err := i.domain.UpdateOrganizationStatus(
-		ctx,
-		payload.Organization,
-	); err != nil {
-		switch {
-		case errors.Is(err, errx.ErrorInternal):
-			i.log.Errorf(
-				"failed to handle organization suspended due to internal error, key %s, id: %s, error: %v",
-				event.Key, event.ID, err,
-			)
-			return inbox.EventStatusPending
-		default:
-			i.log.Errorf(
-				"failed to handle organization suspended, key %s, id: %s, error: %v",
 				event.Key, event.ID, err,
 			)
 			return inbox.EventStatusFailed

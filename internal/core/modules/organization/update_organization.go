@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/netbill/places-svc/internal/core/models"
 )
 
 type UpdateParams struct {
-	Verified  bool      `json:"verified"`
 	Name      string    `json:"name"`
 	Icon      *string   `json:"icon"`
 	Banner    *string   `json:"banner"`
@@ -19,6 +19,6 @@ func (m *Module) UpdateOrganization(
 	ctx context.Context,
 	orgID uuid.UUID,
 	params UpdateParams,
-) error {
+) (models.Organization, error) {
 	return m.repo.UpdateOrganization(ctx, orgID, params)
 }

@@ -12,28 +12,33 @@ import (
 const probeBytes = int64(128 * 1024)
 
 type Bucket struct {
-	s3                 s3bucket
-	OrgIconValidator   ObjectValidator
-	OrgBannerValidator ObjectValidator
-	tokensTTL          UploadTokensTTL
+	s3                      s3bucket
+	placeIconValidator      ObjectValidator
+	placeBannerValidator    ObjectValidator
+	placeClassIconValidator ObjectValidator
+	tokensTTL               UploadTokensTTL
 }
 
 type UploadTokensTTL struct {
-	Org time.Duration
+	Place      time.Duration
+	PlaceClass time.Duration
 }
 
 type Config struct {
-	S3                 s3bucket
-	OrgIconValidator   ObjectValidator
-	OrgBannerValidator ObjectValidator
-	UploadTokensTTL    UploadTokensTTL
+	S3                      s3bucket
+	PlaceIconValidator      ObjectValidator
+	PlaceBannerValidator    ObjectValidator
+	PlaceClassIconValidator ObjectValidator
+	UploadTokensTTL         UploadTokensTTL
 }
 
 func New(config Config) Bucket {
 	return Bucket{
-		s3:                 config.S3,
-		OrgIconValidator:   config.OrgIconValidator,
-		OrgBannerValidator: config.OrgBannerValidator,
+		s3:                      config.S3,
+		placeIconValidator:      config.PlaceIconValidator,
+		placeBannerValidator:    config.PlaceBannerValidator,
+		placeClassIconValidator: config.PlaceClassIconValidator,
+		tokensTTL:               config.UploadTokensTTL,
 	}
 }
 

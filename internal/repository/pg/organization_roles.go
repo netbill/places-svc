@@ -48,7 +48,7 @@ type organizationRoles struct {
 	counter  sq.SelectBuilder
 }
 
-func NewOrganizationRolesQ(db *pgdbx.DB) repository.OrgRolesQ {
+func NewOrgRolesQ(db *pgdbx.DB) repository.OrgRolesQ {
 	b := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	return &organizationRoles{
 		db:       db,
@@ -61,7 +61,7 @@ func NewOrganizationRolesQ(db *pgdbx.DB) repository.OrgRolesQ {
 }
 
 func (q *organizationRoles) New() repository.OrgRolesQ {
-	return NewOrganizationRolesQ(q.db)
+	return NewOrgRolesQ(q.db)
 }
 
 func (q *organizationRoles) Insert(
@@ -228,4 +228,115 @@ func (q *organizationRoles) UpdateSourceUpdatedAt(
 ) repository.OrgRolesQ {
 	q.updater = q.updater.Set("source_updated_at", updatedAt.UTC())
 	return q
+}
+
+func (q *organizationRoles) OrderByRank(asc bool) repository.OrgRolesQ {
+	if asc {
+		q.selector = q.selector.OrderBy("r.rank ASC", "r.id ASC")
+	} else {
+		q.selector = q.selector.OrderBy("r.rank DESC", "r.id DESC")
+	}
+	return q
+}
+
+func (q *organizationRoles) UpdateRolesRanks(
+	ctx context.Context,
+	organizationID uuid.UUID,
+	order map[uuid.UUID]uint,
+	updatedAt time.Time,
+) error {
+	roles, err := NewOrgRolesQ(q.db).
+		FilterByOrganizationID(organizationID).
+		OrderByRank(true).
+		Select(ctx)
+	if err != nil {
+		return fmt.Errorf("select roles by organization: %w", err)
+	}
+	if len(roles) == 0 {
+		return fmt.Errorf("no roles in organization %s", organizationID)
+	}
+
+	n := uint(len(roles))
+
+	idToRole := make(map[uuid.UUID]repository.OrgRoleRow, n)
+	for i := range roles {
+		idToRole[roles[i].ID] = roles[i]
+	}
+
+	usedRank := make(map[uint]uuid.UUID, len(order))
+	for roleID, newRank := range order {
+		if newRank >= n {
+			return fmt.Errorf("rank %d out of range [0..%d]", newRank, n-1)
+		}
+		if _, ok := idToRole[roleID]; !ok {
+			return fmt.Errorf("role %s not in organization %s", roleID, organizationID)
+		}
+		if prev, ok := usedRank[newRank]; ok && prev != roleID {
+			return fmt.Errorf("duplicate rank %d for roles %s and %s", newRank, prev, roleID)
+		}
+		usedRank[newRank] = roleID
+	}
+
+	target := make([]uuid.UUID, n)
+	filled := make([]bool, n)
+
+	for rnk, id := range usedRank {
+		target[rnk] = id
+		filled[rnk] = true
+	}
+
+	rest := make([]uuid.UUID, 0, n-uint(len(order)))
+	for i := range roles {
+		id := roles[i].ID
+		if _, ok := order[id]; ok {
+			continue
+		}
+		rest = append(rest, id)
+	}
+
+	j := 0
+	for i := 0; uint(i) < n; i++ {
+		if filled[i] {
+			continue
+		}
+		target[i] = rest[j]
+		j++
+	}
+
+	changed := make([]uuid.UUID, 0, n)
+	newRanks := make([]int32, 0, n)
+
+	for newRank, id := range target {
+		if roles[newRank].ID != id {
+			changed = append(changed, id)
+			newRanks = append(newRanks, int32(newRank))
+		}
+	}
+
+	if len(changed) > 0 {
+		const sqlUpdate = `
+			UPDATE organization_roles r
+			SET
+				rank = v.rank,
+				replica_updated_at = $3
+			FROM (
+				SELECT UNNEST($1::uuid[]) AS id, UNNEST($2::int4[]) AS rank
+			) v
+			WHERE r.id = v.id
+			  AND r.organization_id = $4
+		`
+
+		if _, err := q.db.Exec(
+			ctx,
+			sqlUpdate,
+			changed,
+			newRanks,
+			updatedAt.UTC(),
+			organizationID,
+		); err != nil {
+			return fmt.Errorf("updating roles ranks: %w", err)
+		}
+	}
+
+	return nil
 }

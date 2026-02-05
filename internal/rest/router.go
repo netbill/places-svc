@@ -39,11 +39,11 @@ type Middlewares interface {
 type Router struct {
 	handlers    Handlers
 	middlewares Middlewares
-	log         logium.Logger
+	log         *logium.Logger
 }
 
 func New(
-	log logium.Logger,
+	log *logium.Logger,
 	middlewares Middlewares,
 	handlers Handlers,
 ) *Router {

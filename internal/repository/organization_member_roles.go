@@ -44,3 +44,27 @@ type OrgMemberRolesQ interface {
 
 	Delete(ctx context.Context) error
 }
+
+func (r *Repository) RemoveOrgMemberRole(
+	ctx context.Context,
+	memberID, roleID uuid.UUID,
+) error {
+	return r.OrgMemberRolesQ.New().
+		FilterByMemberID(memberID).
+		FilterByRoleID(roleID).
+		Delete(ctx)
+}
+
+func (r *Repository) AddOrgMemberRole(
+	ctx context.Context,
+	memberID, roleID uuid.UUID,
+	addedAt time.Time,
+) error {
+	_, err := r.OrgMemberRolesQ.New().Insert(ctx, OrgMemberRoleRow{
+		MemberID:        memberID,
+		RoleID:          roleID,
+		SourceCreatedAt: addedAt,
+	})
+
+	return err
+}

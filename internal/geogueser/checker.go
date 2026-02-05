@@ -1,8 +1,8 @@
-package gegueser
+package geogueser
 
 import (
 	"embed"
-	"errors"
+	"fmt"
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/geojson"
@@ -52,7 +52,7 @@ func New() (Checker, error) {
 	}
 
 	if len(mp) == 0 {
-		return Checker{}, errors.New("no polygons found in geojson")
+		return Checker{}, fmt.Errorf("no polygons found in geojson")
 	}
 
 	return Checker{mp: mp}, nil

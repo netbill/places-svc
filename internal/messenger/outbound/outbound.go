@@ -6,12 +6,12 @@ import (
 )
 
 type Producer struct {
-	log    logium.Logger
+	log    *logium.Logger
 	addr   []string
 	outbox outbox.Box
 }
 
-func New(log logium.Logger, ob outbox.Box, addr ...string) *Producer {
+func New(log *logium.Logger, ob outbox.Box, addr ...string) *Producer {
 	return &Producer{
 		log:    log,
 		addr:   addr,

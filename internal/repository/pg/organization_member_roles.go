@@ -45,7 +45,7 @@ type organizationMemberRoles struct {
 	counter  sq.SelectBuilder
 }
 
-func NewOrganizationMemberRolesQ(db *pgdbx.DB) repository.OrgMemberRolesQ {
+func NewOrgMemberRolesQ(db *pgdbx.DB) repository.OrgMemberRolesQ {
 	b := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	return &organizationMemberRoles{
 		db:       db,
@@ -58,7 +58,7 @@ func NewOrganizationMemberRolesQ(db *pgdbx.DB) repository.OrgMemberRolesQ {
 }
 
 func (q *organizationMemberRoles) New() repository.OrgMemberRolesQ {
-	return NewOrganizationMemberRolesQ(q.db)
+	return NewOrgMemberRolesQ(q.db)
 }
 
 func (q *organizationMemberRoles) Insert(

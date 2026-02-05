@@ -16,8 +16,8 @@ import (
 
 const organizationsTable = "organizations"
 
-const organizationsColumns = "id, status, verified, name, icon, banner, source_created_at, source_updated_at, replica_created_at, replica_updated_at"
-const organizationsColumnsP = "o.id, o.status, o.verified, o.name, o.icon, o.banner, o.source_created_at, o.source_updated_at, o.replica_created_at, o.replica_updated_at"
+const organizationsColumns = "id, status, name, icon, banner, source_created_at, source_updated_at, replica_created_at, replica_updated_at"
+const organizationsColumnsP = "o.id, o.status, o.name, o.icon, o.banner, o.source_created_at, o.source_updated_at, o.replica_created_at, o.replica_updated_at"
 
 func scanOrganization(row sq.RowScanner) (o repository.OrganizationRow, err error) {
 	var icon pgtype.Text
@@ -26,7 +26,6 @@ func scanOrganization(row sq.RowScanner) (o repository.OrganizationRow, err erro
 	err = row.Scan(
 		&o.ID,
 		&o.Status,
-		&o.Verified,
 		&o.Name,
 		&icon,
 		&banner,
@@ -84,7 +83,6 @@ func (q *organizations) Insert(ctx context.Context, data repository.Organization
 	query, args, err := q.inserter.SetMap(map[string]any{
 		"id":                 data.ID,
 		"status":             data.Status,
-		"verified":           data.Verified,
 		"name":               data.Name,
 		"icon":               data.Icon,
 		"banner":             data.Banner,
@@ -165,14 +163,6 @@ func (q *organizations) FilterByStatus(status string) repository.OrganizationsQ 
 	return q
 }
 
-func (q *organizations) FilterByVerified(verified bool) repository.OrganizationsQ {
-	q.selector = q.selector.Where(sq.Eq{"o.verified": verified})
-	q.counter = q.counter.Where(sq.Eq{"o.verified": verified})
-	q.updater = q.updater.Where(sq.Eq{"o.verified": verified})
-	q.deleter = q.deleter.Where(sq.Eq{"o.verified": verified})
-	return q
-}
-
 func (q *organizations) FilterByName(name string) repository.OrganizationsQ {
 	q.selector = q.selector.Where(sq.Eq{"o.name": name})
 	q.counter = q.counter.Where(sq.Eq{"o.name": name})
@@ -210,11 +200,6 @@ func (q *organizations) UpdateMany(ctx context.Context) (int64, error) {
 
 func (q *organizations) UpdateStatus(status string) repository.OrganizationsQ {
 	q.updater = q.updater.Set("status", status)
-	return q
-}
-
-func (q *organizations) UpdateVerified(verified bool) repository.OrganizationsQ {
-	q.updater = q.updater.Set("verified", verified)
 	return q
 }
 
