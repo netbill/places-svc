@@ -85,9 +85,6 @@ CREATE TABLE organization_role_permission_links (
     role_id         UUID NOT NULL REFERENCES organization_roles (id) ON DELETE CASCADE,
     permission_code VARCHAR(255) NOT NULL REFERENCES organization_role_permissions (code) ON DELETE CASCADE,
 
-    source_created_at  TIMESTAMPTZ NOT NULL,
-    replica_created_at TIMESTAMPTZ NOT NULL DEFAULT (now() at time zone 'utc'),
-
     PRIMARY KEY (role_id, permission_code)
 );
 
