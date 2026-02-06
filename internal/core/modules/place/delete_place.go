@@ -9,7 +9,7 @@ import (
 
 func (m *Module) DeletePlace(
 	ctx context.Context,
-	initiator models.InitiatorData,
+	initiator models.Initiator,
 	placeID uuid.UUID,
 ) error {
 	place, err := m.repo.GetPlaceByID(ctx, placeID)
@@ -18,7 +18,7 @@ func (m *Module) DeletePlace(
 	}
 
 	if place.OrganizationID != nil {
-		err = m.chekPermissionForManagePlace(ctx, initiator, *place.OrganizationID)
+		err = m.chekPermissionForDeletePlace(ctx, initiator, *place.OrganizationID)
 		if err != nil {
 			return err
 		}
@@ -30,7 +30,7 @@ func (m *Module) DeletePlace(
 			return err
 		}
 
-		err = m.messanger.PublishDeletePlace(ctx, placeID)
+		err = m.messenger.PublishDeletePlace(ctx, placeID)
 		if err != nil {
 			return err
 		}

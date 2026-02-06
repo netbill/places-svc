@@ -88,7 +88,7 @@ CREATE TABLE organization_role_permission_links (
     source_created_at  TIMESTAMPTZ NOT NULL,
     replica_created_at TIMESTAMPTZ NOT NULL DEFAULT (now() at time zone 'utc'),
 
-    PRIMARY KEY (role_id, permission_id)
+    PRIMARY KEY (role_id, permission_code)
 );
 
 -- +migrate Down

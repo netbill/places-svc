@@ -11,27 +11,27 @@ import (
 
 func (m *Module) OpenUpdatePlaceSession(
 	ctx context.Context,
-	initiator models.InitiatorData,
+	initiator models.Initiator,
 	placeID uuid.UUID,
 ) (models.Place, models.UpdatePlaceMedia, error) {
-	org, err := m.GetPlace(ctx, placeID)
+	place, err := m.GetPlace(ctx, placeID)
 	if err != nil {
 		return models.Place{}, models.UpdatePlaceMedia{}, err
 	}
 
-	err = m.chekPermissionForManagePlace(ctx, initiator, org.ID)
-	if err != nil {
+	if err = m.chekPermissionForUpdatePlace(ctx, initiator, place.ID); err != nil {
 		return models.Place{}, models.UpdatePlaceMedia{}, err
 	}
 
 	uploadSessionID := uuid.New()
-	links, err := m.bucket.GeneratePreloadLinkForPlaceMedia(ctx, org.ID, uploadSessionID)
+
+	links, err := m.bucket.GeneratePreloadLinkForPlaceMedia(ctx, place.ID, uploadSessionID)
 	if err != nil {
 		return models.Place{}, models.UpdatePlaceMedia{}, err
 	}
 
 	uploadToken, err := m.token.NewUploadPlaceMediaToken(
-		initiator.AccountID,
+		initiator.GetAccountID(),
 		placeID,
 		uploadSessionID,
 	)
@@ -39,7 +39,7 @@ func (m *Module) OpenUpdatePlaceSession(
 		return models.Place{}, models.UpdatePlaceMedia{}, err
 	}
 
-	return org, models.UpdatePlaceMedia{
+	return place, models.UpdatePlaceMedia{
 		Links: models.PlaceUploadMediaLinks{
 			IconUploadURL:   links.IconUploadURL,
 			IconGetURL:      links.IconGetURL,
@@ -87,7 +87,7 @@ func (p UpdateParams) GetUpdatedBanner() *string {
 
 func (m *Module) UpdatePlace(
 	ctx context.Context,
-	initiator models.InitiatorData,
+	initiator models.Initiator,
 	placeID uuid.UUID,
 	params UpdateParams,
 ) (place models.Place, err error) {
@@ -99,53 +99,40 @@ func (m *Module) UpdatePlace(
 	params.Media.icon = place.Icon
 	params.Media.banner = place.Banner
 
-	if params.Media.DeleteIcon == true {
-		if err = m.bucket.DeletePlaceIcon(
-			ctx,
-			placeID,
-		); err != nil {
+	if params.Media.DeleteIcon {
+		if err = m.bucket.DeletePlaceIcon(ctx, placeID); err != nil {
 			return models.Place{}, err
 		}
-
 		params.Media.icon = nil
 	}
 
-	if params.Media.DeleteBanner == true {
-		if err = m.bucket.DeletePlaceBanner(
-			ctx,
-			placeID,
-		); err != nil {
+	if params.Media.DeleteBanner {
+		if err = m.bucket.DeletePlaceBanner(ctx, placeID); err != nil {
 			return models.Place{}, err
 		}
-
 		params.Media.banner = nil
 	}
 
-	if !(params.Media.DeleteBanner == params.Media.DeleteIcon == true) {
-		links, err := m.bucket.AcceptUpdatePlaceMedia(
+	if !(params.Media.DeleteBanner && params.Media.DeleteIcon) {
+		links, lerr := m.bucket.AcceptUpdatePlaceMedia(
 			ctx,
 			placeID,
 			params.Media.UploadSessionID,
 		)
-		if err != nil {
-			return models.Place{}, err
+		if lerr != nil {
+			return models.Place{}, lerr
 		}
 
 		params.Media.icon = links.Icon
 		params.Media.banner = links.Banner
 	}
 
-	err = m.bucket.CleanPlaceMediaSession(
-		ctx,
-		placeID,
-		params.Media.UploadSessionID,
-	)
-	if err != nil {
+	if err = m.bucket.CleanPlaceMediaSession(ctx, placeID, params.Media.UploadSessionID); err != nil {
 		return models.Place{}, err
 	}
 
 	if place.OrganizationID != nil {
-		if err = m.chekPermissionForManagePlace(ctx, initiator, *place.OrganizationID); err != nil {
+		if err = m.chekPermissionForUpdatePlace(ctx, initiator, *place.OrganizationID); err != nil {
 			return models.Place{}, err
 		}
 	}
@@ -161,29 +148,30 @@ func (m *Module) UpdatePlace(
 	}
 
 	err = m.repo.Transaction(ctx, func(txCtx context.Context) error {
-		place, err = m.repo.UpdatePlaceByID(ctx, placeID, params)
+		place, err = m.repo.UpdatePlaceByID(txCtx, placeID, params)
 		if err != nil {
 			return err
 		}
 
-		err = m.messanger.PublishUpdatePlace(ctx, place)
-		if err != nil {
+		if err = m.messenger.PublishUpdatePlace(txCtx, place); err != nil {
 			return err
 		}
 
 		return nil
 	})
+	if err != nil {
+		return models.Place{}, err
+	}
 
 	return place, nil
 }
 
 func (m *Module) DeleteUpdatePlaceIconInSession(
 	ctx context.Context,
-	initiator models.InitiatorData,
+	initiator models.Initiator,
 	placeID, uploadSessionID uuid.UUID,
 ) error {
-	err := m.chekPermissionForManagePlace(ctx, initiator, placeID)
-	if err != nil {
+	if err := m.chekPermissionForUpdatePlace(ctx, initiator, placeID); err != nil {
 		return err
 	}
 
@@ -196,11 +184,10 @@ func (m *Module) DeleteUpdatePlaceIconInSession(
 
 func (m *Module) DeleteUpdatePlaceBannerInSession(
 	ctx context.Context,
-	initiator models.InitiatorData,
+	initiator models.Initiator,
 	placeID, uploadSessionID uuid.UUID,
 ) error {
-	err := m.chekPermissionForManagePlace(ctx, initiator, placeID)
-	if err != nil {
+	if err := m.chekPermissionForUpdatePlace(ctx, initiator, placeID); err != nil {
 		return err
 	}
 

@@ -7,28 +7,11 @@ import (
 
 	"github.com/netbill/evebox/box/inbox"
 	"github.com/netbill/evebox/consumer"
-	"github.com/netbill/logium"
 	"github.com/netbill/places-svc/internal/messenger/contracts"
+	"github.com/segmentio/kafka-go"
 )
 
-type Inbound interface {
-	AccountCreated(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-	AccountDeleted(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-	AccountUsernameChanged(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-	AccountProfileUpdated(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-
+type handlers interface {
 	OrgMemberCreated(
 		ctx context.Context,
 		event inbox.Event,
@@ -79,34 +62,9 @@ type Inbound interface {
 		ctx context.Context,
 		event inbox.Event,
 	) inbox.EventStatus
-	OrganizationSuspended(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
 }
 
-type Consumer struct {
-	addr     []string
-	log      *logium.Logger
-	inbox    inbox.Box
-	handlers Inbound
-}
-
-func NewConsumer(
-	log *logium.Logger,
-	inbox inbox.Box,
-	handlers Inbound,
-	addr ...string,
-) Consumer {
-	return Consumer{
-		addr:     addr,
-		log:      log,
-		inbox:    inbox,
-		handlers: handlers,
-	}
-}
-
-func (c Consumer) Run(ctx context.Context) {
+func (m *Messenger) RunConsumer(ctx context.Context, handlers handlers) {
 	wg := &sync.WaitGroup{}
 	run := func(f func()) {
 		wg.Add(1)
@@ -116,65 +74,64 @@ func (c Consumer) Run(ctx context.Context) {
 		}()
 	}
 
-	accountConsumer := consumer.New(c.log, "profiles-svc-account-consumer", c.inbox)
+	orgConsumer := consumer.New(
+		consumer.NewConsumerParams{
+			Log:  m.log,
+			DB:   m.db,
+			Name: "profiles-svc-profile-consumer",
+			Addr: m.addr,
+			OnUnknown: func(ctx context.Context, m kafka.Message, eventType string) error {
+				return nil
+			},
+		},
+	)
 
-	accountConsumer.Handle(contracts.AccountCreatedEvent, c.handlers.AccountCreated)
-	accountConsumer.Handle(contracts.AccountDeletedEvent, c.handlers.AccountDeleted)
-	accountConsumer.Handle(contracts.AccountUsernameChangedEvent, c.handlers.AccountUsernameChanged)
-	accountConsumer.Handle(contracts.AccountProfileUpdatedEvent, c.handlers.AccountUsernameChanged)
+	orgConsumer.Handle(contracts.OrgMemberCreatedEvent, handlers.OrgMemberCreated)
+	orgConsumer.Handle(contracts.OrgMemberDeletedEvent, handlers.OrgMemberDeleted)
+	orgConsumer.Handle(contracts.OrgMemberRoleAddedEvent, handlers.OrgMemberAddedRole)
+	orgConsumer.Handle(contracts.OrgMemberRoleRemovedEvent, handlers.OrgMemberRemovedRole)
 
-	orgConsumer := consumer.New(c.log, "profiles-svc-org-consumer", c.inbox)
+	orgConsumer.Handle(contracts.OrgRoleCreatedEvent, handlers.OrgRoleCreated)
+	orgConsumer.Handle(contracts.OrgRoleDeletedEvent, handlers.OrgRoleDeleted)
+	orgConsumer.Handle(contracts.OrgRolePermissionsUpdatedEvent, handlers.OrgRolePermissionsUpdated)
+	orgConsumer.Handle(contracts.OrgRolesRanksUpdatedEvent, handlers.OrgRolesRanksUpdated)
 
-	orgConsumer.Handle(contracts.OrgMemberCreatedEvent, c.handlers.OrgMemberCreated)
-	orgConsumer.Handle(contracts.OrgMemberDeletedEvent, c.handlers.OrgMemberDeleted)
-	orgConsumer.Handle(contracts.OrgMemberRoleAddedEvent, c.handlers.OrgMemberAddedRole)
-	orgConsumer.Handle(contracts.OrgMemberRoleRemovedEvent, c.handlers.OrgMemberRemovedRole)
+	orgConsumer.Handle(contracts.OrganizationCreatedEvent, handlers.OrganizationCreated)
+	orgConsumer.Handle(contracts.OrganizationDeletedEvent, handlers.OrganizationDeleted)
+	orgConsumer.Handle(contracts.OrganizationActivatedEvent, handlers.OrganizationActivated)
+	orgConsumer.Handle(contracts.OrganizationDeactivatedEvent, handlers.OrganizationDeactivated)
 
-	orgConsumer.Handle(contracts.OrgRoleCreatedEvent, c.handlers.OrgRoleCreated)
-	orgConsumer.Handle(contracts.OrgRoleDeletedEvent, c.handlers.OrgRoleDeleted)
-	orgConsumer.Handle(contracts.OrgRolePermissionsUpdatedEvent, c.handlers.OrgRolePermissionsUpdated)
-	orgConsumer.Handle(contracts.OrgRolesRanksUpdatedEvent, c.handlers.OrgRolesRanksUpdated)
-
-	orgConsumer.Handle(contracts.OrganizationCreatedEvent, c.handlers.OrganizationCreated)
-	orgConsumer.Handle(contracts.OrganizationDeletedEvent, c.handlers.OrganizationDeleted)
-	orgConsumer.Handle(contracts.OrganizationActivatedEvent, c.handlers.OrganizationActivated)
-	orgConsumer.Handle(contracts.OrganizationDeactivatedEvent, c.handlers.OrganizationDeactivated)
-	orgConsumer.Handle(contracts.OrganizationSuspendedEvent, c.handlers.OrganizationSuspended)
-
-	inboxer1 := inbox.NewWorker(c.log, c.inbox, inbox.ConfigWorker{
-		Name:       "profiles-svc-inbox-worker-1",
+	inboxer1 := consumer.NewInboxer(consumer.NewInboxerParams{
+		Log:        m.log,
+		Pool:       m.db,
+		Name:       "places-svc-inbox-worker-1",
 		BatchSize:  10,
 		RetryDelay: 1 * time.Minute,
 		MinSleep:   100 * time.Millisecond,
 		MaxSleep:   1 * time.Second,
 	})
-	inboxer1.Handle(contracts.AccountCreatedEvent, c.handlers.AccountCreated)
-	inboxer1.Handle(contracts.AccountDeletedEvent, c.handlers.AccountDeleted)
-	inboxer1.Handle(contracts.AccountUsernameChangedEvent, c.handlers.AccountUsernameChanged)
-	inboxer1.Handle(contracts.AccountProfileUpdatedEvent, c.handlers.AccountProfileUpdated)
 
-	inboxer2 := inbox.NewWorker(c.log, c.inbox, inbox.ConfigWorker{
-		Name:       "profiles-svc-inbox-worker-2",
-		BatchSize:  10,
-		RetryDelay: 1 * time.Minute,
-		MinSleep:   100 * time.Millisecond,
-		MaxSleep:   1 * time.Second,
-	})
-	inboxer2.Handle(contracts.AccountCreatedEvent, c.handlers.AccountCreated)
-	inboxer2.Handle(contracts.AccountDeletedEvent, c.handlers.AccountDeleted)
-	inboxer2.Handle(contracts.AccountUsernameChangedEvent, c.handlers.AccountUsernameChanged)
-	inboxer2.Handle(contracts.AccountProfileUpdatedEvent, c.handlers.AccountProfileUpdated)
+	inboxer1.Handle(contracts.OrgMemberCreatedEvent, handlers.OrgMemberCreated)
+	inboxer1.Handle(contracts.OrgMemberDeletedEvent, handlers.OrgMemberDeleted)
+	inboxer1.Handle(contracts.OrgMemberRoleAddedEvent, handlers.OrgMemberAddedRole)
+	inboxer1.Handle(contracts.OrgMemberRoleRemovedEvent, handlers.OrgMemberRemovedRole)
+
+	inboxer1.Handle(contracts.OrgRoleCreatedEvent, handlers.OrgRoleCreated)
+	inboxer1.Handle(contracts.OrgRoleDeletedEvent, handlers.OrgRoleDeleted)
+	inboxer1.Handle(contracts.OrgRolePermissionsUpdatedEvent, handlers.OrgRolePermissionsUpdated)
+	inboxer1.Handle(contracts.OrgRolesRanksUpdatedEvent, handlers.OrgRolesRanksUpdated)
+
+	inboxer1.Handle(contracts.OrganizationCreatedEvent, handlers.OrganizationCreated)
+	inboxer1.Handle(contracts.OrganizationDeletedEvent, handlers.OrganizationDeleted)
+	inboxer1.Handle(contracts.OrganizationActivatedEvent, handlers.OrganizationActivated)
+	inboxer1.Handle(contracts.OrganizationDeactivatedEvent, handlers.OrganizationDeactivated)
 
 	run(func() {
-		accountConsumer.Run(ctx, contracts.PlaceSvcGroup, contracts.AccountsTopicV1, c.addr...)
+		orgConsumer.Run(ctx, contracts.PlaceSvcGroup, contracts.OrganizationsTopicV1, m.addr...)
 	})
 
 	run(func() {
 		inboxer1.Run(ctx)
-	})
-
-	run(func() {
-		inboxer2.Run(ctx)
 	})
 
 	wg.Wait()

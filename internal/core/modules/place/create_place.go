@@ -24,11 +24,11 @@ type CreateParams struct {
 
 func (m *Module) CreatePlace(
 	ctx context.Context,
-	initiator models.InitiatorData,
+	initiator models.Initiator,
 	params CreateParams,
 ) (place models.Place, err error) {
 	if params.OrganizationID != nil {
-		err = m.chekPermissionForManagePlace(ctx, initiator, *params.OrganizationID)
+		err = m.chekPermissionForCreatePlace(ctx, initiator, *params.OrganizationID)
 		if err != nil {
 			return models.Place{}, err
 		}
@@ -56,7 +56,7 @@ func (m *Module) CreatePlace(
 			return err
 		}
 
-		err = m.messanger.PublishCreatePlace(txCtx, place)
+		err = m.messenger.PublishCreatePlace(txCtx, place)
 		if err != nil {
 			return err
 		}

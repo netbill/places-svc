@@ -13,16 +13,22 @@ import (
 type Module struct {
 	repo      repo
 	bucket    bucket
-	messanger messanger
+	messenger messenger
 	territory checkerTerritory
 	token     token
 }
 
-func New(repo repo, bucket bucket, messanger messanger, territory checkerTerritory, token token) *Module {
+func New(
+	repo repo,
+	bucket bucket,
+	messenger messenger,
+	territory checkerTerritory,
+	token token,
+) *Module {
 	return &Module{
 		repo:      repo,
 		bucket:    bucket,
-		messanger: messanger,
+		messenger: messenger,
 		territory: territory,
 		token:     token,
 	}
@@ -53,7 +59,7 @@ type repo interface {
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
 }
 
-type messanger interface {
+type messenger interface {
 	PublishCreatePlace(ctx context.Context, place models.Place) error
 
 	PublishUpdatePlace(ctx context.Context, place models.Place) error
@@ -113,12 +119,12 @@ type token interface {
 	) (string, error)
 }
 
-func (m *Module) chekPermissionForManagePlace(
+func (m *Module) chekPermissionForCreatePlace(
 	ctx context.Context,
-	initiator models.InitiatorData,
+	initiator models.Initiator,
 	organizationID uuid.UUID,
 ) error {
-	member, err := m.repo.GetOrgMemberByAccountID(ctx, organizationID, initiator.AccountID)
+	member, err := m.repo.GetOrgMemberByAccountID(ctx, organizationID, initiator.GetAccountID())
 	if err != nil {
 		return err
 	}
@@ -130,7 +136,71 @@ func (m *Module) chekPermissionForManagePlace(
 	access, err := m.repo.CheckMemberHavePermission(
 		ctx,
 		member.ID,
-		models.RolePermissionManageOrganization,
+		models.RolePermissionPlaceCreate,
+	)
+	if err != nil {
+		return err
+	}
+
+	if !access {
+		return errx.ErrorNotEnoughRights.Raise(
+			fmt.Errorf("initiator has no access to activate organization"),
+		)
+	}
+
+	return nil
+}
+
+func (m *Module) chekPermissionForDeletePlace(
+	ctx context.Context,
+	initiator models.Initiator,
+	organizationID uuid.UUID,
+) error {
+	member, err := m.repo.GetOrgMemberByAccountID(ctx, organizationID, initiator.GetAccountID())
+	if err != nil {
+		return err
+	}
+
+	if member.Head {
+		return nil
+	}
+
+	access, err := m.repo.CheckMemberHavePermission(
+		ctx,
+		member.ID,
+		models.RolePermissionPlaceDelete,
+	)
+	if err != nil {
+		return err
+	}
+
+	if !access {
+		return errx.ErrorNotEnoughRights.Raise(
+			fmt.Errorf("initiator has no access to activate organization"),
+		)
+	}
+
+	return nil
+}
+
+func (m *Module) chekPermissionForUpdatePlace(
+	ctx context.Context,
+	initiator models.Initiator,
+	organizationID uuid.UUID,
+) error {
+	member, err := m.repo.GetOrgMemberByAccountID(ctx, organizationID, initiator.GetAccountID())
+	if err != nil {
+		return err
+	}
+
+	if member.Head {
+		return nil
+	}
+
+	access, err := m.repo.CheckMemberHavePermission(
+		ctx,
+		member.ID,
+		models.RolePermissionPlaceUpdate,
 	)
 	if err != nil {
 		return err

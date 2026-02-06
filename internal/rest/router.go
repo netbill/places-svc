@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/netbill/logium"
-	"github.com/netbill/places-svc/cmd"
 	"github.com/netbill/restkit/tokens"
 )
 
@@ -33,7 +32,7 @@ type Middlewares interface {
 	AccountAuth(
 		allowedRoles ...string,
 	) func(next http.Handler) http.Handler
-	UpdatePlaces() func(next http.Handler) http.Handler
+	UpdatePlace() func(next http.Handler) http.Handler
 }
 
 type Router struct {
@@ -54,11 +53,23 @@ func New(
 	}
 }
 
-func (s *Router) Run(ctx context.Context, cfg cmd.Config) {
+type Config struct {
+	Port              string
+	TimeoutRead       time.Duration
+	TimeoutReadHeader time.Duration
+	TimeoutWrite      time.Duration
+	TimeoutIdle       time.Duration
+}
+
+func (s *Router) Run(ctx context.Context, cfg Config) {
 	auth := s.middlewares.AccountAuth()
-	sysadmin := s.middlewares.AccountAuth(tokens.AccountRoleAdmin)
-	sysmoder := s.middlewares.AccountAuth(tokens.AccountRoleAdmin, tokens.AccountRoleModerator)
-	//updPlace := s.middlewares.UpdatePlaces()
+	sysadmin := s.middlewares.AccountAuth(
+		tokens.RoleSystemAdmin,
+	)
+	sysmoder := s.middlewares.AccountAuth(
+		tokens.RoleSystemAdmin, tokens.RoleSystemModer,
+	)
+	//updPlace := s.middlewares.UpdatePlace()
 
 	r := chi.NewRouter()
 
@@ -95,14 +106,14 @@ func (s *Router) Run(ctx context.Context, cfg cmd.Config) {
 
 	srv := &http.Server{
 		Handler:           r,
-		Addr:              cfg.Rest.Port,
-		ReadTimeout:       cfg.Rest.Timeouts.Read,
-		ReadHeaderTimeout: cfg.Rest.Timeouts.ReadHeader,
-		WriteTimeout:      cfg.Rest.Timeouts.Write,
-		IdleTimeout:       cfg.Rest.Timeouts.Idle,
+		Addr:              cfg.Port,
+		ReadTimeout:       cfg.TimeoutRead,
+		ReadHeaderTimeout: cfg.TimeoutReadHeader,
+		WriteTimeout:      cfg.TimeoutWrite,
+		IdleTimeout:       cfg.TimeoutIdle,
 	}
 
-	s.log.Infof("starting REST service on %s", cfg.Rest.Port)
+	s.log.Infof("starting REST service on %s", cfg.Port)
 
 	errCh := make(chan error, 1)
 	go func() {

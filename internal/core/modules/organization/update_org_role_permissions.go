@@ -2,15 +2,26 @@ package organization
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core/models"
 )
+
+type UpdateOrgRolePermissionsParams struct {
+	PlaceCreate UpdateOrgRolePermissionsDetails
+	PlaceDelete UpdateOrgRolePermissionsDetails
+	PlaceUpdate UpdateOrgRolePermissionsDetails
+}
+
+type UpdateOrgRolePermissionsDetails struct {
+	Enable    bool
+	CreatedAt time.Time
+}
 
 func (m *Module) UpdateOrgRolePermissions(
 	ctx context.Context,
 	roleID uuid.UUID,
-	permissions []models.OrgRolePermissionLink,
+	permissions UpdateOrgRolePermissionsParams,
 ) error {
-	return m.repo.UpdateOrgRolePermissions(ctx, roleID, permissions)
+	return m.repo.SetOrgRolePermissions(ctx, roleID, permissions)
 }

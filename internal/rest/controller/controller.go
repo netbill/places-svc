@@ -14,7 +14,7 @@ import (
 type placeSvc interface {
 	CreatePlace(
 		ctx context.Context,
-		initiatorID uuid.UUID,
+		initiator models.Initiator,
 		params place.CreateParams,
 	) (place models.Place, err error)
 
@@ -27,12 +27,14 @@ type placeSvc interface {
 
 	UpdatePlace(
 		ctx context.Context,
-		initiatorID, placeID uuid.UUID,
+		initiator models.Initiator,
+		placeID uuid.UUID,
 		params place.UpdateParams,
 	) (place models.Place, err error)
 	UpdatePlaceStatus(
 		ctx context.Context,
-		initiatorID, placeID uuid.UUID,
+		initiator models.Initiator,
+		placeID uuid.UUID,
 		status string,
 	) (place models.Place, err error)
 	UpdatePlaceVerified(
@@ -41,7 +43,10 @@ type placeSvc interface {
 		verified bool,
 	) (place models.Place, err error)
 
-	DeletePlace(ctx context.Context, initiatorID, placeID uuid.UUID) error
+	DeletePlace(
+		ctx context.Context,
+		initiator models.Initiator,
+		placeID uuid.UUID) error
 }
 
 type placeClassSvc interface {
@@ -63,8 +68,8 @@ type placeClassSvc interface {
 }
 
 type core struct {
-	placeSvc
-	placeClassSvc
+	place placeSvc
+	class placeClassSvc
 }
 
 type Controller struct {

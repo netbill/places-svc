@@ -64,21 +64,16 @@ type bucket interface {
 	AcceptUpdatePlaceClassMedia(
 		ctx context.Context,
 		placeClassID, sessionID uuid.UUID,
-	) (models.PlaceMedia, error)
+	) (models.PlaceClassMedia, error)
 
-	CancelUpdatePlaceIcon(
+	CancelUpdatePlaceClassIcon(
 		ctx context.Context,
-		placeID, sessionID uuid.UUID,
-	) error
-
-	CancelUpdateClassIconBanner(
-		ctx context.Context,
-		placeID, sessionID uuid.UUID,
+		placeClassID, sessionID uuid.UUID,
 	) error
 
 	CleanPlaceClassMediaSession(
 		ctx context.Context,
-		placeID, sessionID uuid.UUID,
+		placeClassID, sessionID uuid.UUID,
 	) error
 }
 

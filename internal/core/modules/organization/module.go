@@ -67,11 +67,10 @@ type repo interface {
 		order map[uuid.UUID]uint,
 		updatedAt time.Time,
 	) error
-	UpdateOrgRolePermissions(
+	SetOrgRolePermissions(
 		ctx context.Context,
 		roleID uuid.UUID,
-		permissions map[string]bool,
-		updatedAt time.Time,
+		permissions UpdateOrgRolePermissionsParams,
 	) error
 
 	UpdatePlaceStatusForOrg(

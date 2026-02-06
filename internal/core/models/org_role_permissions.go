@@ -14,6 +14,10 @@ var allRolePermissions = []string{
 	RolePermissionPlaceUpdate,
 }
 
+func GetOrgRolePermissionLength() int {
+	return len(allRolePermissions)
+}
+
 type OrgRolePermission struct {
 	Code        string `json:"code"`
 	Description string `json:"description"`

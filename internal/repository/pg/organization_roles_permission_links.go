@@ -61,27 +61,69 @@ func (q *organizationRolePermissionLinks) New() repository.OrgRolePermissionLink
 	return NewOrgRolePermissionLinksQ(q.db)
 }
 
-func (q *organizationRolePermissionLinks) Insert(
+func (q *organizationRolePermissionLinks) Upsert(
 	ctx context.Context,
-	data repository.OrganizationRolePermissionLinkRow,
-) (repository.OrganizationRolePermissionLinkRow, error) {
-	now := time.Now().UTC()
+	roleID uuid.UUID,
+	data map[string]time.Time,
+) ([]repository.OrganizationRolePermissionLinkRow, error) {
+	codes := make([]string, 0, len(data))
+	times := make([]time.Time, 0, len(data))
 
-	query, args, err := q.inserter.SetMap(map[string]any{
-		"role_id":            data.RoleID,
-		"permission_code":    data.PermissionCode,
-		"source_created_at":  data.SourceCreatedAt.UTC(),
-		"replica_created_at": now,
-	}).Suffix("RETURNING " + organizationRolePermissionLinksColumns).ToSql()
-	if err != nil {
-		return repository.OrganizationRolePermissionLinkRow{}, fmt.Errorf(
-			"building insert query for %s: %w",
-			organizationRolePermissionLinksTable,
-			err,
-		)
+	for code, t := range data {
+		if code == "" || t.IsZero() {
+			continue
+		}
+		codes = append(codes, code)
+		times = append(times, t.UTC())
 	}
 
-	return scanOrganizationRolePermissionLink(q.db.QueryRow(ctx, query, args...))
+	const sqlq = `
+		WITH del AS (
+			DELETE FROM organization_role_permission_links
+			WHERE role_id = $1
+		)
+		INSERT INTO organization_role_permission_links (
+			role_id,
+			permission_code,
+			source_created_at
+		)
+		SELECT
+			$1,
+			x.permission_code,
+			x.source_created_at
+		FROM UNNEST($2::text[], $3::timestamptz[])
+			AS x(permission_code, source_created_at)
+		RETURNING
+			role_id,
+			permission_code,
+			source_created_at,
+			replica_created_at
+	`
+
+	rows, err := q.db.Query(ctx, sqlq, roleID, codes, times)
+	if err != nil {
+		return nil, fmt.Errorf("upsert role permission links: %w", err)
+	}
+	defer rows.Close()
+
+	out := make([]repository.OrganizationRolePermissionLinkRow, 0, len(codes))
+	for rows.Next() {
+		var r repository.OrganizationRolePermissionLinkRow
+		if err := rows.Scan(
+			&r.RoleID,
+			&r.PermissionCode,
+			&r.SourceCreatedAt,
+			&r.ReplicaCreatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scanning role permission link: %w", err)
+		}
+		out = append(out, r)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }
 
 func (q *organizationRolePermissionLinks) Get(ctx context.Context) (repository.OrganizationRolePermissionLinkRow, error) {
@@ -132,6 +174,22 @@ func (q *organizationRolePermissionLinks) Select(
 	}
 
 	return out, nil
+}
+
+func (q *organizationRolePermissionLinks) Exist(ctx context.Context) (bool, error) {
+	subSQL, subArgs, err := q.selector.Limit(1).ToSql()
+	if err != nil {
+		return false, fmt.Errorf("building exists query for %s: %w", organizationRolePermissionLinksTable, err)
+	}
+
+	sqlq := "SELECT EXISTS (" + subSQL + ")"
+
+	var ok bool
+	if err = q.db.QueryRow(ctx, sqlq, subArgs...).Scan(&ok); err != nil {
+		return false, fmt.Errorf("scanning exists for %s: %w", PlacesTable, err)
+	}
+
+	return ok, nil
 }
 
 func (q *organizationRolePermissionLinks) Delete(ctx context.Context) error {

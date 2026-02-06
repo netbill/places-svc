@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/netbill/awsx"
-	"github.com/netbill/evebox/box/inbox"
 	"github.com/netbill/evebox/box/outbox"
 	"github.com/netbill/logium"
 	"github.com/netbill/pgdbx"
@@ -105,7 +104,6 @@ func StartServices(ctx context.Context, cfg Config, log *logium.Logger, wg *sync
 	)
 
 	outBox := outbox.New(db)
-	inBox := inbox.New(db)
 
 	kafkaOutbound := outbound.New(log, outBox)
 
@@ -136,7 +134,7 @@ func StartServices(ctx context.Context, cfg Config, log *logium.Logger, wg *sync
 
 	orgSvc := organization.New(repo)
 	pclasessSvc := pclass.New(repo, kafkaOutbound, s3Bucket, tokenManager)
-	placesSvc := place.New(repo, kafkaOutbound, s3Bucket, geogusser, tokenManager)
+	placesSvc := place.New(repo, s3Bucket, kafkaOutbound, geogusser, tokenManager)
 
 	kafkaInbound := inbound.New(log, orgSvc)
 
@@ -148,15 +146,21 @@ func StartServices(ctx context.Context, cfg Config, log *logium.Logger, wg *sync
 	}, responser)
 	router := rest.New(log, mdll, ctrl)
 
-	kafkaConsumer := messenger.NewConsumer(log, inBox, kafkaInbound, cfg.Kafka.Brokers...)
-
-	kafkaProducer := messenger.NewProducer(log, outBox, cfg.Kafka.Brokers...)
+	msgx := messenger.New(log, db, cfg.Kafka.Brokers...)
 
 	log.Infof("starting kafka brokers %s", cfg.Kafka.Brokers)
 
-	run(func() { router.Run(ctx, cfg) })
+	run(func() {
+		router.Run(ctx, rest.Config{
+			Port:              cfg.Rest.Port,
+			TimeoutRead:       cfg.Rest.Timeouts.Read,
+			TimeoutReadHeader: cfg.Rest.Timeouts.ReadHeader,
+			TimeoutWrite:      cfg.Rest.Timeouts.Write,
+			TimeoutIdle:       cfg.Rest.Timeouts.Idle,
+		})
+	})
 
-	run(func() { kafkaConsumer.Run(ctx) })
+	run(func() { msgx.RunConsumer(ctx, kafkaInbound) })
 
-	run(func() { kafkaProducer.Run(ctx) })
+	run(func() { msgx.RunProducer(ctx) })
 }

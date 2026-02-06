@@ -71,3 +71,18 @@ func (r *Repository) DeleteOrgMember(ctx context.Context, memberID uuid.UUID) er
 		FilterByID(memberID).
 		Delete(ctx)
 }
+
+func (r *Repository) GetOrgMemberByAccountID(
+	ctx context.Context,
+	organizationID, accountID uuid.UUID,
+) (models.OrgMember, error) {
+	row, err := r.OrgMembersQ.New().
+		FilterByOrganizationID(organizationID).
+		FilterByAccountID(accountID).
+		Get(ctx)
+	if err != nil {
+		return models.OrgMember{}, err
+	}
+
+	return row.ToModel(), nil
+}

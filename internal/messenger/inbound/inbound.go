@@ -16,14 +16,14 @@ type Inbound struct {
 }
 
 type domain struct {
-	organizationSvc
+	organization organizationSvc
 }
 
 func New(log *logium.Logger, org organizationSvc) Inbound {
 	return Inbound{
 		log: log,
 		domain: domain{
-			organizationSvc: org,
+			organization: org,
 		},
 	}
 }
@@ -59,7 +59,7 @@ type organizationSvc interface {
 	UpdateOrgRolePermissions(
 		ctx context.Context,
 		roleID uuid.UUID,
-		permissions []models.OrgRolePermissionLink,
+		permissions organization.UpdateOrgRolePermissionsParams,
 	) error
 
 	UpdateOrgRolesRanks(

@@ -11,7 +11,7 @@ import (
 
 func (m *Module) OpenUpdatePlaceClassSession(
 	ctx context.Context,
-	initiator models.InitiatorData,
+	initiator models.Initiator,
 	placeClassID uuid.UUID,
 ) (models.PlaceClass, models.UpdatePlaceClassMedia, error) {
 	org, err := m.GetPlaceClass(ctx, placeClassID)
@@ -26,7 +26,7 @@ func (m *Module) OpenUpdatePlaceClassSession(
 	}
 
 	uploadToken, err := m.token.NewUploadPlaceClassMediaToken(
-		initiator.AccountID,
+		initiator.GetAccountID(),
 		placeClassID,
 		uploadSessionID,
 	)

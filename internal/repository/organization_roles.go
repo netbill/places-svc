@@ -104,17 +104,6 @@ func (r *Repository) UpdateOrgRolesRanks(
 	)
 }
 
-func (r *Repository) UpdateOrgRolePermissions(
-	ctx context.Context,
-	roleID uuid.UUID,
-	permissions map[string]bool,
-	updatedAt time.Time,
-) error {
-	//TODO: implement
-
-	return nil
-}
-
 func (r *Repository) DeleteOrgRole(
 	ctx context.Context,
 	roleID uuid.UUID,
