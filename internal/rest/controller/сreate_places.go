@@ -13,7 +13,7 @@ import (
 	"github.com/paulmach/orb"
 )
 
-func (c Controller) CreatePlace(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) CreatePlace(w http.ResponseWriter, r *http.Request) {
 	initiator, err := contexter.AccountData(r.Context())
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get initiator account data")
@@ -28,7 +28,7 @@ func (c Controller) CreatePlace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := c.core.place.CreatePlace(r.Context(), initiator, place.CreateParams{
+	res, err := c.core.place.Create(r.Context(), initiator, place.CreateParams{
 		OrganizationID: req.Data.Attributes.OrganizationId,
 		ClassID:        req.Data.Attributes.ClassId,
 		Address:        req.Data.Attributes.Address,

@@ -1,0 +1,96 @@
+type: object
+required:
+  - id
+  - type
+  - attributes
+  - relationships
+properties:
+  id:
+    type: string
+    format: uuid
+    description: "place ID"
+  type:
+    type: string
+    enum: [ place ]
+  attributes:
+    type: object
+    required:
+      - status
+      - verified
+      - point
+      - address
+      - name
+      - created_at
+      - updated_at
+    properties:
+      status:
+        type: string
+        description: "The status of the place (e.g., active, inactive)"
+      verified:
+        type: boolean
+        description: "Indicates if the place has been verified"
+      point:
+        $ref: '../Point.yaml'
+      address:
+        type: string
+        description: "The physical address of the place"
+      name:
+        type: string
+        description: "The name of the place"
+      description:
+        type: string
+        description: "A brief description of the place"
+      icon:
+        type: string
+        format: uri
+        description: "A URL to an icon representing the place"
+      banner:
+        type: string
+        format: uri
+        description: "A URL to a banner image for the place"
+      website:
+        type: string
+        format: uri
+        description: "The website URL of the place"
+      phone:
+        type: string
+        description: "The contact phone number of the place"
+      created_at:
+        type: string
+        format: date-time
+        description: "The date and time when the place was created"
+      updated_at:
+        type: string
+        format: date-time
+        description: "The date and time when the place was last updated"
+  relationships:
+    type: object
+    required:
+      - class
+    properties:
+      organization:
+        type: object
+        required:
+          - id
+          - type
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: "The ID of the organization associated with the place"
+          type:
+            type: string
+            enum: [ organization ]
+      class:
+        type: object
+        required:
+          - id
+          - type
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: "The ID of the class associated with the place"
+          type:
+            type: string
+            enum: [ place_class ]

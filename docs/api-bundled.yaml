@@ -83,7 +83,7 @@ components:
                 phone:
                   type: string
                   description: The contact phone number of the place
-    UpdatePlace:
+    ConfirmUpdatePlace:
       type: object
       required:
         - data
@@ -105,11 +105,12 @@ components:
                 - update_place
             attributes:
               type: object
+              required:
+                - status
+                - verified
+                - address
+                - name
               properties:
-                class_id:
-                  type: string
-                  format: uuid
-                  description: The ID of the class this place belongs to
                 status:
                   type: string
                   description: 'The status of the place (e.g., active, inactive)'
@@ -122,14 +123,6 @@ components:
                 description:
                   type: string
                   description: A brief description of the place
-                icon:
-                  type: string
-                  format: uri
-                  description: A URL to an icon representing the place
-                banner:
-                  type: string
-                  format: uri
-                  description: A URL to a banner image for the place
                 website:
                   type: string
                   format: uri
@@ -137,6 +130,12 @@ components:
                 phone:
                   type: string
                   description: The contact phone number of the place
+                delete_icon:
+                  type: boolean
+                  description: Flag to indicate if the place's icon should be deleted
+                delete_banner:
+                  type: boolean
+                  description: Flag to indicate if the place's banner should be deleted
     UpdateClassForPlace:
       type: object
       required:
@@ -156,7 +155,7 @@ components:
             type:
               type: string
               enum:
-                - update_place_class
+                - update_place_class_for_place
             attributes:
               type: object
               required:
@@ -290,7 +289,7 @@ components:
                   type: string
                   format: uri
                   description: A URL to an icon representing the class
-    UpdatePlaceClass:
+    ConfirmUpdatePlaceClass:
       type: object
       required:
         - data
@@ -309,9 +308,13 @@ components:
             type:
               type: string
               enum:
-                - place_class_update
+                - confirm_place_class_update
             attributes:
               type: object
+              required:
+                - code
+                - name
+                - description
               properties:
                 parent_id:
                   type: string
@@ -327,10 +330,9 @@ components:
                 description:
                   type: string
                   description: A brief description of the class
-                icon:
-                  type: string
-                  format: uri
-                  description: A URL to an icon representing the class
+                delete_icon:
+                  type: bool
+                  description: Flag to indicate if the place class banner should be deleted
     ReplacePlaceClass:
       type: object
       required:
@@ -582,3 +584,145 @@ components:
             $ref: '#/components/schemas/PlaceClass/properties/data'
         links:
           $ref: '#/components/schemas/PaginationData'
+    OpenUpdatePlaceClassMediaLinks:
+      type: object
+      required:
+        - data
+        - included
+      properties:
+        data:
+          type: object
+          required:
+            - id
+            - type
+            - attributes
+            - relationships
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Upload session id
+            type:
+              type: string
+              enum:
+                - place_class_avatar_upload
+            attributes:
+              type: object
+              required:
+                - upload_token
+                - icon_upload_url
+                - icon_get_url
+              properties:
+                upload_token:
+                  type: string
+                  description: JWT upload session token
+                icon_upload_url:
+                  type: string
+                  format: uri
+                  description: Pre-signed PUT URL for icon upload
+                icon_get_url:
+                  type: string
+                  format: uri
+                  description: Pre-signed GET URL to read uploaded icon
+            relationships:
+              type: object
+              properties:
+                place_class:
+                  type: object
+                  required:
+                    - data
+                  properties:
+                    data:
+                      type: object
+                      required:
+                        - id
+                        - type
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          description: place_class id
+                        type:
+                          type: string
+                          enum:
+                            - place_class
+        included:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaceClass/properties/data'
+    OpenUpdatePlaceMediaLinks:
+      type: object
+      required:
+        - data
+        - included
+      properties:
+        data:
+          type: object
+          required:
+            - id
+            - type
+            - attributes
+            - relationships
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Upload session id
+            type:
+              type: string
+              enum:
+                - place_avatar_upload
+            attributes:
+              type: object
+              required:
+                - upload_token
+                - icon_upload_url
+                - icon_get_url
+                - banner_upload_url
+                - banner_get_url
+              properties:
+                upload_token:
+                  type: string
+                  description: JWT upload session token
+                icon_upload_url:
+                  type: string
+                  format: uri
+                  description: Pre-signed PUT URL for icon upload
+                icon_get_url:
+                  type: string
+                  format: uri
+                  description: Pre-signed GET URL to read uploaded icon
+                banner_upload_url:
+                  type: string
+                  format: uri
+                  description: Pre-signed PUT URL for banner upload
+                banner_get_url:
+                  type: string
+                  format: uri
+                  description: Pre-signed GET URL to read uploaded banner
+            relationships:
+              type: object
+              properties:
+                place:
+                  type: object
+                  required:
+                    - data
+                  properties:
+                    data:
+                      type: object
+                      required:
+                        - id
+                        - type
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          description: place id
+                        type:
+                          type: string
+                          enum:
+                            - place
+        included:
+          type: array
+          items:
+            $ref: '#/components/schemas/Place/properties/data'

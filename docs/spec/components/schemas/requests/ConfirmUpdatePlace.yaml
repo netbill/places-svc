@@ -1,0 +1,51 @@
+type: object
+required:
+  - data
+properties:
+  data:
+    type: object
+    required:
+      - id
+      - type
+      - attributes
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: "The unique identifier of the place to be updated"
+      type:
+        type: string
+        enum: [ update_place ]
+      attributes:
+        type: object
+        required:
+          - status
+          - verified
+          - address
+          - name
+        properties:
+          status:
+            type: string
+            description: "The status of the place (e.g., active, inactive)"
+          address:
+            type: string
+            description: "The physical address of the place"
+          name:
+            type: string
+            description: "The name of the place"
+          description:
+            type: string
+            description: "A brief description of the place"
+          website:
+            type: string
+            format: uri
+            description: "The website URL of the place"
+          phone:
+            type: string
+            description: "The contact phone number of the place"
+          delete_icon:
+            type: boolean
+            description: "Flag to indicate if the place's icon should be deleted"
+          delete_banner:
+            type: boolean
+            description: "Flag to indicate if the place's banner should be deleted"

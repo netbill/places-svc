@@ -11,7 +11,7 @@ import (
 	"github.com/netbill/places-svc/internal/messenger/contracts"
 )
 
-func (i Inbound) OrganizationCreated(
+func (i *Inbound) OrganizationCreated(
 	ctx context.Context,
 	event inbox.Event,
 ) inbox.EventStatus {
@@ -46,7 +46,7 @@ func (i Inbound) OrganizationCreated(
 	return inbox.EventStatusProcessed
 }
 
-func (i Inbound) OrganizationDeleted(
+func (i *Inbound) OrganizationDeleted(
 	ctx context.Context,
 	event inbox.Event,
 ) inbox.EventStatus {
@@ -76,7 +76,7 @@ func (i Inbound) OrganizationDeleted(
 	return inbox.EventStatusProcessed
 }
 
-func (i Inbound) OrganizationActivated(
+func (i *Inbound) OrganizationActivated(
 	ctx context.Context,
 	event inbox.Event,
 ) inbox.EventStatus {
@@ -110,7 +110,7 @@ func (i Inbound) OrganizationActivated(
 	return inbox.EventStatusProcessed
 }
 
-func (i Inbound) OrganizationDeactivated(
+func (i *Inbound) OrganizationDeactivated(
 	ctx context.Context,
 	event inbox.Event,
 ) inbox.EventStatus {

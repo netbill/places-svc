@@ -12,7 +12,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-func (p Producer) PublishPlaceClassCreated(ctx context.Context, class models.PlaceClass) error {
+func (p *Producer) PublishPlaceClassCreated(ctx context.Context, class models.PlaceClass) error {
 	payload, err := json.Marshal(contracts.PlaceClassCreatedPayload{
 		PlaceClassID: class.ID,
 		ParentID:     class.ParentID,
@@ -46,7 +46,7 @@ func (p Producer) PublishPlaceClassCreated(ctx context.Context, class models.Pla
 	return err
 }
 
-func (p Producer) PublishPlaceClassUpdated(ctx context.Context, class models.PlaceClass) error {
+func (p *Producer) PublishPlaceClassUpdated(ctx context.Context, class models.PlaceClass) error {
 	payload, err := json.Marshal(contracts.PlaceClassUpdatedPayload{
 		PlaceClassID: class.ID,
 		ParentID:     class.ParentID,
@@ -79,7 +79,7 @@ func (p Producer) PublishPlaceClassUpdated(ctx context.Context, class models.Pla
 	return err
 }
 
-func (p Producer) PublishPlaceClassParentUpdated(ctx context.Context, class models.PlaceClass) error {
+func (p *Producer) PublishPlaceClassParentUpdated(ctx context.Context, class models.PlaceClass) error {
 	payload, err := json.Marshal(contracts.PlaceClassParentUpdatedPayload{
 		PlaceClassID: class.ID,
 		ParentID:     class.ParentID,
@@ -108,7 +108,7 @@ func (p Producer) PublishPlaceClassParentUpdated(ctx context.Context, class mode
 	return err
 }
 
-func (p Producer) PublishPlaceClassDeleted(ctx context.Context, classID uuid.UUID) error {
+func (p *Producer) PublishPlaceClassDeleted(ctx context.Context, classID uuid.UUID) error {
 	payload, err := json.Marshal(contracts.PlaceClassDeletedPayload{
 		PlaceClassID: classID,
 		DeletedAt:    time.Now().UTC(),
@@ -136,7 +136,7 @@ func (p Producer) PublishPlaceClassDeleted(ctx context.Context, classID uuid.UUI
 	return err
 }
 
-func (p Producer) PublishPlacesClassReplaced(ctx context.Context, oldClassID, newClassID uuid.UUID) error {
+func (p *Producer) PublishPlacesClassReplaced(ctx context.Context, oldClassID, newClassID uuid.UUID) error {
 	payload, err := json.Marshal(contracts.PlacesClassReplacedPayload{
 		OldClassID: oldClassID,
 		NewClassID: newClassID,

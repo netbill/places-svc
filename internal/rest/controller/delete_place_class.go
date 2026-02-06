@@ -11,7 +11,7 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
-func (c Controller) DeletePlaceClass(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) DeletePlaceClass(w http.ResponseWriter, r *http.Request) {
 	classID, err := uuid.Parse(chi.URLParam(r, "place_class_id"))
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid place class id")
@@ -19,7 +19,7 @@ func (c Controller) DeletePlaceClass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.core.class.DeletePlaceClass(r.Context(), classID)
+	err = c.core.class.Delete(r.Context(), classID)
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to delete place class")
 		switch {

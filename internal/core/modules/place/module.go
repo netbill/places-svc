@@ -43,6 +43,7 @@ type repo interface {
 	UpdatePlaceByID(ctx context.Context, id uuid.UUID, params UpdateParams) (models.Place, error)
 	UpdatePlaceStatus(ctx context.Context, placeID uuid.UUID, status string) (models.Place, error)
 	UpdatePlaceVerified(ctx context.Context, placeID uuid.UUID, verified bool) (models.Place, error)
+	UpdateClassForPlace(ctx context.Context, placeID uuid.UUID, classID uuid.UUID) (models.Place, error)
 
 	DeletePlaceByID(ctx context.Context, id uuid.UUID) error
 

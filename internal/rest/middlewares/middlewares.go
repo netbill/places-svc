@@ -89,3 +89,25 @@ func (p *Provider) UpdatePlace() func(next http.Handler) http.Handler {
 		})
 	}
 }
+
+func (p *Provider) UpdatePlaceClass() func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			res, err := grants.UploadContentGrant(r, p.uploadFilesSK, grants.UploadContentParams{
+				Audience:   tokenmanager.PlacesActor,
+				Resource:   tokenmanager.PlaceClassResource,
+				ResourceID: chi.URLParam(r, "place_class_id"),
+			})
+			if err != nil {
+				p.log.WithError(err).Errorf("upload content grant validation failed")
+				p.responser.RenderErr(w, problems.Unauthorized("upload content grant validation failed"))
+
+				return
+			}
+
+			next.ServeHTTP(w, r.WithContext(
+				context.WithValue(r.Context(), contexter.UploadContentCtxKey, res)),
+			)
+		})
+	}
+}

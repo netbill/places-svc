@@ -8,21 +8,23 @@ import (
 	"github.com/netbill/restkit/pagi"
 )
 
-func PlaceClass(model models.PlaceClass) resources.PlaceClassData {
-	data := resources.PlaceClassData{
-		Id:   model.ID,
-		Type: "class",
-		Attributes: resources.PlaceClassDataAttributes{
-			Code:        model.Code,
-			Name:        model.Name,
-			Description: model.Description,
-			Icon:        model.Icon,
-			CreatedAt:   model.CreatedAt,
-			UpdatedAt:   model.UpdatedAt,
+func PlaceClass(model models.PlaceClass) resources.PlaceClass {
+	res := resources.PlaceClass{
+		Data: resources.PlaceClassData{
+			Id:   model.ID,
+			Type: "class",
+			Attributes: resources.PlaceClassDataAttributes{
+				Code:        model.Code,
+				Name:        model.Name,
+				Description: model.Description,
+				Icon:        model.Icon,
+				CreatedAt:   model.CreatedAt,
+				UpdatedAt:   model.UpdatedAt,
+			},
 		},
 	}
 	if model.ParentID != nil {
-		data.Relationships = &resources.PlaceClassDataRelationships{
+		res.Data.Relationships = &resources.PlaceClassDataRelationships{
 			Parent: &resources.PlaceClassDataRelationshipsParent{
 				Id:   *model.ParentID,
 				Type: "class",
@@ -30,13 +32,13 @@ func PlaceClass(model models.PlaceClass) resources.PlaceClassData {
 		}
 	}
 
-	return data
+	return res
 }
 
 func PlaceClasses(r *http.Request, page pagi.Page[[]models.PlaceClass]) resources.PlaceClassesCollection {
 	data := make([]resources.PlaceClassData, len(page.Data))
 	for i, mod := range page.Data {
-		data[i] = PlaceClass(mod)
+		data[i] = PlaceClass(mod).Data
 	}
 
 	links := pagi.BuildPageLinks(r, page.Page, page.Size, page.Total)
@@ -48,6 +50,34 @@ func PlaceClasses(r *http.Request, page pagi.Page[[]models.PlaceClass]) resource
 			Last:  links.Last,
 			Prev:  links.Prev,
 			Next:  links.Next,
+		},
+	}
+}
+
+func OpenUpdatePlaceClassSession(
+	class models.PlaceClass,
+	uploadLinks models.UpdatePlaceClassMedia,
+) resources.OpenUpdatePlaceClassMediaLinks {
+	return resources.OpenUpdatePlaceClassMediaLinks{
+		Data: resources.OpenUpdatePlaceClassMediaLinksData{
+			Id:   uploadLinks.UploadSessionID,
+			Type: "update_placeClass_session",
+			Attributes: resources.OpenUpdatePlaceClassMediaLinksDataAttributes{
+				UploadToken:   uploadLinks.UploadToken,
+				IconGetUrl:    uploadLinks.Links.IconGetURL,
+				IconUploadUrl: uploadLinks.Links.IconUploadURL,
+			},
+			Relationships: resources.OpenUpdatePlaceClassMediaLinksDataRelationships{
+				PlaceClass: &resources.OpenUpdatePlaceClassMediaLinksDataRelationshipsPlaceClass{
+					Data: resources.OpenUpdatePlaceClassMediaLinksDataRelationshipsPlaceClassData{
+						Id:   class.ID,
+						Type: "placeClass",
+					},
+				},
+			},
+		},
+		Included: []resources.PlaceClassData{
+			PlaceClass(class).Data,
 		},
 	}
 }

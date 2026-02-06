@@ -16,35 +16,40 @@ paths:
 
 components:
   schemas:
-    # requestBodies:
+    # requests:
     CreatePlace:
-      $ref: './spec/components/schemas/CreatePlace.yaml'
-    UpdatePlace:
-      $ref: './spec/components/schemas/UpdatePlace.yaml'
+      $ref: './spec/components/schemas/requests/CreatePlace.yaml'
+    ConfirmUpdatePlace:
+      $ref: './spec/components/schemas/requests/ConfirmUpdatePlace.yaml'
     UpdateClassForPlace:
-      $ref: './spec/components/schemas/UpdateClassForPlace.yaml'
+      $ref: './spec/components/schemas/requests/UpdateClassForPlace.yaml'
     VerifyPlace:
-      $ref: './spec/components/schemas/VerifyPlace.yaml'
+      $ref: './spec/components/schemas/requests/VerifyPlace.yaml'
     UpdatePlaceStatus:
-      $ref: './spec/components/schemas/UpdatePlaceStatus.yaml'
+      $ref: './spec/components/schemas/requests/UpdatePlaceStatus.yaml'
     UpdatePlaceVerify:
-      $ref: './spec/components/schemas/UpdatePlaceVerify.yaml'
+      $ref: './spec/components/schemas/requests/UpdatePlaceVerify.yaml'
 
     CreatePlaceClass:
-      $ref: './spec/components/schemas/CreatePlaceClass.yaml'
-    UpdatePlaceClass:
-      $ref: './spec/components/schemas/UpdatePlaceClass.yaml'
+      $ref: './spec/components/schemas/requests/CreatePlaceClass.yaml'
+    ConfirmUpdatePlaceClass:
+      $ref: './spec/components/schemas/requests/ConfirmUpdatePlaceClass.yaml'
     ReplacePlaceClass:
-      $ref: './spec/components/schemas/ReplacePlaceClass.yaml'
+      $ref: './spec/components/schemas/requests/ReplacePlaceClass.yaml'
 
     # responses:
     PaginationData:
-      $ref: './spec/components/schemas/PaginationData.yaml'
+      $ref: './spec/components/schemas/responses/PaginationData.yaml'
     Place:
-      $ref: './spec/components/schemas/Place.yaml'
+      $ref: './spec/components/schemas/responses/Place.yaml'
     PlacesCollection:
-      $ref: './spec/components/schemas/PlacesCollection.yaml'
+      $ref: './spec/components/schemas/responses/PlacesCollection.yaml'
     PlaceClass:
-      $ref: './spec/components/schemas/PlaceClass.yaml'
+      $ref: './spec/components/schemas/responses/PlaceClass.yaml'
     PlaceClassesCollection:
-      $ref: './spec/components/schemas/PlaceClassesCollection.yaml'
+      $ref: './spec/components/schemas/responses/PlaceClassesCollection.yaml'
+    OpenUpdatePlaceClassMediaLinks:
+      $ref: './spec/components/schemas/responses/OpenUpdatePlaceClassMediaLinks.yaml'
+    OpenUpdatePlaceMediaLinks:
+      $ref: './spec/components/schemas/responses/OpenUpdatePlaceMediaLinks.yaml'
+      

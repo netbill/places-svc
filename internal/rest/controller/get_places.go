@@ -12,7 +12,7 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
-func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 	limit, offset := pagi.GetPagination(r)
 	if limit > 100 {
 		c.log.WithError(fmt.Errorf("invalid pagination limit %d", limit)).Errorf("invalid pagination limit")
@@ -107,7 +107,7 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 		params.Near.RadiusM = uint(radius)
 	}
 
-	res, err := c.core.place.GetPlaces(r.Context(), params, limit, offset)
+	res, err := c.core.place.GetList(r.Context(), params, limit, offset)
 	if err != nil {
 		c.log.WithError(err).Errorf("error getting places")
 		c.responser.RenderErr(w, problems.InternalError())

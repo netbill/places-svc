@@ -4,17 +4,17 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**ParentId** | Pointer to [**uuid.UUID**](uuid.UUID.md) | The ID of the parent class | [optional] 
-**Code** | Pointer to **string** | The unique code of the class | [optional] 
-**Name** | Pointer to **string** | The name of the class | [optional] 
-**Description** | Pointer to **string** | A brief description of the class | [optional] 
-**Icon** | Pointer to **string** | A URL to an icon representing the class | [optional] 
+**ParentId** | [**uuid.UUID**](uuid.UUID.md) | The ID of the parent class | 
+**Code** | **string** | The unique code of the class | 
+**Name** | **string** | The name of the class | 
+**Description** | **string** | A brief description of the class | 
+**DeleteIcon** | **bool** | Flag to indicate if the place class banner should be deleted | 
 
 ## Methods
 
 ### NewUpdatePlaceClassDataAttributes
 
-`func NewUpdatePlaceClassDataAttributes() *UpdatePlaceClassDataAttributes`
+`func NewUpdatePlaceClassDataAttributes(parentId uuid.UUID, code string, name string, description string, deleteIcon bool, ) *UpdatePlaceClassDataAttributes`
 
 NewUpdatePlaceClassDataAttributes instantiates a new UpdatePlaceClassDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -48,11 +48,6 @@ and a boolean to check if the value has been set.
 
 SetParentId sets ParentId field to given value.
 
-### HasParentId
-
-`func (o *UpdatePlaceClassDataAttributes) HasParentId() bool`
-
-HasParentId returns a boolean if a field has been set.
 
 ### GetCode
 
@@ -73,11 +68,6 @@ and a boolean to check if the value has been set.
 
 SetCode sets Code field to given value.
 
-### HasCode
-
-`func (o *UpdatePlaceClassDataAttributes) HasCode() bool`
-
-HasCode returns a boolean if a field has been set.
 
 ### GetName
 
@@ -98,11 +88,6 @@ and a boolean to check if the value has been set.
 
 SetName sets Name field to given value.
 
-### HasName
-
-`func (o *UpdatePlaceClassDataAttributes) HasName() bool`
-
-HasName returns a boolean if a field has been set.
 
 ### GetDescription
 
@@ -123,36 +108,26 @@ and a boolean to check if the value has been set.
 
 SetDescription sets Description field to given value.
 
-### HasDescription
 
-`func (o *UpdatePlaceClassDataAttributes) HasDescription() bool`
+### GetDeleteIcon
 
-HasDescription returns a boolean if a field has been set.
+`func (o *UpdatePlaceClassDataAttributes) GetDeleteIcon() bool`
 
-### GetIcon
+GetDeleteIcon returns the DeleteIcon field if non-nil, zero value otherwise.
 
-`func (o *UpdatePlaceClassDataAttributes) GetIcon() string`
+### GetDeleteIconOk
 
-GetIcon returns the Icon field if non-nil, zero value otherwise.
+`func (o *UpdatePlaceClassDataAttributes) GetDeleteIconOk() (*bool, bool)`
 
-### GetIconOk
-
-`func (o *UpdatePlaceClassDataAttributes) GetIconOk() (*string, bool)`
-
-GetIconOk returns a tuple with the Icon field if it's non-nil, zero value otherwise
+GetDeleteIconOk returns a tuple with the DeleteIcon field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetIcon
+### SetDeleteIcon
 
-`func (o *UpdatePlaceClassDataAttributes) SetIcon(v string)`
+`func (o *UpdatePlaceClassDataAttributes) SetDeleteIcon(v bool)`
 
-SetIcon sets Icon field to given value.
+SetDeleteIcon sets DeleteIcon field to given value.
 
-### HasIcon
-
-`func (o *UpdatePlaceClassDataAttributes) HasIcon() bool`
-
-HasIcon returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

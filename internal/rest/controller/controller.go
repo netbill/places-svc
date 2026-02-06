@@ -13,59 +13,96 @@ import (
 )
 
 type placeSvc interface {
-	CreatePlace(
+	Create(
 		ctx context.Context,
 		initiator models.Initiator,
 		params place.CreateParams,
 	) (place models.Place, err error)
 
-	GetPlace(ctx context.Context, placeID uuid.UUID) (models.Place, error)
-	GetPlaces(
+	Get(ctx context.Context, placeID uuid.UUID) (models.Place, error)
+	GetList(
 		ctx context.Context,
 		params place.FilterParams,
 		limit, offset uint,
 	) (places pagi.Page[[]models.Place], err error)
 
-	UpdatePlace(
+	OpenUpdateSession(
+		ctx context.Context,
+		initiator models.Initiator,
+		placeID uuid.UUID,
+	) (models.Place, models.UpdatePlaceMedia, error)
+	ConfirmUpdateSession(
 		ctx context.Context,
 		initiator models.Initiator,
 		placeID uuid.UUID,
 		params place.UpdateParams,
 	) (place models.Place, err error)
-	UpdatePlaceStatus(
+	DeleteUpdateIconInSession(
+		ctx context.Context,
+		initiator models.Initiator,
+		placeID, uploadSessionID uuid.UUID,
+	) error
+	DeleteUpdateBannerInSession(
+		ctx context.Context,
+		initiator models.Initiator,
+		placeID, uploadSessionID uuid.UUID,
+	) error
+	CancelUpdate(
+		ctx context.Context,
+		initiator models.Initiator,
+		placeID, uploadSessionID uuid.UUID,
+	) error
+
+	UpdateStatus(
 		ctx context.Context,
 		initiator models.Initiator,
 		placeID uuid.UUID,
 		status string,
 	) (place models.Place, err error)
-	UpdatePlaceVerified(
+	UpdateVerified(
 		ctx context.Context,
 		placeID uuid.UUID,
 		verified bool,
 	) (place models.Place, err error)
 
-	DeletePlace(
+	Delete(
 		ctx context.Context,
 		initiator models.Initiator,
 		placeID uuid.UUID) error
 }
 
 type placeClassSvc interface {
-	CreatePlaceClass(ctx context.Context, params pclass.CreateParams) (class models.PlaceClass, err error)
-	GetPlaceClasses(
+	Create(ctx context.Context, params pclass.CreateParams) (class models.PlaceClass, err error)
+
+	GetList(
 		ctx context.Context,
 		params pclass.FilterParams,
 		limit, offset uint,
 	) (classes pagi.Page[[]models.PlaceClass], err error)
-	GetPlaceClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error)
-	UpdatePlaceClass(
+	Get(ctx context.Context, id uuid.UUID) (models.PlaceClass, error)
+
+	OpenUpdateSession(
+		ctx context.Context,
+		initiator models.Initiator,
+		placeClassID uuid.UUID,
+	) (models.PlaceClass, models.UpdatePlaceClassMedia, error)
+	ConfirmUpdateSession(
 		ctx context.Context,
 		ID uuid.UUID,
 		params pclass.UpdateParams,
 	) (class models.PlaceClass, err error)
-	DeletePlaceClass(ctx context.Context, classID uuid.UUID) error
+	DeleteUpdateIconInSession(
+		ctx context.Context,
+		placeID, uploadSessionID uuid.UUID,
+	) error
+	CancelUpdate(
+		ctx context.Context,
+		placeID, uploadSessionID uuid.UUID,
+	) error
 
-	ReplacePlacesClass(ctx context.Context, oldClassID, newClassID uuid.UUID) error
+	Delete(ctx context.Context, classID uuid.UUID) error
+
+	Replace(ctx context.Context, oldClassID, newClassID uuid.UUID) error
 }
 
 type responser interface {
@@ -89,8 +126,8 @@ func New(
 	responser responser,
 	placeSvc placeSvc,
 	placeClassSvc placeClassSvc,
-) Controller {
-	return Controller{
+) *Controller {
+	return &Controller{
 		log: log,
 		core: core{
 			place: placeSvc,

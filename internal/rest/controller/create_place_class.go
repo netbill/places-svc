@@ -11,7 +11,7 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
-func (c Controller) CreatePlaceClass(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) CreatePlaceClass(w http.ResponseWriter, r *http.Request) {
 	req, err := requests.CreatePlaceClass(r)
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid create place class request")
@@ -19,7 +19,7 @@ func (c Controller) CreatePlaceClass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := c.core.class.CreatePlaceClass(r.Context(), pclass.CreateParams{
+	res, err := c.core.class.Create(r.Context(), pclass.CreateParams{
 		ParentID:    req.Data.Attributes.ParentId,
 		Code:        req.Data.Attributes.Code,
 		Name:        req.Data.Attributes.Name,

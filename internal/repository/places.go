@@ -201,7 +201,6 @@ func (r *Repository) UpdatePlaceByID(
 ) (models.Place, error) {
 	row, err := r.PlacesQ.New().
 		FilterByID(placeID).
-		UpdateClassID(params.ClassID).
 		UpdateAddress(params.Address).
 		UpdateName(params.Name).
 		UpdateDescription(params.Description).
@@ -236,6 +235,19 @@ func (r *Repository) UpdatePlaceVerified(
 	verified bool,
 ) (models.Place, error) {
 	row, err := r.PlacesQ.New().FilterByID(placeID).UpdateVerified(verified).UpdateOne(ctx)
+	if err != nil {
+		return models.Place{}, err
+	}
+
+	return row.ToModel(), nil
+}
+
+func (r *Repository) UpdateClassForPlace(
+	ctx context.Context,
+	placeID uuid.UUID,
+	classID uuid.UUID,
+) (models.Place, error) {
+	row, err := r.PlacesQ.New().FilterByID(placeID).UpdateClassID(classID).UpdateOne(ctx)
 	if err != nil {
 		return models.Place{}, err
 	}

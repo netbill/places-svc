@@ -12,7 +12,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-func (p Producer) PublishCreatePlace(ctx context.Context, place models.Place) error {
+func (p *Producer) PublishCreatePlace(ctx context.Context, place models.Place) error {
 	payload, err := json.Marshal(contracts.PlaceCreatedPayload{
 		PlaceID:        place.ID,
 		ClassID:        place.ClassID,
@@ -56,7 +56,7 @@ func (p Producer) PublishCreatePlace(ctx context.Context, place models.Place) er
 	return err
 }
 
-func (p Producer) PublishUpdatePlace(ctx context.Context, place models.Place) error {
+func (p *Producer) PublishUpdatePlace(ctx context.Context, place models.Place) error {
 	payload, err := json.Marshal(contracts.PlaceUpdatedPayload{
 		PlaceID:        place.ID,
 		ClassID:        place.ClassID,
@@ -98,7 +98,7 @@ func (p Producer) PublishUpdatePlace(ctx context.Context, place models.Place) er
 	return err
 }
 
-func (p Producer) PublishUpdatePlaceStatus(ctx context.Context, place models.Place) error {
+func (p *Producer) PublishUpdatePlaceStatus(ctx context.Context, place models.Place) error {
 	payload, err := json.Marshal(contracts.PlaceStatusUpdatedPayload{
 		PlaceID:   place.ID,
 		Status:    place.Status,
@@ -127,7 +127,7 @@ func (p Producer) PublishUpdatePlaceStatus(ctx context.Context, place models.Pla
 	return err
 }
 
-func (p Producer) PublishUpdatePlaceVerified(ctx context.Context, place models.Place) error {
+func (p *Producer) PublishUpdatePlaceVerified(ctx context.Context, place models.Place) error {
 	payload, err := json.Marshal(contracts.PlaceVerifiedUpdatedPayload{
 		PlaceID:   place.ID,
 		Verified:  place.Verified,
@@ -156,7 +156,7 @@ func (p Producer) PublishUpdatePlaceVerified(ctx context.Context, place models.P
 	return err
 }
 
-func (p Producer) PublishUpdatePlaceClassID(ctx context.Context, place models.Place) error {
+func (p *Producer) PublishUpdatePlaceClassID(ctx context.Context, place models.Place) error {
 	payload, err := json.Marshal(contracts.PlaceClassIDUpdatedPayload{
 		PlaceID:   place.ID,
 		ClassID:   place.ClassID,
@@ -185,7 +185,7 @@ func (p Producer) PublishUpdatePlaceClassID(ctx context.Context, place models.Pl
 	return err
 }
 
-func (p Producer) PublishDeletePlace(ctx context.Context, placeID uuid.UUID) error {
+func (p *Producer) PublishDeletePlace(ctx context.Context, placeID uuid.UUID) error {
 	payload, err := json.Marshal(contracts.PlaceDeletedPayload{
 		PlaceID:   placeID,
 		DeletedAt: time.Now().UTC(),

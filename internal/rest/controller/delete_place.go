@@ -12,7 +12,7 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
-func (c Controller) DeletePlace(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) DeletePlace(w http.ResponseWriter, r *http.Request) {
 	initiator, err := contexter.AccountData(r.Context())
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get initiator account data")
@@ -29,7 +29,7 @@ func (c Controller) DeletePlace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.core.place.DeletePlace(r.Context(), initiator, placeID)
+	err = c.core.place.Delete(r.Context(), initiator, placeID)
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to update place")
 		switch {

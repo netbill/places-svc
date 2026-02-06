@@ -11,7 +11,7 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
-func (c Controller) UpdatePlaceStatus(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) UpdatePlaceStatus(w http.ResponseWriter, r *http.Request) {
 	initiator, err := contexter.AccountData(r.Context())
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get initiator account data")
@@ -25,7 +25,7 @@ func (c Controller) UpdatePlaceStatus(w http.ResponseWriter, r *http.Request) {
 		c.responser.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
-	res, err := c.core.place.UpdatePlaceStatus(r.Context(), initiator, req.Data.Id, req.Data.Attributes.Status)
+	res, err := c.core.place.UpdateStatus(r.Context(), initiator, req.Data.Id, req.Data.Attributes.Status)
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to update status place")
 		switch {

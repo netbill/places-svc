@@ -12,7 +12,7 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
-func (c Controller) GetPlaceClass(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetPlaceClass(w http.ResponseWriter, r *http.Request) {
 	classID, err := uuid.Parse(chi.URLParam(r, "place_class_id"))
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid place class id")
@@ -20,7 +20,7 @@ func (c Controller) GetPlaceClass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := c.core.class.GetPlaceClass(r.Context(), classID)
+	res, err := c.core.class.Get(r.Context(), classID)
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get place class")
 		switch {

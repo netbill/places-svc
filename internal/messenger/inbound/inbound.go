@@ -19,8 +19,8 @@ type core struct {
 	organization organizationSvc
 }
 
-func New(log *logium.Logger, org organizationSvc) Inbound {
-	return Inbound{
+func New(log *logium.Logger, org organizationSvc) *Inbound {
+	return &Inbound{
 		log: log,
 		core: core{
 			organization: org,

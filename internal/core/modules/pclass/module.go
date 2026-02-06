@@ -75,6 +75,11 @@ type bucket interface {
 		ctx context.Context,
 		placeClassID, sessionID uuid.UUID,
 	) error
+
+	DeletePlaceClassIcon(
+		ctx context.Context,
+		placeClassID uuid.UUID,
+	) error
 }
 
 type token interface {

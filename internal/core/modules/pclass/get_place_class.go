@@ -8,7 +8,7 @@ import (
 	"github.com/netbill/restkit/pagi"
 )
 
-func (m *Module) GetPlaceClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error) {
+func (m *Module) Get(ctx context.Context, id uuid.UUID) (models.PlaceClass, error) {
 	class, err := m.repo.GetPlaceClass(ctx, id)
 	if err != nil {
 		return models.PlaceClass{}, err
@@ -30,7 +30,11 @@ type FilterPlaceClassParams struct {
 	IncludedChildren bool
 }
 
-func (m *Module) GetPlaceClasses(ctx context.Context, params FilterParams, limit, offset uint) (pagi.Page[[]models.PlaceClass], error) {
+func (m *Module) GetList(
+	ctx context.Context,
+	params FilterParams,
+	limit, offset uint,
+) (pagi.Page[[]models.PlaceClass], error) {
 	classes, err := m.repo.GetPlaceClasses(ctx, params, limit, offset)
 	if err != nil {
 		return pagi.Page[[]models.PlaceClass]{}, err

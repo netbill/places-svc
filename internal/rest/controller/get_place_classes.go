@@ -12,7 +12,7 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
-func (c Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 	limit, offset := pagi.GetPagination(r)
 	if limit > 100 {
 		c.log.WithError(fmt.Errorf("invalid pagination limit %d", limit)).Errorf("invalid pagination limit")
@@ -59,7 +59,7 @@ func (c Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	res, err := c.core.class.GetPlaceClasses(r.Context(), params, limit, offset)
+	res, err := c.core.class.GetList(r.Context(), params, limit, offset)
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get place classes")
 		c.responser.RenderErr(w, problems.InternalError())

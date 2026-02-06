@@ -1,0 +1,42 @@
+type: object
+required:
+  - data
+properties:
+  data:
+    type: object
+    required:
+      - id
+      - type
+      - attributes
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: "place ID"
+      type:
+        type: string
+        enum: [ confirm_place_class_update ]
+      attributes:
+        type: object
+        required:
+          - code
+          - name
+          - description
+        properties:
+          parent_id:
+            type: string
+            format: uuid
+            description: "The ID of the parent class"
+          code:
+            type: string
+            description: "The unique code of the class"
+            example: "japanese_cuisine"
+          name:
+            type: string
+            description: "The name of the class"
+          description:
+            type: string
+            description: "A brief description of the class"
+          delete_icon:
+            type: bool
+            description: "Flag to indicate if the place class banner should be deleted"

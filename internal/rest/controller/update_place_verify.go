@@ -10,7 +10,7 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
-func (c Controller) UpdatePlaceVerify(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) UpdatePlaceVerify(w http.ResponseWriter, r *http.Request) {
 	req, err := requests.UpdatePlaceVerify(r)
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid update place verify data")
@@ -18,7 +18,7 @@ func (c Controller) UpdatePlaceVerify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := c.core.place.UpdatePlaceVerified(r.Context(), req.Data.Id, req.Data.Attributes.Verify)
+	res, err := c.core.place.UpdateVerified(r.Context(), req.Data.Id, req.Data.Attributes.Verify)
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid update place verify data")
 		switch {

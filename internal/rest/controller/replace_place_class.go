@@ -10,7 +10,7 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
-func (c Controller) ReplacePlaceClass(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) ReplacePlaceClass(w http.ResponseWriter, r *http.Request) {
 	req, err := requests.ReplacePlaceClass(r)
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid replace place class request")
@@ -18,7 +18,7 @@ func (c Controller) ReplacePlaceClass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.core.class.ReplacePlacesClass(r.Context(), req.Data.Id, req.Data.Attributes.ClassReplaceId)
+	err = c.core.class.Replace(r.Context(), req.Data.Id, req.Data.Attributes.ClassReplaceId)
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to replace place class")
 		switch {
