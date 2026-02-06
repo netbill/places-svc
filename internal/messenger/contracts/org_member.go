@@ -6,6 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const OrgMemberTopicV1 = "organization.member.v1"
+
 const OrgMemberCreatedEvent = "member.created"
 
 type OrgMemberCreatedPayload struct {

@@ -70,7 +70,7 @@ type repo interface {
 	SetOrgRolePermissions(
 		ctx context.Context,
 		roleID uuid.UUID,
-		permissions UpdateOrgRolePermissionsParams,
+		codes ...string,
 	) error
 
 	UpdatePlaceStatusForOrg(

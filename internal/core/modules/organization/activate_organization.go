@@ -12,7 +12,7 @@ func (m *Module) ActivateOrganization(
 	ctx context.Context,
 	orgID uuid.UUID,
 	updatedAt time.Time,
-) error {
+) (models.Organization, error) {
 	return m.repo.UpdateOrgStatus(
 		ctx,
 		orgID,

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/netbill/logium"
@@ -67,26 +68,34 @@ type placeClassSvc interface {
 	ReplacePlacesClass(ctx context.Context, oldClassID, newClassID uuid.UUID) error
 }
 
+type responser interface {
+	Render(w http.ResponseWriter, status int, res ...interface{})
+	RenderErr(w http.ResponseWriter, errs ...error)
+}
+
 type core struct {
 	place placeSvc
 	class placeClassSvc
 }
 
 type Controller struct {
-	core core
-	log  *logium.Logger
+	log       *logium.Logger
+	core      core
+	responser responser
 }
 
 func New(
+	log *logium.Logger,
+	responser responser,
 	placeSvc placeSvc,
 	placeClassSvc placeClassSvc,
-	log *logium.Logger,
 ) Controller {
 	return Controller{
-		core: core{
-			placeSvc:      placeSvc,
-			placeClassSvc: placeClassSvc,
-		},
 		log: log,
+		core: core{
+			place: placeSvc,
+			class: placeClassSvc,
+		},
+		responser: responser,
 	}
 }

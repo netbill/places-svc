@@ -21,7 +21,7 @@ func (i Inbound) OrgRoleCreated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.CreateOrgRole(ctx, models.OrgRole{
+	if _, err := i.core.organization.CreateOrgRole(ctx, models.OrgRole{
 		ID:             payload.RoleID,
 		OrganizationID: payload.OrganizationID,
 		Rank:           payload.Rank,
@@ -56,7 +56,7 @@ func (i Inbound) OrgRoleDeleted(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.DeleteOrgRole(ctx, payload.RoleID); err != nil {
+	if err := i.core.organization.DeleteOrgRole(ctx, payload.RoleID); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -86,7 +86,13 @@ func (i Inbound) OrgRolePermissionsUpdated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.UpdateOrgRolePermissions(ctx, payload.RoleID, payload.Permissions); err != nil {
+	codes := make([]string, 0, len(payload.Permissions))
+	for code, enable := range payload.Permissions {
+		if enable {
+			codes = append(codes, code)
+		}
+	}
+	if err := i.core.organization.UpdateOrgRolePermissions(ctx, payload.RoleID, codes...); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -116,7 +122,12 @@ func (i Inbound) OrgRolesRanksUpdated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.UpdateOrgRolesRanks(ctx, payload.OrganizationID, payload.Ranks); err != nil {
+	if err := i.core.organization.UpdateOrgRolesRanks(
+		ctx,
+		payload.OrganizationID,
+		payload.Ranks,
+		payload.UpdatedAt,
+	); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(

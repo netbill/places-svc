@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
-	"github.com/netbill/ape"
 	"github.com/netbill/places-svc/internal/core/modules/place"
 	"github.com/netbill/places-svc/internal/rest/responses"
 	"github.com/netbill/restkit/pagi"
@@ -17,7 +16,7 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 	limit, offset := pagi.GetPagination(r)
 	if limit > 100 {
 		c.log.WithError(fmt.Errorf("invalid pagination limit %d", limit)).Errorf("invalid pagination limit")
-		ape.RenderErr(w, problems.BadRequest(fmt.Errorf("pagination limit must be between 1 and 100"))...)
+		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("pagination limit must be between 1 and 100"))...)
 		return
 	}
 
@@ -26,7 +25,7 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 	if orgIDStr := r.URL.Query().Get("organization_id"); orgIDStr != "" {
 		orgID, err := uuid.Parse(orgIDStr)
 		if err != nil {
-			ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid organization id"))...)
+			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid organization id"))...)
 			return
 		}
 
@@ -40,7 +39,7 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 	if verified := r.URL.Query().Get("verified"); verified != "" {
 		value, err := strconv.ParseBool(verified)
 		if err != nil {
-			ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid verified flag"))...)
+			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid verified flag"))...)
 			return
 		}
 
@@ -59,7 +58,7 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 			id, err := uuid.Parse(classID)
 			if err != nil {
 				c.log.WithError(err).Errorf("invalid class_id %s", classID)
-				ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid class_id"))...)
+				c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid class_id"))...)
 				return
 			}
 			ids = append(ids, id)
@@ -69,7 +68,7 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 			value, err := strconv.ParseBool(incParentStr)
 			if err != nil {
 				c.log.WithError(err).Errorf("invalid include_parent flag")
-				ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid include_parent"))...)
+				c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid include_parent"))...)
 				return
 			}
 
@@ -80,7 +79,7 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 			value, err := strconv.ParseBool(includeChildStr)
 			if err != nil {
 				c.log.WithError(err).Errorf("invalid include_children")
-				ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid include_children"))...)
+				c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid include_children"))...)
 				return
 			}
 
@@ -95,24 +94,24 @@ func (c Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 
 		lat, err := strconv.ParseFloat(r.URL.Query().Get("lat"), 64)
 		if err != nil {
-			ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid lat"))...)
+			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid lat"))...)
 			return
 		}
 		params.Near.Point[1] = lat
 
 		radius, err := strconv.ParseUint(r.URL.Query().Get("radius"), 10, 64)
 		if err != nil {
-			ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid radius"))...)
+			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid radius"))...)
 			return
 		}
 		params.Near.RadiusM = uint(radius)
 	}
 
-	res, err := c.core.GetPlaces(r.Context(), params, limit, offset)
+	res, err := c.core.place.GetPlaces(r.Context(), params, limit, offset)
 	if err != nil {
 		c.log.WithError(err).Errorf("error getting places")
-		ape.RenderErr(w, problems.InternalError())
+		c.responser.RenderErr(w, problems.InternalError())
 	}
 
-	ape.Render(w, http.StatusOK, responses.Places(r, res))
+	c.responser.Render(w, http.StatusOK, responses.Places(r, res))
 }

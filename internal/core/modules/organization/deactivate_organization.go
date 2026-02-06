@@ -12,14 +12,15 @@ func (m *Module) DeactivateOrganization(
 	ctx context.Context,
 	orgID uuid.UUID,
 	updatedAt time.Time,
-) error {
-	return m.repo.Transaction(ctx, func(ctx context.Context) error {
-		if err := m.repo.UpdateOrgStatus(
+) (org models.Organization, err error) {
+	err = m.repo.Transaction(ctx, func(ctx context.Context) error {
+		org, err = m.repo.UpdateOrgStatus(
 			ctx,
 			orgID,
 			models.OrganizationStatusInactive,
 			updatedAt,
-		); err != nil {
+		)
+		if err != nil {
 			return err
 		}
 
@@ -33,4 +34,6 @@ func (m *Module) DeactivateOrganization(
 
 		return nil
 	})
+
+	return org, err
 }

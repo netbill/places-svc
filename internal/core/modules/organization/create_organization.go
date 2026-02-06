@@ -9,6 +9,6 @@ import (
 func (m *Module) CreateOrganization(
 	ctx context.Context,
 	org models.Organization,
-) error {
+) (models.Organization, error) {
 	return m.repo.CreateOrganization(ctx, org)
 }

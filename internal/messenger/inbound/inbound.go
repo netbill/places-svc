@@ -11,25 +11,25 @@ import (
 )
 
 type Inbound struct {
-	log    *logium.Logger
-	domain domain
+	log  *logium.Logger
+	core core
 }
 
-type domain struct {
+type core struct {
 	organization organizationSvc
 }
 
 func New(log *logium.Logger, org organizationSvc) Inbound {
 	return Inbound{
 		log: log,
-		domain: domain{
+		core: core{
 			organization: org,
 		},
 	}
 }
 
 type organizationSvc interface {
-	CreateOrganization(ctx context.Context, organization models.Organization) error
+	CreateOrganization(ctx context.Context, organization models.Organization) (models.Organization, error)
 	UpdateOrganization(
 		ctx context.Context,
 		organizationID uuid.UUID,
@@ -39,32 +39,33 @@ type organizationSvc interface {
 		ctx context.Context,
 		orgID uuid.UUID,
 		updatedAt time.Time,
-	) error
+	) (models.Organization, error)
 	DeactivateOrganization(
 		ctx context.Context,
 		orgID uuid.UUID,
 		deactivatedAt time.Time,
-	) error
+	) (models.Organization, error)
 	DeleteOrganization(ctx context.Context, organizationID uuid.UUID) error
 
-	CreateOrgMember(ctx context.Context, member models.OrgMember) error
+	CreateOrgMember(ctx context.Context, member models.OrgMember) (models.OrgMember, error)
 	DeleteOrgMember(ctx context.Context, ID uuid.UUID) error
 
 	AddOrgMemberRole(ctx context.Context, memberID, roleID uuid.UUID, addedAT time.Time) error
 	RemoveOrgMemberRole(ctx context.Context, memberID, roleID uuid.UUID) error
 
-	CreateOrgRole(ctx context.Context, role models.OrgRole) error
+	CreateOrgRole(ctx context.Context, role models.OrgRole) (models.OrgRole, error)
 	DeleteOrgRole(ctx context.Context, ID uuid.UUID) error
 
 	UpdateOrgRolePermissions(
 		ctx context.Context,
 		roleID uuid.UUID,
-		permissions organization.UpdateOrgRolePermissionsParams,
+		permissions ...string,
 	) error
 
 	UpdateOrgRolesRanks(
 		ctx context.Context,
 		organizationID uuid.UUID,
 		order map[uuid.UUID]uint,
+		updatedAt time.Time,
 	) error
 }

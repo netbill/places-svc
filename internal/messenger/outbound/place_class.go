@@ -3,6 +3,7 @@ package outbound
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/netbill/evebox/header"
@@ -13,7 +14,14 @@ import (
 
 func (p Producer) PublishPlaceClassCreated(ctx context.Context, class models.PlaceClass) error {
 	payload, err := json.Marshal(contracts.PlaceClassCreatedPayload{
-		PlaceClass: class,
+		PlaceClassID: class.ID,
+		ParentID:     class.ParentID,
+		Code:         class.Code,
+		Name:         class.Name,
+		Description:  class.Description,
+		Icon:         class.Icon,
+		CreatedAt:    class.CreatedAt,
+		UpdatedAt:    class.UpdatedAt,
 	})
 	if err != nil {
 		return err
@@ -40,7 +48,13 @@ func (p Producer) PublishPlaceClassCreated(ctx context.Context, class models.Pla
 
 func (p Producer) PublishPlaceClassUpdated(ctx context.Context, class models.PlaceClass) error {
 	payload, err := json.Marshal(contracts.PlaceClassUpdatedPayload{
-		PlaceClass: class,
+		PlaceClassID: class.ID,
+		ParentID:     class.ParentID,
+		Code:         class.Code,
+		Name:         class.Name,
+		Description:  class.Description,
+		Icon:         class.Icon,
+		UpdatedAt:    class.UpdatedAt,
 	})
 	if err != nil {
 		return err
@@ -67,7 +81,9 @@ func (p Producer) PublishPlaceClassUpdated(ctx context.Context, class models.Pla
 
 func (p Producer) PublishPlaceClassParentUpdated(ctx context.Context, class models.PlaceClass) error {
 	payload, err := json.Marshal(contracts.PlaceClassParentUpdatedPayload{
-		PlaceClass: class,
+		PlaceClassID: class.ID,
+		ParentID:     class.ParentID,
+		UpdatedAt:    class.UpdatedAt,
 	})
 	if err != nil {
 		return err
@@ -95,6 +111,7 @@ func (p Producer) PublishPlaceClassParentUpdated(ctx context.Context, class mode
 func (p Producer) PublishPlaceClassDeleted(ctx context.Context, classID uuid.UUID) error {
 	payload, err := json.Marshal(contracts.PlaceClassDeletedPayload{
 		PlaceClassID: classID,
+		DeletedAt:    time.Now().UTC(),
 	})
 	if err != nil {
 		return err

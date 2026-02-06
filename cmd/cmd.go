@@ -139,7 +139,7 @@ func StartServices(ctx context.Context, cfg Config, log *logium.Logger, wg *sync
 	kafkaInbound := inbound.New(log, orgSvc)
 
 	responser := restkit.NewResponser()
-	ctrl := controller.New(placesSvc, pclasessSvc, log)
+	ctrl := controller.New(log, responser, placesSvc, pclasessSvc)
 	mdll := middlewares.New(log, middlewares.Config{
 		AccountAccessSK: cfg.Auth.Account.Token.Access.SecretKey,
 		UploadFilesSK:   cfg.S3.Upload.Token.SecretKey,

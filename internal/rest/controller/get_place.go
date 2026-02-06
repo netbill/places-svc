@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/netbill/ape"
 	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/restkit/problems"
 )
@@ -16,20 +15,20 @@ func (c Controller) GetPlace(w http.ResponseWriter, r *http.Request) {
 	placeID, err := uuid.Parse(chi.URLParam(r, "place_id"))
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid place id")
-		ape.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid place id"))...)
+		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid place id"))...)
 		return
 	}
 
-	res, err := c.core.GetPlace(r.Context(), placeID)
+	res, err := c.core.place.GetPlace(r.Context(), placeID)
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid place class")
 		switch {
 		case errors.Is(err, errx.ErrorPlaceNotFound):
-			ape.RenderErr(w, problems.NotFound(fmt.Sprintf("place with id %s not found", placeID)))
+			c.responser.RenderErr(w, problems.NotFound(fmt.Sprintf("place with id %s not found", placeID)))
 		default:
-			ape.RenderErr(w, problems.InternalError())
+			c.responser.RenderErr(w, problems.InternalError())
 		}
 	}
 
-	ape.Render(w, http.StatusOK, res)
+	c.responser.Render(w, http.StatusOK, res)
 }

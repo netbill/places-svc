@@ -4,27 +4,24 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/netbill/pgdbx"
+
 	"github.com/netbill/places-svc/internal/repository"
 )
 
 const organizationRolePermissionLinksTable = "organization_role_permission_links"
 
-const organizationRolePermissionLinksColumns = "role_id, permission_code, source_created_at, replica_created_at"
-
-const organizationRolePermissionLinksColumnsP = "l.role_id, l.permission_code, l.source_created_at, l.replica_created_at"
+const organizationRolePermissionLinksColumns = "role_id, permission_code"
+const organizationRolePermissionLinksColumnsP = "l.role_id, l.permission_code"
 
 func scanOrganizationRolePermissionLink(row sq.RowScanner) (l repository.OrganizationRolePermissionLinkRow, err error) {
 	err = row.Scan(
 		&l.RoleID,
 		&l.PermissionCode,
-		&l.SourceCreatedAt,
-		&l.ReplicaCreatedAt,
 	)
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
@@ -40,7 +37,6 @@ type organizationRolePermissionLinks struct {
 	db       *pgdbx.DB
 	selector sq.SelectBuilder
 	inserter sq.InsertBuilder
-	updater  sq.UpdateBuilder
 	deleter  sq.DeleteBuilder
 	counter  sq.SelectBuilder
 }
@@ -51,9 +47,8 @@ func NewOrgRolePermissionLinksQ(db *pgdbx.DB) repository.OrgRolePermissionLinksQ
 		db:       db,
 		selector: b.Select(organizationRolePermissionLinksColumnsP).From(organizationRolePermissionLinksTable + " l"),
 		inserter: b.Insert(organizationRolePermissionLinksTable),
-		updater:  b.Update(organizationRolePermissionLinksTable + " l"),
 		deleter:  b.Delete(organizationRolePermissionLinksTable + " l"),
-		counter:  b.Select("COUNT(*)").From(organizationRolePermissionLinksTable + " l"),
+		counter:  b.Select("COUNT(*) AS count").From(organizationRolePermissionLinksTable + " l"),
 	}
 }
 
@@ -64,17 +59,20 @@ func (q *organizationRolePermissionLinks) New() repository.OrgRolePermissionLink
 func (q *organizationRolePermissionLinks) Upsert(
 	ctx context.Context,
 	roleID uuid.UUID,
-	data map[string]time.Time,
+	codes ...string,
 ) ([]repository.OrganizationRolePermissionLinkRow, error) {
-	codes := make([]string, 0, len(data))
-	times := make([]time.Time, 0, len(data))
+	uniq := make([]string, 0, len(codes))
+	seen := make(map[string]struct{}, len(codes))
 
-	for code, t := range data {
-		if code == "" || t.IsZero() {
+	for _, c := range codes {
+		if c == "" {
 			continue
 		}
-		codes = append(codes, code)
-		times = append(times, t.UTC())
+		if _, ok := seen[c]; ok {
+			continue
+		}
+		seen[c] = struct{}{}
+		uniq = append(uniq, c)
 	}
 
 	const sqlq = `
@@ -82,39 +80,22 @@ func (q *organizationRolePermissionLinks) Upsert(
 			DELETE FROM organization_role_permission_links
 			WHERE role_id = $1
 		)
-		INSERT INTO organization_role_permission_links (
-			role_id,
-			permission_code,
-			source_created_at
-		)
-		SELECT
-			$1,
-			x.permission_code,
-			x.source_created_at
-		FROM UNNEST($2::text[], $3::timestamptz[])
-			AS x(permission_code, source_created_at)
-		RETURNING
-			role_id,
-			permission_code,
-			source_created_at,
-			replica_created_at
+		INSERT INTO organization_role_permission_links (role_id, permission_code)
+		SELECT $1, x.code
+		FROM UNNEST($2::text[]) AS x(code)
+		RETURNING role_id, permission_code
 	`
 
-	rows, err := q.db.Query(ctx, sqlq, roleID, codes, times)
+	rows, err := q.db.Query(ctx, sqlq, roleID, uniq)
 	if err != nil {
 		return nil, fmt.Errorf("upsert role permission links: %w", err)
 	}
 	defer rows.Close()
 
-	out := make([]repository.OrganizationRolePermissionLinkRow, 0, len(codes))
+	out := make([]repository.OrganizationRolePermissionLinkRow, 0, len(uniq))
 	for rows.Next() {
 		var r repository.OrganizationRolePermissionLinkRow
-		if err := rows.Scan(
-			&r.RoleID,
-			&r.PermissionCode,
-			&r.SourceCreatedAt,
-			&r.ReplicaCreatedAt,
-		); err != nil {
+		if err := rows.Scan(&r.RoleID, &r.PermissionCode); err != nil {
 			return nil, fmt.Errorf("scanning role permission link: %w", err)
 		}
 		out = append(out, r)
@@ -139,9 +120,7 @@ func (q *organizationRolePermissionLinks) Get(ctx context.Context) (repository.O
 	return scanOrganizationRolePermissionLink(q.db.QueryRow(ctx, query, args...))
 }
 
-func (q *organizationRolePermissionLinks) Select(
-	ctx context.Context,
-) ([]repository.OrganizationRolePermissionLinkRow, error) {
+func (q *organizationRolePermissionLinks) Select(ctx context.Context) ([]repository.OrganizationRolePermissionLinkRow, error) {
 	query, args, err := q.selector.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -176,17 +155,25 @@ func (q *organizationRolePermissionLinks) Select(
 	return out, nil
 }
 
-func (q *organizationRolePermissionLinks) Exist(ctx context.Context) (bool, error) {
+func (q *organizationRolePermissionLinks) Exists(ctx context.Context) (bool, error) {
 	subSQL, subArgs, err := q.selector.Limit(1).ToSql()
 	if err != nil {
-		return false, fmt.Errorf("building exists query for %s: %w", organizationRolePermissionLinksTable, err)
+		return false, fmt.Errorf(
+			"building exists query for %s: %w",
+			organizationRolePermissionLinksTable,
+			err,
+		)
 	}
 
 	sqlq := "SELECT EXISTS (" + subSQL + ")"
 
 	var ok bool
 	if err = q.db.QueryRow(ctx, sqlq, subArgs...).Scan(&ok); err != nil {
-		return false, fmt.Errorf("scanning exists for %s: %w", PlacesTable, err)
+		return false, fmt.Errorf(
+			"scanning exists for %s: %w",
+			organizationRolePermissionLinksTable,
+			err,
+		)
 	}
 
 	return ok, nil
@@ -205,66 +192,59 @@ func (q *organizationRolePermissionLinks) Delete(ctx context.Context) error {
 	return nil
 }
 
-func (q *organizationRolePermissionLinks) FilterByRoleID(
-	roleID ...uuid.UUID,
-) repository.OrgRolePermissionLinksQ {
+func (q *organizationRolePermissionLinks) FilterByRoleID(roleID ...uuid.UUID) repository.OrgRolePermissionLinksQ {
 	q.selector = q.selector.Where(sq.Eq{"l.role_id": roleID})
 	q.counter = q.counter.Where(sq.Eq{"l.role_id": roleID})
-	q.updater = q.updater.Where(sq.Eq{"l.role_id": roleID})
 	q.deleter = q.deleter.Where(sq.Eq{"l.role_id": roleID})
 	return q
 }
 
-func (q *organizationRolePermissionLinks) FilterByPermissionCode(
-	code ...string,
-) repository.OrgRolePermissionLinksQ {
+func (q *organizationRolePermissionLinks) FilterByPermissionCode(code ...string) repository.OrgRolePermissionLinksQ {
 	q.selector = q.selector.Where(sq.Eq{"l.permission_code": code})
 	q.counter = q.counter.Where(sq.Eq{"l.permission_code": code})
-	q.updater = q.updater.Where(sq.Eq{"l.permission_code": code})
 	q.deleter = q.deleter.Where(sq.Eq{"l.permission_code": code})
 	return q
 }
 
-func (q *organizationRolePermissionLinks) UpdateOne(
-	ctx context.Context,
-) (repository.OrganizationRolePermissionLinkRow, error) {
-	query, args, err := q.updater.Suffix("RETURNING " + organizationRolePermissionLinksColumns).ToSql()
-	if err != nil {
-		return repository.OrganizationRolePermissionLinkRow{}, fmt.Errorf(
-			"building update query for %s: %w",
-			organizationRolePermissionLinksTable,
-			err,
-		)
-	}
-
-	return scanOrganizationRolePermissionLink(q.db.QueryRow(ctx, query, args...))
-}
-
-func (q *organizationRolePermissionLinks) UpdateMany(ctx context.Context) (int64, error) {
-	query, args, err := q.updater.ToSql()
+func (q *organizationRolePermissionLinks) Count(ctx context.Context) (uint, error) {
+	query, args, err := q.counter.ToSql()
 	if err != nil {
 		return 0, fmt.Errorf(
-			"building update query for %s: %w",
+			"building count query for %s: %w",
 			organizationRolePermissionLinksTable,
 			err,
 		)
 	}
 
-	res, err := q.db.Exec(ctx, query, args...)
-	if err != nil {
+	var n uint
+	if err = q.db.QueryRow(ctx, query, args...).Scan(&n); err != nil {
 		return 0, fmt.Errorf(
-			"executing update query for %s: %w",
+			"scanning count for %s: %w",
 			organizationRolePermissionLinksTable,
 			err,
 		)
 	}
 
-	return res.RowsAffected(), nil
+	return n, nil
 }
 
-func (q *organizationRolePermissionLinks) UpdateSourceCreatedAt(
-	v time.Time,
-) repository.OrgRolePermissionLinksQ {
-	q.updater = q.updater.Set("source_created_at", v.UTC())
+func (q *organizationRolePermissionLinks) Page(limit, offset uint) repository.OrgRolePermissionLinksQ {
+	q.selector = q.selector.Limit(uint64(limit)).Offset(uint64(offset))
 	return q
+}
+
+func (q *organizationRolePermissionLinks) Exist(ctx context.Context) (bool, error) {
+	subSQL, subArgs, err := q.selector.Limit(1).ToSql()
+	if err != nil {
+		return false, fmt.Errorf("building exists query for %s: %w", organizationRolePermissionLinksTable, err)
+	}
+
+	sqlq := "SELECT EXISTS (" + subSQL + ")"
+
+	var ok bool
+	if err = q.db.QueryRow(ctx, sqlq, subArgs...).Scan(&ok); err != nil {
+		return false, fmt.Errorf("scanning exists for %s: %w", PlacesTable, err)
+	}
+
+	return ok, nil
 }

@@ -21,7 +21,7 @@ func (i Inbound) OrgMemberCreated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.CreateOrgMember(ctx, models.OrgMember{
+	if _, err := i.core.organization.CreateOrgMember(ctx, models.OrgMember{
 		ID:             payload.MemberID,
 		AccountID:      payload.AccountID,
 		OrganizationID: payload.OrganizationID,
@@ -51,7 +51,7 @@ func (i Inbound) OrgMemberDeleted(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.DeleteOrgMember(ctx, payload.MemberID); err != nil {
+	if err := i.core.organization.DeleteOrgMember(ctx, payload.MemberID); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -78,7 +78,7 @@ func (i Inbound) OrgMemberAddedRole(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.AddOrgMemberRole(ctx, payload.MemberID, payload.RoleID, payload.AddedAt); err != nil {
+	if err := i.core.organization.AddOrgMemberRole(ctx, payload.MemberID, payload.RoleID, payload.AddedAt); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -105,7 +105,7 @@ func (i Inbound) OrgMemberRemovedRole(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.RemoveOrgMemberRole(ctx, payload.MemberID, payload.RoleID); err != nil {
+	if err := i.core.organization.RemoveOrgMemberRole(ctx, payload.MemberID, payload.RoleID); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(

@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core/models"
-	"github.com/netbill/places-svc/internal/core/modules/organization"
 )
 
 type OrganizationRolePermissionLinkRow struct {
@@ -22,17 +20,12 @@ type OrgRolePermissionLinksQ interface {
 	Upsert(
 		ctx context.Context,
 		roleID uuid.UUID,
-		data map[string]time.Time,
+		data ...string,
 	) ([]OrganizationRolePermissionLinkRow, error)
 
 	Get(ctx context.Context) (OrganizationRolePermissionLinkRow, error)
 	Select(ctx context.Context) ([]OrganizationRolePermissionLinkRow, error)
 	Exist(ctx context.Context) (bool, error)
-
-	UpdateMany(ctx context.Context) (int64, error)
-	UpdateOne(ctx context.Context) (OrganizationRolePermissionLinkRow, error)
-
-	UpdateSourceCreatedAt(v time.Time) OrgRolePermissionLinksQ
 
 	FilterByRoleID(roleID ...uuid.UUID) OrgRolePermissionLinksQ
 	FilterByPermissionCode(code ...string) OrgRolePermissionLinksQ
@@ -43,21 +36,9 @@ type OrgRolePermissionLinksQ interface {
 func (r *Repository) SetOrgRolePermissions(
 	ctx context.Context,
 	roleID uuid.UUID,
-	permissions organization.UpdateOrgRolePermissionsParams,
+	codes ...string,
 ) error {
-	codes := make(map[string]time.Time)
-
-	if permissions.PlaceCreate.Enable {
-		codes[models.RolePermissionPlaceCreate] = permissions.PlaceCreate.CreatedAt
-	}
-	if permissions.PlaceDelete.Enable {
-		codes[models.RolePermissionPlaceDelete] = permissions.PlaceDelete.CreatedAt
-	}
-	if permissions.PlaceUpdate.Enable {
-		codes[models.RolePermissionPlaceUpdate] = permissions.PlaceUpdate.CreatedAt
-	}
-
-	rows, err := r.OrgRolePermissionLinksQ.Upsert(ctx, roleID, codes)
+	rows, err := r.OrgRolePermissionLinksQ.Upsert(ctx, roleID, codes...)
 	if err != nil {
 		return fmt.Errorf("set role permissions: %w", err)
 	}

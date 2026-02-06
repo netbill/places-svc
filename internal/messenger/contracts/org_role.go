@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core/models"
 )
 
 const OrgRoleCreatedEvent = "role.created"
@@ -17,16 +16,6 @@ type OrgRoleCreatedPayload struct {
 	Description    string    `json:"description"`
 	Color          string    `json:"color"`
 	CreatedAt      time.Time `json:"created_at"`
-}
-
-const OrgRoleUpdatedEvent = "role.updated"
-
-type OrgRoleUpdatedPayload struct {
-	RoleID      uuid.UUID `json:"role_id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Color       string    `json:"color"`
-	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 const OrgRoleDeletedEvent = "role.deleted"
@@ -47,8 +36,8 @@ type OrgRolesRanksUpdatedPayload struct {
 const OrgRolePermissionsUpdatedEvent = "role.permissions.updated"
 
 type OrgRolePermissionsUpdatedPayload struct {
-	RoleID      uuid.UUID                      `json:"role_id"`
-	Permissions []models.OrgRolePermissionLink `json:"permissions"`
+	RoleID      uuid.UUID       `json:"role_id"`
+	Permissions map[string]bool `json:"permissions"`
 }
 
 const OrgMemberRoleAddedEvent = "member_role.added"

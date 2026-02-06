@@ -15,13 +15,28 @@ import (
 )
 
 func Run(args []string) bool {
-	cfg, err := cmd.LoadConfig()
-	if err != nil {
-		logrus.Fatalf("failed to load config: %v", err)
-	}
+	cfg := cmd.LoadConfig()
 
-	log := logium.NewLogger(cfg.Log.Level, cfg.Log.Format)
-	log.Info("Starting server...")
+	logium.SetLevel(logrus.DebugLevel)
+
+	log := logium.New()
+
+	lvl, err := logrus.ParseLevel(cfg.Log.Level)
+	if err != nil {
+		lvl = logrus.InfoLevel
+		log.WithField("bad_level", cfg.Log.Level).Warn("unknown log level, fallback to info")
+	}
+	log.SetLevel(lvl)
+
+	switch {
+	case cfg.Log.Format == "json":
+		log.SetFormatter(&logrus.JSONFormatter{})
+	default:
+		log.SetFormatter(&logrus.TextFormatter{
+			FullTimestamp:   true,
+			TimestampFormat: "2006-01-02 15:04:05",
+		})
+	}
 
 	var (
 		service = kingpin.New("chains-auth", "")

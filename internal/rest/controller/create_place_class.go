@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/netbill/ape"
 	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/modules/pclass"
 	"github.com/netbill/places-svc/internal/rest/requests"
@@ -16,11 +15,11 @@ func (c Controller) CreatePlaceClass(w http.ResponseWriter, r *http.Request) {
 	req, err := requests.CreatePlaceClass(r)
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid create place class request")
-		ape.RenderErr(w, problems.BadRequest(err)...)
+		c.responser.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 
-	res, err := c.core.CreatePlaceClass(r.Context(), pclass.CreateParams{
+	res, err := c.core.class.CreatePlaceClass(r.Context(), pclass.CreateParams{
 		ParentID:    req.Data.Attributes.ParentId,
 		Code:        req.Data.Attributes.Code,
 		Name:        req.Data.Attributes.Name,
@@ -31,15 +30,15 @@ func (c Controller) CreatePlaceClass(w http.ResponseWriter, r *http.Request) {
 		c.log.WithError(err).Errorf("failed to create place class")
 		switch {
 		case errors.Is(errx.ErrorPlaceClassNotFound, err):
-			ape.RenderErr(w, problems.NotFound("parent place class not found"))
+			c.responser.RenderErr(w, problems.NotFound("parent place class not found"))
 		case errors.Is(errx.ErrorPlaceClassParentCycle, err):
-			ape.RenderErr(w, problems.Conflict("place class parent cycle detected"))
+			c.responser.RenderErr(w, problems.Conflict("place class parent cycle detected"))
 		case errors.Is(errx.ErrorPlaceClassCodeExists, err):
-			ape.RenderErr(w, problems.Conflict("place class code already in use"))
+			c.responser.RenderErr(w, problems.Conflict("place class code already in use"))
 		default:
-			ape.RenderErr(w, problems.InternalError())
+			c.responser.RenderErr(w, problems.InternalError())
 		}
 	}
 
-	ape.Render(w, http.StatusCreated, responses.PlaceClass(res))
+	c.responser.Render(w, http.StatusCreated, responses.PlaceClass(res))
 }

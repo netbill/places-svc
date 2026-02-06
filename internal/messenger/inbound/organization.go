@@ -21,7 +21,7 @@ func (i Inbound) OrganizationCreated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.CreateOrganization(ctx, models.Organization{
+	if _, err := i.core.organization.CreateOrganization(ctx, models.Organization{
 		ID:        payload.OrganizationID,
 		Status:    payload.Status,
 		Name:      payload.Name,
@@ -56,7 +56,7 @@ func (i Inbound) OrganizationDeleted(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.DeleteOrganization(ctx, payload.OrganizationID); err != nil {
+	if err := i.core.organization.DeleteOrganization(ctx, payload.OrganizationID); err != nil {
 		switch {
 		case errors.Is(err, errx.ErrorInternal):
 			i.log.Errorf(
@@ -86,7 +86,7 @@ func (i Inbound) OrganizationActivated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.ActivateOrganization(
+	if _, err := i.core.organization.ActivateOrganization(
 		ctx,
 		payload.OrganizationID,
 		payload.ActivatedAt,
@@ -120,7 +120,7 @@ func (i Inbound) OrganizationDeactivated(
 		return inbox.EventStatusFailed
 	}
 
-	if err := i.domain.DeactivateOrganization(
+	if _, err := i.core.organization.DeactivateOrganization(
 		ctx,
 		payload.OrganizationID,
 		payload.DeactivatedAt,

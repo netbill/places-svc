@@ -3,6 +3,7 @@ package outbound
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/netbill/evebox/header"
@@ -13,7 +14,24 @@ import (
 
 func (p Producer) PublishCreatePlace(ctx context.Context, place models.Place) error {
 	payload, err := json.Marshal(contracts.PlaceCreatedPayload{
-		Place: place,
+		PlaceID:        place.ID,
+		ClassID:        place.ClassID,
+		OrganizationID: place.OrganizationID,
+
+		Status:   place.Status,
+		Verified: place.Verified,
+		Point:    place.Point,
+		Address:  place.Address,
+		Name:     place.Name,
+
+		Description: place.Description,
+		Icon:        place.Icon,
+		Banner:      place.Banner,
+		Website:     place.Website,
+		Phone:       place.Phone,
+
+		CreatedAt: place.CreatedAt,
+		UpdatedAt: place.UpdatedAt,
 	})
 	if err != nil {
 		return err
@@ -40,7 +58,22 @@ func (p Producer) PublishCreatePlace(ctx context.Context, place models.Place) er
 
 func (p Producer) PublishUpdatePlace(ctx context.Context, place models.Place) error {
 	payload, err := json.Marshal(contracts.PlaceUpdatedPayload{
-		Place: place,
+		PlaceID:        place.ID,
+		ClassID:        place.ClassID,
+		OrganizationID: place.OrganizationID,
+
+		Status:   place.Status,
+		Verified: place.Verified,
+		Address:  place.Address,
+		Name:     place.Name,
+
+		Description: place.Description,
+		Icon:        place.Icon,
+		Banner:      place.Banner,
+		Website:     place.Website,
+		Phone:       place.Phone,
+
+		UpdatedAt: place.UpdatedAt,
 	})
 	if err != nil {
 		return err
@@ -67,7 +100,9 @@ func (p Producer) PublishUpdatePlace(ctx context.Context, place models.Place) er
 
 func (p Producer) PublishUpdatePlaceStatus(ctx context.Context, place models.Place) error {
 	payload, err := json.Marshal(contracts.PlaceStatusUpdatedPayload{
-		Place: place,
+		PlaceID:   place.ID,
+		Status:    place.Status,
+		UpdatedAt: place.UpdatedAt,
 	})
 	if err != nil {
 		return err
@@ -94,7 +129,9 @@ func (p Producer) PublishUpdatePlaceStatus(ctx context.Context, place models.Pla
 
 func (p Producer) PublishUpdatePlaceVerified(ctx context.Context, place models.Place) error {
 	payload, err := json.Marshal(contracts.PlaceVerifiedUpdatedPayload{
-		Place: place,
+		PlaceID:   place.ID,
+		Verified:  place.Verified,
+		UpdatedAt: place.UpdatedAt,
 	})
 	if err != nil {
 		return err
@@ -121,7 +158,9 @@ func (p Producer) PublishUpdatePlaceVerified(ctx context.Context, place models.P
 
 func (p Producer) PublishUpdatePlaceClassID(ctx context.Context, place models.Place) error {
 	payload, err := json.Marshal(contracts.PlaceClassIDUpdatedPayload{
-		Place: place,
+		PlaceID:   place.ID,
+		ClassID:   place.ClassID,
+		UpdatedAt: place.UpdatedAt,
 	})
 	if err != nil {
 		return err
@@ -148,7 +187,8 @@ func (p Producer) PublishUpdatePlaceClassID(ctx context.Context, place models.Pl
 
 func (p Producer) PublishDeletePlace(ctx context.Context, placeID uuid.UUID) error {
 	payload, err := json.Marshal(contracts.PlaceDeletedPayload{
-		PlaceID: placeID,
+		PlaceID:   placeID,
+		DeletedAt: time.Now().UTC(),
 	})
 	if err != nil {
 		return err
