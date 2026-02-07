@@ -16,6 +16,7 @@ func (c *Controller) UpdatePlaceStatus(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get initiator account data")
 		c.responser.RenderErr(w, problems.Unauthorized("failed to get initiator account data"))
+
 		return
 	}
 
@@ -23,23 +24,21 @@ func (c *Controller) UpdatePlaceStatus(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid update place status data")
 		c.responser.RenderErr(w, problems.BadRequest(err)...)
+
 		return
 	}
 	res, err := c.core.place.UpdateStatus(r.Context(), initiator, req.Data.Id, req.Data.Attributes.Status)
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to update status place")
 		switch {
-		case errors.Is(err, errx.ErrorPlaceNotFound):
+		case errors.Is(err, errx.ErrorPlaceNotExists):
 			c.responser.RenderErr(w, problems.NotFound("place not found"))
 		case errors.Is(err, errx.ErrorNotEnoughRights):
 			c.responser.RenderErr(w, problems.Forbidden("not enough rights to update place"))
-		//case errors.Is(err, errx.ErrorPlaceStatusSuspended):
-		//	c.responser.RenderErr(w, problems.Forbidden("place status is suspend"))
-		//case errors.Is(err, errx.ErrorCannotSetPlaceStatusSuspend):
-		//	c.responser.RenderErr(w, problems.Forbidden("cannot set status suspended"))
 		default:
 			c.responser.RenderErr(w, problems.InternalError())
 		}
+
 		return
 	}
 

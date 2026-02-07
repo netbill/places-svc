@@ -16,6 +16,7 @@ func (c *Controller) GetPlace(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid place id")
 		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid place id"))...)
+
 		return
 	}
 
@@ -23,11 +24,13 @@ func (c *Controller) GetPlace(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid place class")
 		switch {
-		case errors.Is(err, errx.ErrorPlaceNotFound):
+		case errors.Is(err, errx.ErrorPlaceNotExists):
 			c.responser.RenderErr(w, problems.NotFound(fmt.Sprintf("place with id %s not found", placeID)))
 		default:
 			c.responser.RenderErr(w, problems.InternalError())
 		}
+
+		return
 	}
 
 	c.responser.Render(w, http.StatusOK, res)

@@ -3,7 +3,7 @@ package errx
 import "github.com/netbill/ape"
 
 var (
-	ErrorPlaceNotFound = ape.DeclareError("PLACE_NOT_FOUND")
+	ErrorPlaceNotExists = ape.DeclareError("PLACE_NOT_FOUND")
 
 	ErrorPlaceOutOfTerritory = ape.DeclareError("PLACE_OUT_OF_TERRITORY")
 

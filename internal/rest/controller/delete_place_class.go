@@ -16,22 +16,24 @@ func (c *Controller) DeletePlaceClass(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid place class id")
 		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid place class id"))...)
+
 		return
 	}
 
-	err = c.core.class.Delete(r.Context(), classID)
+	err = c.core.pclass.Delete(r.Context(), classID)
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to delete place class")
 		switch {
+		case errors.Is(err, errx.ErrorPlaceClassNotExists):
+			c.responser.RenderErr(w, problems.NotFound("place class not found"))
 		case errors.Is(err, errx.ErrorPlaceClassHaveChildren):
 			c.responser.RenderErr(w, problems.Forbidden("cannot delete class because it has child classes"))
 		case errors.Is(err, errx.ErrorPlacesExitsWithThisClass):
 			c.responser.RenderErr(w, problems.Forbidden("cannot delete class when places exist with this class"))
-		case errors.Is(err, errx.ErrorPlaceClassNotFound):
-			c.responser.RenderErr(w, problems.NotFound("place class not found"))
 		default:
 			c.responser.RenderErr(w, problems.InternalError())
 		}
+
 		return
 	}
 

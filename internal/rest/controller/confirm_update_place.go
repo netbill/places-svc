@@ -2,8 +2,10 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/modules/place"
 	"github.com/netbill/places-svc/internal/rest/contexter"
@@ -12,12 +14,12 @@ import (
 	"github.com/netbill/restkit/problems"
 )
 
-// TOOD remade
 func (c *Controller) ConfirmUpdatePlace(w http.ResponseWriter, r *http.Request) {
 	initiator, err := contexter.AccountData(r.Context())
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get initiator account data")
 		c.responser.RenderErr(w, problems.Unauthorized("failed to get initiator account data"))
+
 		return
 	}
 
@@ -33,6 +35,7 @@ func (c *Controller) ConfirmUpdatePlace(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid update place request data")
 		c.responser.RenderErr(w, problems.BadRequest(err)...)
+
 		return
 	}
 
@@ -44,22 +47,35 @@ func (c *Controller) ConfirmUpdatePlace(w http.ResponseWriter, r *http.Request) 
 		Phone:       req.Data.Attributes.Phone,
 		Media: place.UpdateMediaParams{
 			UploadSessionID: uploadFilesData.GetUploadSessionID(),
-			DeleteIcon:      req.Data.Attributes.DeleteIcon,
-			DeleteBanner:    req.Data.Attributes.DeleteBanner,
+			DeleteIcon:      req.Data.Attributes.DeleteIcon != nil && *req.Data.Attributes.DeleteIcon,
+			DeleteBanner:    req.Data.Attributes.DeleteBanner != nil && *req.Data.Attributes.DeleteBanner,
 		},
 	})
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to update place")
 		switch {
-		case errors.Is(err, errx.ErrorPlaceNotFound):
-			c.responser.RenderErr(w, problems.NotFound("place not found"))
-		case errors.Is(err, errx.ErrorPlaceClassNotFound):
-			c.responser.RenderErr(w, problems.NotFound("place class not found"))
 		case errors.Is(err, errx.ErrorNotEnoughRights):
 			c.responser.RenderErr(w, problems.Forbidden("not enough rights to update place"))
+		case errors.Is(err, errx.ErrorPlaceNotExists):
+			c.responser.RenderErr(w, problems.NotFound("place not found"))
+		case errors.Is(err, errx.ErrorPlaceIconTooLarge),
+			errors.Is(err, errx.ErrorPlaceIconContentFormatNotAllowed),
+			errors.Is(err, errx.ErrorPlaceIconContentTypeNotAllowed),
+			errors.Is(err, errx.ErrorPlaceIconResolutionNotAllowed):
+			c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+				"icon": fmt.Errorf(err.Error()),
+			})...)
+		case errors.Is(err, errx.ErrorPlaceBannerTooLarge),
+			errors.Is(err, errx.ErrorPlaceBannerContentFormatNotAllowed),
+			errors.Is(err, errx.ErrorPlaceBannerContentTypeNotAllowed),
+			errors.Is(err, errx.ErrorPlaceBannerResolutionNotAllowed):
+			c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+				"banner": fmt.Errorf(err.Error()),
+			})...)
 		default:
 			c.responser.RenderErr(w, problems.InternalError())
 		}
+
 		return
 	}
 

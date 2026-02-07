@@ -17,6 +17,7 @@ func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 	if limit > 100 {
 		c.log.WithError(fmt.Errorf("invalid pagination limit %d", limit)).Errorf("invalid pagination limit")
 		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("pagination limit must be between 1 and 100"))...)
+
 		return
 	}
 
@@ -26,6 +27,7 @@ func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 		orgID, err := uuid.Parse(orgIDStr)
 		if err != nil {
 			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid organization id"))...)
+
 			return
 		}
 
@@ -40,6 +42,7 @@ func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 		value, err := strconv.ParseBool(verified)
 		if err != nil {
 			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid verified flag"))...)
+
 			return
 		}
 
@@ -59,6 +62,7 @@ func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				c.log.WithError(err).Errorf("invalid class_id %s", classID)
 				c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid class_id"))...)
+
 				return
 			}
 			ids = append(ids, id)
@@ -69,6 +73,7 @@ func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				c.log.WithError(err).Errorf("invalid include_parent flag")
 				c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid include_parent"))...)
+
 				return
 			}
 
@@ -80,6 +85,7 @@ func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				c.log.WithError(err).Errorf("invalid include_children")
 				c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid include_children"))...)
+
 				return
 			}
 
@@ -95,6 +101,7 @@ func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 		lat, err := strconv.ParseFloat(r.URL.Query().Get("lat"), 64)
 		if err != nil {
 			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid lat"))...)
+
 			return
 		}
 		params.Near.Point[1] = lat
@@ -102,6 +109,7 @@ func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 		radius, err := strconv.ParseUint(r.URL.Query().Get("radius"), 10, 64)
 		if err != nil {
 			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid radius"))...)
+
 			return
 		}
 		params.Near.RadiusM = uint(radius)
@@ -111,6 +119,8 @@ func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("error getting places")
 		c.responser.RenderErr(w, problems.InternalError())
+
+		return
 	}
 
 	c.responser.Render(w, http.StatusOK, responses.Places(r, res))

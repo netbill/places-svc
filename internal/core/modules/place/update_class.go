@@ -11,7 +11,7 @@ import (
 
 func (m *Module) UpdateClass(
 	ctx context.Context,
-	initiator models.Initiator,
+	initiator models.AccountClaims,
 	placeID uuid.UUID,
 	classID uuid.UUID,
 ) (place models.Place, err error) {

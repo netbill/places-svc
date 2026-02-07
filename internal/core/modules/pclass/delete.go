@@ -14,7 +14,7 @@ func (m *Module) Delete(ctx context.Context, classID uuid.UUID) error {
 		return err
 	}
 	if !exist {
-		return errx.ErrorPlaceClassNotFound.Raise(
+		return errx.ErrorPlaceClassNotExists.Raise(
 			fmt.Errorf("place class with id %s not found", classID.String()),
 		)
 	}

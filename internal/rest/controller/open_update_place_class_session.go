@@ -33,7 +33,7 @@ func (c *Controller) OpenUpdatePlaceClassSession(w http.ResponseWriter, r *http.
 		return
 	}
 
-	placeClass, media, err := c.core.class.OpenUpdateSession(
+	placeClass, media, err := c.core.pclass.OpenUpdateSession(
 		r.Context(),
 		initiator,
 		placeClassID,
@@ -41,7 +41,7 @@ func (c *Controller) OpenUpdatePlaceClassSession(w http.ResponseWriter, r *http.
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get preload link for update place_class")
 		switch {
-		case errors.Is(err, errx.ErrorPlaceClassNotFound):
+		case errors.Is(err, errx.ErrorPlaceClassNotExists):
 			c.responser.RenderErr(w, problems.NotFound("place_class does not exist"))
 		default:
 			c.responser.RenderErr(w, problems.InternalError())

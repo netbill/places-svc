@@ -41,7 +41,7 @@ func (c *Controller) OpenUpdatePlaceSession(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get preload link for update place")
 		switch {
-		case errors.Is(err, errx.ErrorPlaceNotFound):
+		case errors.Is(err, errx.ErrorPlaceNotExists):
 			c.responser.RenderErr(w, problems.NotFound("place does not exist"))
 		case errors.Is(err, errx.ErrorNotEnoughRights):
 			c.responser.RenderErr(w, problems.Forbidden("not enough rights to update place"))

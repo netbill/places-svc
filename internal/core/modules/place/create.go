@@ -24,7 +24,7 @@ type CreateParams struct {
 
 func (m *Module) Create(
 	ctx context.Context,
-	initiator models.Initiator,
+	initiator models.AccountClaims,
 	params CreateParams,
 ) (place models.Place, err error) {
 	if params.OrganizationID != nil {
@@ -45,7 +45,7 @@ func (m *Module) Create(
 		return models.Place{}, err
 	}
 	if !classExists {
-		return models.Place{}, errx.ErrorPlaceClassNotFound.Raise(
+		return models.Place{}, errx.ErrorPlaceClassNotExists.Raise(
 			fmt.Errorf("place class %v not found", params.ClassID),
 		)
 	}

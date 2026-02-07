@@ -95,9 +95,11 @@ func (s *Router) Run(ctx context.Context, cfg Config) {
 				r.Route("/classes", func(r chi.Router) {
 					r.Get("/", s.handlers.GetPlaceClasses)
 					r.With(sysadmin).Post("/", s.handlers.CreatePlaceClass)
+					r.With(sysadmin).Put("/replace", s.handlers.ReplacePlaceClass)
 
 					r.Route("/{place_class_id}", func(r chi.Router) {
 						r.Get("/", s.handlers.GetPlaceClass)
+						r.With(sysadmin).Delete("/", s.handlers.DeletePlaceClass)
 
 						r.With(sysadmin).Route("/update-session", func(r chi.Router) {
 							r.Put("/", s.handlers.OpenUpdatePlaceClassSession)
@@ -107,9 +109,6 @@ func (s *Router) Run(ctx context.Context, cfg Config) {
 							r.With(updPlaceClass).Delete("/upload-icon", s.handlers.DeletePlaceClassUploadIcon)
 						})
 
-						r.With(sysadmin).Delete("/", s.handlers.DeletePlaceClass)
-
-						r.With(sysadmin).Put("/replace", s.handlers.ReplacePlaceClass)
 					})
 				})
 
@@ -118,6 +117,10 @@ func (s *Router) Run(ctx context.Context, cfg Config) {
 
 				r.Route("/{place_id}", func(r chi.Router) {
 					r.Get("/", s.handlers.GetPlace)
+					r.With(auth).Delete("/", s.handlers.DeletePlaceClassUploadIcon)
+					r.With(auth).Patch("/status", s.handlers.UpdatePlaceStatus)
+
+					r.With(sysmoder).Patch("/verify", s.handlers.UpdatePlaceVerify)
 
 					r.With(sysadmin).Route("/update-session", func(r chi.Router) {
 						r.Put("/", s.handlers.OpenUpdatePlaceClassSession)
@@ -127,11 +130,6 @@ func (s *Router) Run(ctx context.Context, cfg Config) {
 						r.With(updPlace).Delete("/upload-icon", s.handlers.DeletePlaceUploadIcon)
 						r.With(updPlace).Delete("/upload-banner", s.handlers.DeletePlaceUploadBanner)
 					})
-
-					r.With(auth).Delete("/", s.handlers.DeletePlaceClassUploadIcon)
-
-					r.With(auth).Patch("/status", s.handlers.UpdatePlaceStatus)
-					r.With(sysmoder).Patch("/verify", s.handlers.UpdatePlaceVerify)
 				})
 			})
 		})

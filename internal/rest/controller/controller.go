@@ -15,7 +15,7 @@ import (
 type placeSvc interface {
 	Create(
 		ctx context.Context,
-		initiator models.Initiator,
+		initiator models.AccountClaims,
 		params place.CreateParams,
 	) (place models.Place, err error)
 
@@ -28,34 +28,34 @@ type placeSvc interface {
 
 	OpenUpdateSession(
 		ctx context.Context,
-		initiator models.Initiator,
+		initiator models.AccountClaims,
 		placeID uuid.UUID,
 	) (models.Place, models.UpdatePlaceMedia, error)
 	ConfirmUpdateSession(
 		ctx context.Context,
-		initiator models.Initiator,
+		initiator models.AccountClaims,
 		placeID uuid.UUID,
 		params place.UpdateParams,
 	) (place models.Place, err error)
 	DeleteUpdateIconInSession(
 		ctx context.Context,
-		initiator models.Initiator,
+		initiator models.AccountClaims,
 		placeID, uploadSessionID uuid.UUID,
 	) error
 	DeleteUpdateBannerInSession(
 		ctx context.Context,
-		initiator models.Initiator,
+		initiator models.AccountClaims,
 		placeID, uploadSessionID uuid.UUID,
 	) error
 	CancelUpdate(
 		ctx context.Context,
-		initiator models.Initiator,
+		initiator models.AccountClaims,
 		placeID, uploadSessionID uuid.UUID,
 	) error
 
 	UpdateStatus(
 		ctx context.Context,
-		initiator models.Initiator,
+		initiator models.AccountClaims,
 		placeID uuid.UUID,
 		status string,
 	) (place models.Place, err error)
@@ -67,7 +67,7 @@ type placeSvc interface {
 
 	Delete(
 		ctx context.Context,
-		initiator models.Initiator,
+		initiator models.AccountClaims,
 		placeID uuid.UUID) error
 }
 
@@ -83,7 +83,7 @@ type placeClassSvc interface {
 
 	OpenUpdateSession(
 		ctx context.Context,
-		initiator models.Initiator,
+		initiator models.AccountClaims,
 		placeClassID uuid.UUID,
 	) (models.PlaceClass, models.UpdatePlaceClassMedia, error)
 	ConfirmUpdateSession(
@@ -111,8 +111,8 @@ type responser interface {
 }
 
 type core struct {
-	place placeSvc
-	class placeClassSvc
+	place  placeSvc
+	pclass placeClassSvc
 }
 
 type Controller struct {
@@ -130,8 +130,8 @@ func New(
 	return &Controller{
 		log: log,
 		core: core{
-			place: placeSvc,
-			class: placeClassSvc,
+			place:  placeSvc,
+			pclass: placeClassSvc,
 		},
 		responser: responser,
 	}

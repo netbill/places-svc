@@ -17,6 +17,7 @@ func (c *Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 	if limit > 100 {
 		c.log.WithError(fmt.Errorf("invalid pagination limit %d", limit)).Errorf("invalid pagination limit")
 		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("pagination limit must be between 1 and 100"))...)
+
 		return
 	}
 
@@ -32,6 +33,7 @@ func (c *Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			c.log.WithError(err).Errorf("invalid parent id")
 			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid parent id"))...)
+
 			return
 		}
 		params.Parent.ID = parentID
@@ -41,6 +43,7 @@ func (c *Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				c.log.WithError(err).Errorf("invalid with_parents value")
 				c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid with_parents value"))...)
+
 				return
 			}
 
@@ -52,6 +55,7 @@ func (c *Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				c.log.WithError(err).Errorf("invalid with_child value")
 				c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid with_child value"))...)
+
 				return
 			}
 
@@ -59,10 +63,11 @@ func (c *Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	res, err := c.core.class.GetList(r.Context(), params, limit, offset)
+	res, err := c.core.pclass.GetList(r.Context(), params, limit, offset)
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get place classes")
 		c.responser.RenderErr(w, problems.InternalError())
+
 		return
 	}
 

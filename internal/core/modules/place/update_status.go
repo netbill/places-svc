@@ -9,7 +9,7 @@ import (
 
 func (m *Module) UpdateStatus(
 	ctx context.Context,
-	initiator models.Initiator,
+	initiator models.AccountClaims,
 	placeID uuid.UUID,
 	status string,
 ) (place models.Place, err error) {

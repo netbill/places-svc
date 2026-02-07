@@ -15,6 +15,7 @@ func (c *Controller) UpdatePlaceVerify(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid update place verify data")
 		c.responser.RenderErr(w, problems.BadRequest(err)...)
+
 		return
 	}
 
@@ -22,11 +23,12 @@ func (c *Controller) UpdatePlaceVerify(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid update place verify data")
 		switch {
-		case errors.Is(err, errx.ErrorPlaceNotFound):
+		case errors.Is(err, errx.ErrorPlaceNotExists):
 			c.responser.RenderErr(w, problems.NotFound("place not found"))
 		default:
 			c.responser.RenderErr(w, problems.InternalError())
 		}
+
 		return
 	}
 

@@ -17,18 +17,20 @@ func (c *Controller) GetPlaceClass(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid place class id")
 		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid place class id"))...)
+
 		return
 	}
 
-	res, err := c.core.class.Get(r.Context(), classID)
+	res, err := c.core.pclass.Get(r.Context(), classID)
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get place class")
 		switch {
-		case errors.Is(err, errx.ErrorPlaceClassNotFound):
+		case errors.Is(err, errx.ErrorPlaceClassNotExists):
 			c.responser.RenderErr(w, problems.NotFound("place class not found"))
 		default:
 			c.responser.RenderErr(w, problems.InternalError())
 		}
+
 		return
 	}
 

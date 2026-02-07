@@ -9,7 +9,7 @@ import (
 
 func (m *Module) Delete(
 	ctx context.Context,
-	initiator models.Initiator,
+	initiator models.AccountClaims,
 	placeID uuid.UUID,
 ) error {
 	place, err := m.repo.GetPlaceByID(ctx, placeID)

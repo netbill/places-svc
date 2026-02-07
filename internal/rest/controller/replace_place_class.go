@@ -15,18 +15,20 @@ func (c *Controller) ReplacePlaceClass(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid replace place class request")
 		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid replace place class request: %s", err))...)
+
 		return
 	}
 
-	err = c.core.class.Replace(r.Context(), req.Data.Id, req.Data.Attributes.ClassReplaceId)
+	err = c.core.pclass.Replace(r.Context(), req.Data.Id, req.Data.Attributes.ClassReplaceId)
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to replace place class")
 		switch {
-		case errors.Is(err, errx.ErrorPlaceClassNotFound):
+		case errors.Is(err, errx.ErrorPlaceClassNotExists):
 			c.responser.RenderErr(w, problems.NotFound("place class not found"))
 		default:
 			c.responser.RenderErr(w, problems.InternalError())
 		}
+
 		return
 	}
 

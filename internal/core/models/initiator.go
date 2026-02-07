@@ -4,6 +4,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type Initiator interface {
+type AccountClaims interface {
 	GetAccountID() uuid.UUID
 }

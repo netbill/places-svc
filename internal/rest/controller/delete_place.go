@@ -17,6 +17,7 @@ func (c *Controller) DeletePlace(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get initiator account data")
 		c.responser.RenderErr(w, problems.Unauthorized("failed to get initiator account data"))
+
 		return
 	}
 
@@ -26,6 +27,7 @@ func (c *Controller) DeletePlace(w http.ResponseWriter, r *http.Request) {
 		c.responser.RenderErr(w, problems.BadRequest(
 			fmt.Errorf("invalid place_id: %s", chi.URLParam(r, "place_id")))...,
 		)
+
 		return
 	}
 
@@ -33,13 +35,14 @@ func (c *Controller) DeletePlace(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to update place")
 		switch {
-		case errors.Is(err, errx.ErrorPlaceNotFound):
+		case errors.Is(err, errx.ErrorPlaceNotExists):
 			c.responser.RenderErr(w, problems.NotFound("place not found"))
 		case errors.Is(err, errx.ErrorNotEnoughRights):
 			c.responser.RenderErr(w, problems.Forbidden("not enough rights to update place"))
 		default:
 			c.responser.RenderErr(w, problems.InternalError())
 		}
+
 		return
 	}
 

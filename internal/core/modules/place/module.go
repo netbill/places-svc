@@ -122,7 +122,7 @@ type token interface {
 
 func (m *Module) chekPermissionForCreatePlace(
 	ctx context.Context,
-	initiator models.Initiator,
+	initiator models.AccountClaims,
 	organizationID uuid.UUID,
 ) error {
 	member, err := m.repo.GetOrgMemberByAccountID(ctx, organizationID, initiator.GetAccountID())
@@ -145,7 +145,10 @@ func (m *Module) chekPermissionForCreatePlace(
 
 	if !access {
 		return errx.ErrorNotEnoughRights.Raise(
-			fmt.Errorf("initiator has no access to activate organization"),
+			fmt.Errorf(
+				"account wit id: %s has no access to activate place %s",
+				initiator.GetAccountID(), organizationID,
+			),
 		)
 	}
 
@@ -154,10 +157,10 @@ func (m *Module) chekPermissionForCreatePlace(
 
 func (m *Module) chekPermissionForDeletePlace(
 	ctx context.Context,
-	initiator models.Initiator,
+	subject models.AccountClaims,
 	organizationID uuid.UUID,
 ) error {
-	member, err := m.repo.GetOrgMemberByAccountID(ctx, organizationID, initiator.GetAccountID())
+	member, err := m.repo.GetOrgMemberByAccountID(ctx, organizationID, subject.GetAccountID())
 	if err != nil {
 		return err
 	}
@@ -177,7 +180,10 @@ func (m *Module) chekPermissionForDeletePlace(
 
 	if !access {
 		return errx.ErrorNotEnoughRights.Raise(
-			fmt.Errorf("initiator has no access to activate organization"),
+			fmt.Errorf(
+				"account wit id: %s has no access to delete place %s",
+				subject.GetAccountID(), organizationID,
+			),
 		)
 	}
 
@@ -186,10 +192,10 @@ func (m *Module) chekPermissionForDeletePlace(
 
 func (m *Module) chekPermissionForUpdatePlace(
 	ctx context.Context,
-	initiator models.Initiator,
+	subject models.AccountClaims,
 	organizationID uuid.UUID,
 ) error {
-	member, err := m.repo.GetOrgMemberByAccountID(ctx, organizationID, initiator.GetAccountID())
+	member, err := m.repo.GetOrgMemberByAccountID(ctx, organizationID, subject.GetAccountID())
 	if err != nil {
 		return err
 	}
@@ -209,7 +215,10 @@ func (m *Module) chekPermissionForUpdatePlace(
 
 	if !access {
 		return errx.ErrorNotEnoughRights.Raise(
-			fmt.Errorf("initiator has no access to activate organization"),
+			fmt.Errorf(
+				"account wit id: %s has no access to update place %s",
+				subject.GetAccountID(), organizationID,
+			),
 		)
 	}
 

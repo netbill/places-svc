@@ -18,6 +18,7 @@ func (c *Controller) CreatePlace(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get initiator account data")
 		c.responser.RenderErr(w, problems.Unauthorized("failed to get initiator account data"))
+
 		return
 	}
 
@@ -25,6 +26,7 @@ func (c *Controller) CreatePlace(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid create places request")
 		c.responser.RenderErr(w, problems.BadRequest(err)...)
+
 		return
 	}
 
@@ -34,10 +36,8 @@ func (c *Controller) CreatePlace(w http.ResponseWriter, r *http.Request) {
 		Address:        req.Data.Attributes.Address,
 		Name:           req.Data.Attributes.Name,
 		Description:    req.Data.Attributes.Description,
-		//Icon:           req.Data.Attributes.Icon,
-		//Banner:         req.Data.Attributes.Banner,
-		Website: req.Data.Attributes.Website,
-		Phone:   req.Data.Attributes.Phone,
+		Website:        req.Data.Attributes.Website,
+		Phone:          req.Data.Attributes.Phone,
 		Point: orb.Point{
 			req.Data.Attributes.Point.Longitude,
 			req.Data.Attributes.Point.Latitude,
@@ -50,11 +50,12 @@ func (c *Controller) CreatePlace(w http.ResponseWriter, r *http.Request) {
 			c.responser.RenderErr(w, problems.Forbidden("not enough rights to create place"))
 		case errors.Is(err, errx.ErrorPlaceOutOfTerritory):
 			c.responser.RenderErr(w, problems.Forbidden("place is out of organization's territory"))
-		case errors.Is(err, errx.ErrorPlaceClassNotFound):
+		case errors.Is(err, errx.ErrorPlaceClassNotExists):
 			c.responser.RenderErr(w, problems.NotFound("place class not found"))
 		default:
 			c.responser.RenderErr(w, problems.InternalError())
 		}
+
 		return
 	}
 

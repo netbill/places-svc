@@ -11,7 +11,7 @@ import (
 
 func (m *Module) OpenUpdateSession(
 	ctx context.Context,
-	initiator models.Initiator,
+	initiator models.AccountClaims,
 	placeClassID uuid.UUID,
 ) (models.PlaceClass, models.UpdatePlaceClassMedia, error) {
 	org, err := m.Get(ctx, placeClassID)
@@ -57,11 +57,11 @@ type UpdateMediaParams struct {
 	UploadSessionID uuid.UUID `json:"upload_session_id"`
 
 	icon       *string
-	DeleteIcon *bool `json:"delete_icon"`
+	DeleteIcon bool `json:"delete_icon"`
 }
 
 func (p UpdateParams) GetUpdatedIcon() *string {
-	if p.Media.DeleteIcon != nil && *p.Media.DeleteIcon {
+	if p.Media.DeleteIcon {
 		return nil
 	}
 	return p.Media.icon
@@ -101,14 +101,14 @@ func (m *Module) ConfirmUpdateSession(
 
 	params.Media.icon = class.Icon
 
-	if params.Media.DeleteIcon != nil || *params.Media.DeleteIcon {
+	if params.Media.DeleteIcon {
 		if err = m.bucket.DeletePlaceClassIcon(ctx, classID); err != nil {
 			return models.PlaceClass{}, err
 		}
 		params.Media.icon = nil
 	}
 
-	if params.Media.DeleteIcon != nil || *params.Media.DeleteIcon == false {
+	if !params.Media.DeleteIcon {
 		links, err := m.bucket.AcceptUpdatePlaceClassMedia(
 			ctx,
 			classID,

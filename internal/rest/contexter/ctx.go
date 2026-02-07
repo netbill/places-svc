@@ -37,10 +37,10 @@ func AccountData(ctx context.Context) (Account, error) {
 }
 
 type UploadContent interface {
-	GetOwnerAccountID() uuid.UUID
+	GetUploadOwnerAccountID() uuid.UUID
 	GetUploadSessionID() uuid.UUID
-	GetResourceID() string
-	GetResource() string
+	GetUploadResourceID() string
+	GetUploadResource() string
 }
 
 func UploadContentData(ctx context.Context) (UploadContent, error) {

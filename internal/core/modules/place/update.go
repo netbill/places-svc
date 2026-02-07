@@ -9,7 +9,7 @@ import (
 
 func (m *Module) OpenUpdateSession(
 	ctx context.Context,
-	initiator models.Initiator,
+	initiator models.AccountClaims,
 	placeID uuid.UUID,
 ) (models.Place, models.UpdatePlaceMedia, error) {
 	place, err := m.Get(ctx, placeID)
@@ -62,14 +62,14 @@ type UpdateParams struct {
 type UpdateMediaParams struct {
 	UploadSessionID uuid.UUID
 
-	DeleteIcon   *bool
+	DeleteIcon   bool
 	icon         *string
-	DeleteBanner *bool
+	DeleteBanner bool
 	banner       *string
 }
 
 func (p UpdateParams) GetUpdatedIcon() *string {
-	if p.Media.DeleteIcon != nil && *p.Media.DeleteIcon {
+	if p.Media.DeleteIcon {
 		return nil
 	}
 
@@ -77,7 +77,7 @@ func (p UpdateParams) GetUpdatedIcon() *string {
 }
 
 func (p UpdateParams) GetUpdatedBanner() *string {
-	if p.Media.DeleteBanner != nil && *p.Media.DeleteBanner {
+	if p.Media.DeleteBanner {
 		return nil
 	}
 
@@ -86,7 +86,7 @@ func (p UpdateParams) GetUpdatedBanner() *string {
 
 func (m *Module) ConfirmUpdateSession(
 	ctx context.Context,
-	initiator models.Initiator,
+	initiator models.AccountClaims,
 	placeID uuid.UUID,
 	params UpdateParams,
 ) (place models.Place, err error) {
@@ -104,22 +104,21 @@ func (m *Module) ConfirmUpdateSession(
 	params.Media.icon = place.Icon
 	params.Media.banner = place.Banner
 
-	if params.Media.DeleteIcon != nil || *params.Media.DeleteIcon {
+	if params.Media.DeleteIcon {
 		if err = m.bucket.DeletePlaceIcon(ctx, placeID); err != nil {
 			return models.Place{}, err
 		}
 		params.Media.icon = nil
 	}
 
-	if params.Media.DeleteBanner != nil || *params.Media.DeleteBanner {
+	if params.Media.DeleteBanner {
 		if err = m.bucket.DeletePlaceBanner(ctx, placeID); err != nil {
 			return models.Place{}, err
 		}
 		params.Media.banner = nil
 	}
 
-	if (params.Media.DeleteIcon != nil || *params.Media.DeleteIcon == false) ||
-		(params.Media.DeleteBanner != nil && *params.Media.DeleteIcon == false) {
+	if !params.Media.DeleteIcon || !params.Media.DeleteBanner {
 		links, err := m.bucket.AcceptUpdatePlaceMedia(
 			ctx,
 			placeID,
@@ -158,7 +157,7 @@ func (m *Module) ConfirmUpdateSession(
 
 func (m *Module) DeleteUpdateIconInSession(
 	ctx context.Context,
-	initiator models.Initiator,
+	initiator models.AccountClaims,
 	placeID, uploadSessionID uuid.UUID,
 ) error {
 	if err := m.chekPermissionForUpdatePlace(ctx, initiator, placeID); err != nil {
@@ -174,7 +173,7 @@ func (m *Module) DeleteUpdateIconInSession(
 
 func (m *Module) DeleteUpdateBannerInSession(
 	ctx context.Context,
-	initiator models.Initiator,
+	initiator models.AccountClaims,
 	placeID, uploadSessionID uuid.UUID,
 ) error {
 	if err := m.chekPermissionForUpdatePlace(ctx, initiator, placeID); err != nil {
@@ -190,7 +189,7 @@ func (m *Module) DeleteUpdateBannerInSession(
 
 func (m *Module) CancelUpdate(
 	ctx context.Context,
-	initiator models.Initiator,
+	initiator models.AccountClaims,
 	placeID, uploadSessionID uuid.UUID,
 ) error {
 	if err := m.chekPermissionForUpdatePlace(ctx, initiator, placeID); err != nil {

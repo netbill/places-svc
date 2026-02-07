@@ -16,10 +16,11 @@ func (c *Controller) CreatePlaceClass(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("invalid create place class request")
 		c.responser.RenderErr(w, problems.BadRequest(err)...)
+
 		return
 	}
 
-	res, err := c.core.class.Create(r.Context(), pclass.CreateParams{
+	res, err := c.core.pclass.Create(r.Context(), pclass.CreateParams{
 		ParentID:    req.Data.Attributes.ParentId,
 		Code:        req.Data.Attributes.Code,
 		Name:        req.Data.Attributes.Name,
@@ -29,7 +30,7 @@ func (c *Controller) CreatePlaceClass(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to create place class")
 		switch {
-		case errors.Is(errx.ErrorPlaceClassNotFound, err):
+		case errors.Is(errx.ErrorPlaceClassNotExists, err):
 			c.responser.RenderErr(w, problems.NotFound("parent place class not found"))
 		case errors.Is(errx.ErrorPlaceClassParentCycle, err):
 			c.responser.RenderErr(w, problems.Conflict("place class parent cycle detected"))
@@ -38,6 +39,8 @@ func (c *Controller) CreatePlaceClass(w http.ResponseWriter, r *http.Request) {
 		default:
 			c.responser.RenderErr(w, problems.InternalError())
 		}
+
+		return
 	}
 
 	c.responser.Render(w, http.StatusCreated, responses.PlaceClass(res))

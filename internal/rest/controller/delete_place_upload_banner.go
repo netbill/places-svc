@@ -18,6 +18,7 @@ func (c *Controller) DeletePlaceUploadBanner(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		c.log.WithError(err).Errorf("failed to get initiator account data")
 		c.responser.RenderErr(w, problems.Unauthorized("failed to get initiator account data"))
+
 		return
 	}
 
@@ -47,13 +48,16 @@ func (c *Controller) DeletePlaceUploadBanner(w http.ResponseWriter, r *http.Requ
 	); err != nil {
 		c.log.WithError(err).Errorf("failed to delete place banner in upload session")
 		switch {
-		case errors.Is(err, errx.ErrorPlaceNotFound):
+		case errors.Is(err, errx.ErrorPlaceNotExists):
 			c.responser.RenderErr(w, problems.NotFound("place does not exist"))
 		case errors.Is(err, errx.ErrorNotEnoughRights):
 			c.responser.RenderErr(w, problems.Forbidden("not enough rights to update place"))
 		default:
 			c.responser.RenderErr(w, problems.InternalError())
 		}
+
 		return
 	}
+
+	c.responser.Render(w, http.StatusOK)
 }
