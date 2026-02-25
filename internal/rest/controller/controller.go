@@ -15,7 +15,7 @@ import (
 type placeSvc interface {
 	Create(
 		ctx context.Context,
-		initiator models.AccountClaims,
+		actor models.AccountActor,
 		params place.CreateParams,
 	) (place models.Place, err error)
 
@@ -28,34 +28,34 @@ type placeSvc interface {
 
 	OpenUpdateSession(
 		ctx context.Context,
-		initiator models.AccountClaims,
+		actor models.AccountActor,
 		placeID uuid.UUID,
 	) (models.Place, models.UpdatePlaceMedia, error)
 	ConfirmUpdateSession(
 		ctx context.Context,
-		initiator models.AccountClaims,
+		actor models.AccountActor,
 		placeID uuid.UUID,
 		params place.UpdateParams,
 	) (place models.Place, err error)
 	DeleteUpdateIconInSession(
 		ctx context.Context,
-		initiator models.AccountClaims,
+		actor models.AccountActor,
 		placeID, uploadSessionID uuid.UUID,
 	) error
 	DeleteUpdateBannerInSession(
 		ctx context.Context,
-		initiator models.AccountClaims,
+		actor models.AccountActor,
 		placeID, uploadSessionID uuid.UUID,
 	) error
 	CancelUpdate(
 		ctx context.Context,
-		initiator models.AccountClaims,
+		actor models.AccountActor,
 		placeID, uploadSessionID uuid.UUID,
 	) error
 
 	UpdateStatus(
 		ctx context.Context,
-		initiator models.AccountClaims,
+		actor models.AccountActor,
 		placeID uuid.UUID,
 		status string,
 	) (place models.Place, err error)
@@ -67,7 +67,7 @@ type placeSvc interface {
 
 	Delete(
 		ctx context.Context,
-		initiator models.AccountClaims,
+		actor models.AccountActor,
 		placeID uuid.UUID) error
 }
 
@@ -83,7 +83,7 @@ type placeClassSvc interface {
 
 	OpenUpdateSession(
 		ctx context.Context,
-		initiator models.AccountClaims,
+		actor models.AccountActor,
 		placeClassID uuid.UUID,
 	) (models.PlaceClass, models.UpdatePlaceClassMedia, error)
 	ConfirmUpdateSession(

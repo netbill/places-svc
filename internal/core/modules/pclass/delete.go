@@ -44,7 +44,7 @@ func (m *Module) Delete(ctx context.Context, classID uuid.UUID) error {
 			return err
 		}
 
-		if err = m.messanger.PublishPlaceClassDeleted(ctx, classID); err != nil {
+		if err = m.messenger.PublishPlaceClassDeleted(ctx, classID); err != nil {
 			return err
 		}
 

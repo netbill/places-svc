@@ -24,10 +24,10 @@ func (m *Module) DeactivateOrganization(
 			return err
 		}
 
-		if err := m.repo.UpdatePlaceStatusForOrg(
+		if err = m.repo.UpdatePlaceStatusForOrg(
 			ctx,
 			orgID,
-			models.OrganizationStatusInactive,
+			models.PlaceStatusSuspended,
 		); err != nil {
 			return err
 		}

@@ -2,14 +2,16 @@ package place
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
 func (m *Module) Delete(
 	ctx context.Context,
-	initiator models.AccountClaims,
+	actor models.AccountActor,
 	placeID uuid.UUID,
 ) error {
 	place, err := m.repo.GetPlaceByID(ctx, placeID)
@@ -17,11 +19,25 @@ func (m *Module) Delete(
 		return err
 	}
 
-	if place.OrganizationID != nil {
-		err = m.chekPermissionForDeletePlace(ctx, initiator, *place.OrganizationID)
-		if err != nil {
-			return err
-		}
+	org, err := m.repo.GetOrganization(ctx, place.OrganizationID)
+	if err != nil {
+		return err
+	}
+
+	if org.Status == models.OrganizationStatusSuspended {
+		return errx.ErrorOrganizationIsSuspended.Raise(
+			fmt.Errorf("organization %s is suspended", place.OrganizationID),
+		)
+	}
+
+	member, err := m.repo.GetOrgMemberByAccountID(ctx, actor, place.OrganizationID)
+	if err != nil {
+		return err
+	}
+	if !member.Head {
+		return errx.ErrorNotEnoughRights.Raise(
+			fmt.Errorf("only organization head can delete places"),
+		)
 	}
 
 	return m.repo.Transaction(ctx, func(txCtx context.Context) error {

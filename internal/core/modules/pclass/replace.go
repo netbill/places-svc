@@ -31,7 +31,7 @@ func (m *Module) Replace(ctx context.Context, oldClassID, newClassID uuid.UUID) 
 			return err
 		}
 
-		err = m.messanger.PublishPlacesClassReplaced(txCtx, oldClassID, newClassID)
+		err = m.messenger.PublishPlacesClassReplaced(txCtx, oldClassID, newClassID)
 		if err != nil {
 			return err
 		}

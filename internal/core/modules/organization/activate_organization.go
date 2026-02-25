@@ -13,10 +13,5 @@ func (m *Module) ActivateOrganization(
 	orgID uuid.UUID,
 	updatedAt time.Time,
 ) (models.Organization, error) {
-	return m.repo.UpdateOrgStatus(
-		ctx,
-		orgID,
-		models.OrganizationStatusInactive,
-		updatedAt,
-	)
+	return m.repo.UpdateOrgStatus(ctx, orgID, models.OrganizationStatusInactive, updatedAt)
 }

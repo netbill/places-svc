@@ -11,7 +11,7 @@ import (
 
 func (m *Module) UpdateClass(
 	ctx context.Context,
-	initiator models.AccountClaims,
+	actor models.AccountActor,
 	placeID uuid.UUID,
 	classID uuid.UUID,
 ) (place models.Place, err error) {
@@ -20,9 +20,25 @@ func (m *Module) UpdateClass(
 		return models.Place{}, err
 	}
 
-	err = m.chekPermissionForUpdatePlace(ctx, initiator, placeID)
+	org, err := m.repo.GetOrganization(ctx, place.OrganizationID)
 	if err != nil {
 		return models.Place{}, err
+	}
+
+	if org.Status == models.OrganizationStatusSuspended {
+		return models.Place{}, errx.ErrorOrganizationIsSuspended.Raise(
+			fmt.Errorf("organization %s is suspended", place.OrganizationID),
+		)
+	}
+
+	member, err := m.repo.GetOrgMemberByAccountID(ctx, actor, place.OrganizationID)
+	if err != nil {
+		return models.Place{}, err
+	}
+	if !member.Head {
+		return models.Place{}, errx.ErrorNotEnoughRights.Raise(
+			fmt.Errorf("only organization head can update places"),
+		)
 	}
 
 	exist, err := m.repo.CheckPlaceClassExists(ctx, classID)

@@ -11,11 +11,11 @@ import (
 )
 
 type CreateParams struct {
-	OrganizationID *uuid.UUID `json:"organization_id"`
-	ClassID        uuid.UUID  `json:"class_id"`
-	Point          orb.Point  `json:"point"`
-	Address        string     `json:"address"`
-	Name           string     `json:"name"`
+	OrganizationID uuid.UUID `json:"organization_id"`
+	ClassID        uuid.UUID `json:"class_id"`
+	Point          orb.Point `json:"point"`
+	Address        string    `json:"address"`
+	Name           string    `json:"name"`
 
 	Description *string `json:"description"`
 	Website     *string `json:"website"`
@@ -24,14 +24,17 @@ type CreateParams struct {
 
 func (m *Module) Create(
 	ctx context.Context,
-	initiator models.AccountClaims,
+	actor models.AccountActor,
 	params CreateParams,
 ) (place models.Place, err error) {
-	if params.OrganizationID != nil {
-		err = m.chekPermissionForCreatePlace(ctx, initiator, *params.OrganizationID)
-		if err != nil {
-			return models.Place{}, err
-		}
+	member, err := m.repo.GetOrgMemberByAccountID(ctx, actor, params.OrganizationID)
+	if err != nil {
+		return models.Place{}, err
+	}
+	if !member.Head {
+		return models.Place{}, errx.ErrorNotEnoughRights.Raise(
+			fmt.Errorf("only organization head can create places"),
+		)
 	}
 
 	if !m.territory.ContainsLatLng(params.Point[1], params.Point[0]) {

@@ -42,37 +42,6 @@ type repo interface {
 	) (models.OrgMember, error)
 	DeleteOrgMember(ctx context.Context, memberID uuid.UUID) error
 
-	RemoveOrgMemberRole(
-		ctx context.Context,
-		memberID, roleID uuid.UUID,
-	) error
-	AddOrgMemberRole(
-		ctx context.Context,
-		memberID, roleID uuid.UUID,
-		addedAt time.Time,
-	) error
-
-	CreateOrgRole(
-		ctx context.Context,
-		params models.OrgRole,
-	) (models.OrgRole, error)
-	DeleteOrgRole(
-		ctx context.Context,
-		roleID uuid.UUID,
-	) error
-
-	UpdateOrgRolesRanks(
-		ctx context.Context,
-		organizationID uuid.UUID,
-		order map[uuid.UUID]uint,
-		updatedAt time.Time,
-	) error
-	SetOrgRolePermissions(
-		ctx context.Context,
-		roleID uuid.UUID,
-		codes ...string,
-	) error
-
 	UpdatePlaceStatusForOrg(
 		ctx context.Context,
 		organizationID uuid.UUID,

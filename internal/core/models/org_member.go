@@ -11,6 +11,10 @@ type OrgMember struct {
 	AccountID      uuid.UUID `json:"account_id"`
 	OrganizationID uuid.UUID `json:"organization_id"`
 	Head           bool      `json:"head"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	Label          *string   `json:"label,omitempty"`
+	Position       *string   `json:"position,omitempty"`
+
+	Version   *string   `json:"version,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

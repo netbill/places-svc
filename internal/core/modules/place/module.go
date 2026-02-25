@@ -2,10 +2,8 @@ package place
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/restkit/pagi"
 )
@@ -15,7 +13,6 @@ type Module struct {
 	bucket    bucket
 	messenger messenger
 	territory checkerTerritory
-	token     token
 }
 
 func New(
@@ -23,14 +20,12 @@ func New(
 	bucket bucket,
 	messenger messenger,
 	territory checkerTerritory,
-	token token,
 ) *Module {
 	return &Module{
 		repo:      repo,
 		bucket:    bucket,
 		messenger: messenger,
 		territory: territory,
-		token:     token,
 	}
 }
 
@@ -49,13 +44,8 @@ type repo interface {
 
 	CheckPlaceClassExists(ctx context.Context, classID uuid.UUID) (bool, error)
 
+	GetOrganization(ctx context.Context, id uuid.UUID) (models.Organization, error)
 	GetOrgMemberByAccountID(ctx context.Context, organizationID, accountID uuid.UUID) (models.OrgMember, error)
-
-	CheckMemberHavePermission(
-		ctx context.Context,
-		memberID uuid.UUID,
-		permissionCode string,
-	) (bool, error)
 
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
 }
@@ -72,155 +62,65 @@ type messenger interface {
 }
 
 type bucket interface {
-	GeneratePreloadLinkForPlaceMedia(
+	CreatePlaceIconUploadMediaLinks(
 		ctx context.Context,
-		placeID, sessionID uuid.UUID,
-	) (models.PlaceUploadMediaLinks, error)
+		classID uuid.UUID,
+	) (models.UploadMediaLink, error)
 
-	AcceptUpdatePlaceMedia(
+	ValidatePlaceIcon(
 		ctx context.Context,
-		placeID, sessionID uuid.UUID,
-	) (models.PlaceMedia, error)
-
-	CancelUpdatePlaceIcon(
-		ctx context.Context,
-		placeID, sessionID uuid.UUID,
+		classID uuid.UUID,
+		key string,
 	) error
 
-	CancelUpdatePlaceBanner(
+	DeleteUploadPlaceIcon(
 		ctx context.Context,
-		placeID, sessionID uuid.UUID,
+		classID uuid.UUID,
+		key string,
 	) error
 
 	DeletePlaceIcon(
 		ctx context.Context,
-		placeID uuid.UUID,
+		classID uuid.UUID,
+		key string,
+	) error
+
+	UpdatePlaceIcon(
+		ctx context.Context,
+		classID uuid.UUID,
+		key string,
+	) (string, error)
+
+	CreatePlaceBannerUploadMediaLinks(
+		ctx context.Context,
+		classID uuid.UUID,
+	) (models.UploadMediaLink, error)
+
+	ValidatePlaceBanner(
+		ctx context.Context,
+		classID uuid.UUID,
+		key string,
+	) error
+
+	DeleteUploadPlaceBanner(
+		ctx context.Context,
+		classID uuid.UUID,
+		key string,
 	) error
 
 	DeletePlaceBanner(
 		ctx context.Context,
-		placeID uuid.UUID,
+		classID uuid.UUID,
+		key string,
 	) error
 
-	CleanPlaceMediaSession(
+	UpdatePlaceBanner(
 		ctx context.Context,
-		placeID, sessionID uuid.UUID,
-	) error
+		classID uuid.UUID,
+		key string,
+	) (string, error)
 }
 
 type checkerTerritory interface {
 	ContainsLatLng(lat, lng float64) bool
-}
-
-type token interface {
-	NewUploadPlaceMediaToken(
-		OwnerAccountID uuid.UUID,
-		ResourceID uuid.UUID,
-		UploadSessionID uuid.UUID,
-	) (string, error)
-}
-
-func (m *Module) chekPermissionForCreatePlace(
-	ctx context.Context,
-	initiator models.AccountClaims,
-	organizationID uuid.UUID,
-) error {
-	member, err := m.repo.GetOrgMemberByAccountID(ctx, organizationID, initiator.GetAccountID())
-	if err != nil {
-		return err
-	}
-
-	if member.Head {
-		return nil
-	}
-
-	access, err := m.repo.CheckMemberHavePermission(
-		ctx,
-		member.ID,
-		models.RolePermissionPlaceCreate,
-	)
-	if err != nil {
-		return err
-	}
-
-	if !access {
-		return errx.ErrorNotEnoughRights.Raise(
-			fmt.Errorf(
-				"account wit id: %s has no access to activate place %s",
-				initiator.GetAccountID(), organizationID,
-			),
-		)
-	}
-
-	return nil
-}
-
-func (m *Module) chekPermissionForDeletePlace(
-	ctx context.Context,
-	subject models.AccountClaims,
-	organizationID uuid.UUID,
-) error {
-	member, err := m.repo.GetOrgMemberByAccountID(ctx, organizationID, subject.GetAccountID())
-	if err != nil {
-		return err
-	}
-
-	if member.Head {
-		return nil
-	}
-
-	access, err := m.repo.CheckMemberHavePermission(
-		ctx,
-		member.ID,
-		models.RolePermissionPlaceDelete,
-	)
-	if err != nil {
-		return err
-	}
-
-	if !access {
-		return errx.ErrorNotEnoughRights.Raise(
-			fmt.Errorf(
-				"account wit id: %s has no access to delete place %s",
-				subject.GetAccountID(), organizationID,
-			),
-		)
-	}
-
-	return nil
-}
-
-func (m *Module) chekPermissionForUpdatePlace(
-	ctx context.Context,
-	subject models.AccountClaims,
-	organizationID uuid.UUID,
-) error {
-	member, err := m.repo.GetOrgMemberByAccountID(ctx, organizationID, subject.GetAccountID())
-	if err != nil {
-		return err
-	}
-
-	if member.Head {
-		return nil
-	}
-
-	access, err := m.repo.CheckMemberHavePermission(
-		ctx,
-		member.ID,
-		models.RolePermissionPlaceUpdate,
-	)
-	if err != nil {
-		return err
-	}
-
-	if !access {
-		return errx.ErrorNotEnoughRights.Raise(
-			fmt.Errorf(
-				"account wit id: %s has no access to update place %s",
-				subject.GetAccountID(), organizationID,
-			),
-		)
-	}
-
-	return nil
 }

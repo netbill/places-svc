@@ -11,16 +11,14 @@ import (
 type Module struct {
 	repo      repo
 	bucket    bucket
-	messanger messanger
-	token     token
+	messenger messanger
 }
 
-func New(repo repo, messanger messanger, bucket bucket, token token) *Module {
+func New(repo repo, messenger messanger, bucket bucket) *Module {
 	return &Module{
 		repo:      repo,
 		bucket:    bucket,
-		messanger: messanger,
-		token:     token,
+		messenger: messenger,
 	}
 }
 
@@ -29,11 +27,9 @@ type repo interface {
 	UpdatePlaceClass(ctx context.Context, classID uuid.UUID, params UpdateParams) (models.PlaceClass, error)
 
 	GetPlaceClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error)
-	GetPlaceClassByCode(ctx context.Context, code string) (models.PlaceClass, error)
 	GetPlaceClasses(ctx context.Context, params FilterParams, limit, offset uint) (pagi.Page[[]models.PlaceClass], error)
 
 	PlaceClassExists(ctx context.Context, classID uuid.UUID) (bool, error)
-	PlaceClassExistsByCode(ctx context.Context, code string) (bool, error)
 
 	CheckParentCycle(ctx context.Context, classID, parentID uuid.UUID) (bool, error)
 	CheckPlaceClassHasChildren(ctx context.Context, classID uuid.UUID) (bool, error)
@@ -56,36 +52,32 @@ type messanger interface {
 }
 
 type bucket interface {
-	GeneratePreloadLinkForPlaceClassMedia(
+	CreatePlaceClassIconUploadMediaLinks(
 		ctx context.Context,
-		placeClassID, sessionID uuid.UUID,
-	) (models.PlaceClassUploadMediaLinks, error)
+		classID uuid.UUID,
+	) (models.UploadMediaLink, error)
 
-	AcceptUpdatePlaceClassMedia(
+	ValidatePlaceClassIcon(
 		ctx context.Context,
-		placeClassID, sessionID uuid.UUID,
-	) (models.PlaceClassMedia, error)
-
-	CancelUpdatePlaceClassIcon(
-		ctx context.Context,
-		placeClassID, sessionID uuid.UUID,
+		classID uuid.UUID,
+		key string,
 	) error
 
-	CleanPlaceClassMediaSession(
+	DeleteUploadPlaceClassIcon(
 		ctx context.Context,
-		placeClassID, sessionID uuid.UUID,
+		classID uuid.UUID,
+		key string,
 	) error
 
 	DeletePlaceClassIcon(
 		ctx context.Context,
-		placeClassID uuid.UUID,
+		classID uuid.UUID,
+		key string,
 	) error
-}
 
-type token interface {
-	NewUploadPlaceClassMediaToken(
-		OwnerAccountID uuid.UUID,
-		ResourceID uuid.UUID,
-		UploadSessionID uuid.UUID,
+	UpdatePlaceClassIcon(
+		ctx context.Context,
+		classID uuid.UUID,
+		key string,
 	) (string, error)
 }

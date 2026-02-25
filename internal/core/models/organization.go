@@ -7,21 +7,19 @@ import (
 )
 
 const (
-	OrganizationStatusActive   = "active"
-	OrganizationStatusInactive = "inactive"
+	OrganizationStatusActive    = "active"
+	OrganizationStatusInactive  = "inactive"
+	OrganizationStatusSuspended = "suspended"
 )
 
 type Organization struct {
-	ID     uuid.UUID `json:"id"`
-	Status string    `json:"status"`
-	Name   string    `json:"name"`
-	Icon   *string   `json:"icon"`
-	Banner *string   `json:"banner"`
+	ID        uuid.UUID `json:"id"`
+	Status    string    `json:"status"`
+	Name      string    `json:"name"`
+	IconKey   *string   `json:"icon_key,omitempty"`
+	BannerKey *string   `json:"banner_key,omitempty"`
 
+	Version   int32     `json:"version"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-}
-
-func (e Organization) IsNil() bool {
-	return e.ID == uuid.Nil
 }
