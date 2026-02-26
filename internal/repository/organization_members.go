@@ -67,13 +67,14 @@ func (r *Repository) CreateOrgMember(
 	ctx context.Context,
 	params organization.CreateMemberParams,
 ) error {
-	return r.OrgMembersQ.New().Insert(ctx, OrgMemberRow{
+	return r.OrgMembersSql.New().Insert(ctx, OrgMemberRow{
 		ID:              params.ID,
 		AccountID:       params.AccountID,
 		OrganizationID:  params.OrganizationID,
 		Label:           params.Label,
 		Position:        params.Position,
 		Head:            params.Head,
+		Version:         1,
 		SourceCreatedAt: params.CreatedAt,
 		SourceUpdatedAt: params.CreatedAt,
 	})
@@ -84,16 +85,16 @@ func (r *Repository) UpdateOrgMember(
 	memberID uuid.UUID,
 	params organization.UpdateMemberParams,
 ) error {
-	return r.OrgMembersQ.New().FilterByID(memberID).
+	return r.OrgMembersSql.New().FilterByID(memberID).
 		UpdateLabel(params.Label).
 		UpdatePosition(params.Position).
-		UpdateVersion(params.Version).
 		UpdateSourceUpdatedAt(params.UpdatedAt).
+		UpdateVersion(params.Version).
 		UpdateOne(ctx)
 }
 
 func (r *Repository) DeleteOrgMember(ctx context.Context, memberID uuid.UUID) error {
-	return r.OrgMembersQ.New().
+	return r.OrgMembersSql.New().
 		FilterByID(memberID).
 		Delete(ctx)
 }
@@ -102,7 +103,7 @@ func (r *Repository) GetOrgMemberByAccountID(
 	ctx context.Context,
 	organizationID, accountID uuid.UUID,
 ) (models.OrgMember, error) {
-	row, err := r.OrgMembersQ.New().
+	row, err := r.OrgMembersSql.New().
 		FilterByOrganizationID(organizationID).
 		FilterByAccountID(accountID).
 		Get(ctx)

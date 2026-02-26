@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -11,6 +12,7 @@ import (
 	"github.com/netbill/places-svc/internal/rest/scope"
 	"github.com/netbill/restkit/pagi"
 	"github.com/netbill/restkit/problems"
+	"github.com/netbill/restkit/render"
 )
 
 const operationGetPlaceClasses = "get_place_classes"
@@ -21,7 +23,7 @@ func (c *Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 	limit, offset := pagi.GetPagination(r)
 	if limit > 100 {
 		log.WithField("limit", limit).Info("invalid pagination limit")
-		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("pagination limit must be between 1 and 100"))...)
+		render.ResponseError(w, problems.BadRequest(fmt.Errorf("pagination limit must be between 1 and 100"))...)
 		return
 	}
 
@@ -35,7 +37,7 @@ func (c *Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 		parentID, err := uuid.Parse(r.URL.Query().Get("parent_id"))
 		if err != nil {
 			log.WithError(err).Info("invalid parent id")
-			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid parent id"))...)
+			render.ResponseError(w, problems.BadRequest(fmt.Errorf("invalid parent id"))...)
 			return
 		}
 
@@ -45,7 +47,7 @@ func (c *Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 			with, err := strconv.ParseBool(raw)
 			if err != nil {
 				log.WithError(err).Info("invalid with_parents value")
-				c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid with_parents value"))...)
+				render.ResponseError(w, problems.BadRequest(fmt.Errorf("invalid with_parents value"))...)
 				return
 			}
 			parent.IncludedParents = with
@@ -55,7 +57,7 @@ func (c *Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 			with, err := strconv.ParseBool(raw)
 			if err != nil {
 				log.WithError(err).Info("invalid with_child value")
-				c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid with_child value"))...)
+				render.ResponseError(w, problems.BadRequest(fmt.Errorf("invalid with_child value"))...)
 				return
 			}
 			parent.IncludedChildren = with
@@ -68,18 +70,40 @@ func (c *Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 		with, err := strconv.ParseBool(deprecated)
 		if err != nil {
 			log.WithError(err).Info("invalid deprecated value")
-			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid deprecated value"))...)
+			render.ResponseError(w, problems.BadRequest(fmt.Errorf("invalid deprecated value"))...)
 			return
 		}
 		params.Deprecated = &with
 	}
 
-	res, err := c.modules.Class.GetList(r.Context(), params, limit, offset)
+	classes, err := c.modules.Class.GetList(r.Context(), params, limit, offset)
 	switch {
 	case err != nil:
 		log.WithError(err).Error("failed to get Place classes")
-		c.responser.RenderErr(w, problems.InternalError())
-	default:
-		c.responser.Render(w, http.StatusOK, responses.PlaceClasses(r, res))
+		render.ResponseError(w, problems.InternalError())
+		return
 	}
+
+	includes := r.URL.Query()["include"]
+	opts := make([]responses.PlaceClassCollectionOption, 0)
+
+	if slices.Contains(includes, "parents") {
+		parentIDs := make([]uuid.UUID, 0, classes.Size)
+		for _, p := range classes.Data {
+			if p.ParentID != nil {
+				parentIDs = append(parentIDs, *p.ParentID)
+			}
+		}
+
+		parents, err := c.modules.Class.GetByIDs(r.Context(), parentIDs)
+		if err != nil {
+			log.WithError(err).Error("failed to get place classes")
+			render.ResponseError(w, problems.InternalError())
+			return
+		}
+
+		opts = append(opts, responses.WithCollectionParentClass(parents))
+	}
+
+	render.Response(w, http.StatusOK, responses.PlaceClasses(r, classes, opts...))
 }

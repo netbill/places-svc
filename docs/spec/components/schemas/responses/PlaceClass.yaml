@@ -4,10 +4,7 @@ required:
 properties:
   data:
     $ref: './PlaceClassData.yaml'
-
   included:
-    type: array
-    description: "Included related resources (e.g., organization)"
-    items:
-      oneOf:
-        - $ref: './PlaceClassData.yaml'
+    $ref: './PlaceClassIncluded.yaml'
+  links:
+    $ref: './PaginationData.yaml'

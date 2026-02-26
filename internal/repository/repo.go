@@ -5,13 +5,17 @@ import (
 )
 
 type Repository struct {
-	Transactioner
-	PlacesQ        PlacesQ
-	PlaceClassesQ  PlaceClassesQ
-	OrganizationsQ OrganizationsQ
-	OrgMembersQ    OrgMembersQ
+	TransactionSql   Transaction
+	PlacesSql        PlacesQ
+	PlaceClassesSql  PlaceClassesQ
+	OrganizationsSql OrganizationsQ
+	OrgMembersSql    OrgMembersQ
 }
 
-type Transactioner interface {
-	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
+type Transaction interface {
+	Begin(ctx context.Context, fn func(ctx context.Context) error) error
+}
+
+func (r *Repository) Transaction(ctx context.Context, fn func(ctx context.Context) error) error {
+	return r.TransactionSql.Begin(ctx, fn)
 }

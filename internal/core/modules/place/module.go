@@ -33,6 +33,7 @@ type repo interface {
 	CreatePlace(ctx context.Context, params CreateParams) (models.Place, error)
 
 	GetPlaceByID(ctx context.Context, id uuid.UUID) (models.Place, error)
+	GetPlacesByIDs(ctx context.Context, ids []uuid.UUID) ([]models.Place, error)
 	GetPlaces(ctx context.Context, params FilterParams, limit, offset uint) (pagi.Page[[]models.Place], error)
 
 	UpdatePlaceByID(ctx context.Context, id uuid.UUID, params UpdateParams) (models.Place, error)

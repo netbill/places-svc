@@ -20,7 +20,6 @@ func (p *Publisher) PublishPlaceClassCreated(
 		Name:         class.Name,
 		Description:  class.Description,
 		IconKey:      class.IconKey,
-		Version:      class.Version,
 		CreatedAt:    class.CreatedAt,
 	})
 	if err != nil {

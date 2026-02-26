@@ -22,6 +22,8 @@ var _ MappedNullable = &PlacesCollection{}
 // PlacesCollection struct for PlacesCollection
 type PlacesCollection struct {
 	Data []PlaceData `json:"data"`
+	// Included related resources (e.g., organization)
+	Included []PlaceIncludedInner `json:"included,omitempty"`
 	Links PaginationData `json:"links"`
 }
 
@@ -70,6 +72,38 @@ func (o *PlacesCollection) SetData(v []PlaceData) {
 	o.Data = v
 }
 
+// GetIncluded returns the Included field value if set, zero value otherwise.
+func (o *PlacesCollection) GetIncluded() []PlaceIncludedInner {
+	if o == nil || IsNil(o.Included) {
+		var ret []PlaceIncludedInner
+		return ret
+	}
+	return o.Included
+}
+
+// GetIncludedOk returns a tuple with the Included field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *PlacesCollection) GetIncludedOk() ([]PlaceIncludedInner, bool) {
+	if o == nil || IsNil(o.Included) {
+		return nil, false
+	}
+	return o.Included, true
+}
+
+// HasIncluded returns a boolean if a field has been set.
+func (o *PlacesCollection) HasIncluded() bool {
+	if o != nil && !IsNil(o.Included) {
+		return true
+	}
+
+	return false
+}
+
+// SetIncluded gets a reference to the given []PlaceIncludedInner and assigns it to the Included field.
+func (o *PlacesCollection) SetIncluded(v []PlaceIncludedInner) {
+	o.Included = v
+}
+
 // GetLinks returns the Links field value
 func (o *PlacesCollection) GetLinks() PaginationData {
 	if o == nil {
@@ -105,6 +139,9 @@ func (o PlacesCollection) MarshalJSON() ([]byte, error) {
 func (o PlacesCollection) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["data"] = o.Data
+	if !IsNil(o.Included) {
+		toSerialize["included"] = o.Included
+	}
 	toSerialize["links"] = o.Links
 	return toSerialize, nil
 }

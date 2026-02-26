@@ -32,7 +32,6 @@ func (p *Publisher) PublishCreatePlace(
 		Website:     place.Website,
 		Phone:       place.Phone,
 
-		Version:   place.Version,
 		CreatedAt: place.CreatedAt,
 	})
 	if err != nil {

@@ -11,6 +11,7 @@ import (
 	"github.com/netbill/places-svc/internal/rest/responses"
 	"github.com/netbill/places-svc/internal/rest/scope"
 	"github.com/netbill/restkit/problems"
+	"github.com/netbill/restkit/render"
 )
 
 const operationCreatePlaceClassUploadMediaLink = "create_place_class_upload_media_link"
@@ -21,7 +22,7 @@ func (c *Controller) CreatePlaceClassUploadMediaLink(w http.ResponseWriter, r *h
 	classID, err := uuid.Parse(chi.URLParam(r, "place_class_id"))
 	if err != nil {
 		log.WithError(err).Info("invalid Place class id")
-		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"place_class_id": err,
 		})...)
 
@@ -32,11 +33,11 @@ func (c *Controller) CreatePlaceClassUploadMediaLink(w http.ResponseWriter, r *h
 	switch {
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
 		log.Info("Place class does not exist")
-		c.responser.RenderErr(w, problems.NotFound("Place class does not exist"))
+		render.ResponseError(w, problems.NotFound("Place class does not exist"))
 	case err != nil:
 		log.WithError(err).Error("failed to create Place class upload media link")
-		c.responser.RenderErr(w, problems.InternalError())
+		render.ResponseError(w, problems.InternalError())
 	default:
-		c.responser.Render(w, http.StatusOK, responses.UploadPlaceClassMediaLink(class, media))
+		render.Response(w, http.StatusOK, responses.UploadPlaceClassMediaLink(class, media))
 	}
 }

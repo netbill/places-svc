@@ -56,6 +56,7 @@ type OrganizationsQ interface {
 	UpdateIcon(icon *string) OrganizationsQ
 	UpdateBanner(banner *string) OrganizationsQ
 	UpdateSourceUpdatedAt(v time.Time) OrganizationsQ
+	UpdateVersion(v int32) OrganizationsQ
 
 	FilterByID(id ...uuid.UUID) OrganizationsQ
 	FilterByStatus(status string) OrganizationsQ
@@ -68,12 +69,14 @@ func (r *Repository) CreateOrganization(
 	ctx context.Context,
 	input organization.CreateParams,
 ) error {
-	return r.OrganizationsQ.New().Insert(ctx, OrganizationRow{
+	return r.OrganizationsSql.New().Insert(ctx, OrganizationRow{
 		ID:              input.ID,
 		Status:          input.Status,
 		Name:            input.Name,
 		IconKey:         input.IconKey,
 		BannerKey:       input.BannerKey,
+		Version:         1,
+		SourceUpdatedAt: input.CreatedAt,
 		SourceCreatedAt: input.CreatedAt,
 	})
 }
@@ -82,7 +85,7 @@ func (r *Repository) GetOrganization(
 	ctx context.Context,
 	orgID uuid.UUID,
 ) (models.Organization, error) {
-	row, err := r.OrganizationsQ.New().FilterByID(orgID).Get(ctx)
+	row, err := r.OrganizationsSql.New().FilterByID(orgID).Get(ctx)
 	if err != nil {
 		return models.Organization{}, nil
 	}
@@ -95,22 +98,40 @@ func (r *Repository) GetOrganization(
 	return row.ToModel(), nil
 }
 
+func (r *Repository) GetOrgsByIDs(
+	ctx context.Context,
+	ids []uuid.UUID,
+) ([]models.Organization, error) {
+	rows, err := r.OrganizationsSql.New().FilterByID(ids...).Select(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]models.Organization, len(rows))
+	for i, row := range rows {
+		res[i] = row.ToModel()
+	}
+
+	return res, nil
+}
+
 func (r *Repository) UpdateOrganization(
 	ctx context.Context,
 	orgID uuid.UUID,
 	params organization.UpdateParams,
 ) error {
-	return r.OrganizationsQ.New().
+	return r.OrganizationsSql.New().
 		FilterByID(orgID).
 		UpdateName(params.Name).
 		UpdateIcon(params.IconKey).
 		UpdateBanner(params.BannerKey).
 		UpdateSourceUpdatedAt(params.UpdatedAt).
+		UpdateVersion(params.Version).
 		UpdateOne(ctx)
 }
 
 func (r *Repository) DeleteOrganization(ctx context.Context, ID uuid.UUID) error {
-	return r.OrganizationsQ.New().
+	return r.OrganizationsSql.New().
 		FilterByID(ID).
 		Delete(ctx)
 }

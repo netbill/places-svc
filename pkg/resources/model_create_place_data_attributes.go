@@ -26,7 +26,7 @@ type CreatePlaceDataAttributes struct {
 	ClassId uuid.UUID `json:"class_id"`
 	// The ID of the organization this place belongs to
 	OrganizationId uuid.UUID `json:"organization_id"`
-	Point CreatePlaceDataAttributesPoint `json:"point"`
+	Point Point `json:"point"`
 	// The physical address of the place
 	Address string `json:"address"`
 	// The name of the place
@@ -45,7 +45,7 @@ type _CreatePlaceDataAttributes CreatePlaceDataAttributes
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewCreatePlaceDataAttributes(classId uuid.UUID, organizationId uuid.UUID, point CreatePlaceDataAttributesPoint, address string, name string) *CreatePlaceDataAttributes {
+func NewCreatePlaceDataAttributes(classId uuid.UUID, organizationId uuid.UUID, point Point, address string, name string) *CreatePlaceDataAttributes {
 	this := CreatePlaceDataAttributes{}
 	this.ClassId = classId
 	this.OrganizationId = organizationId
@@ -112,9 +112,9 @@ func (o *CreatePlaceDataAttributes) SetOrganizationId(v uuid.UUID) {
 }
 
 // GetPoint returns the Point field value
-func (o *CreatePlaceDataAttributes) GetPoint() CreatePlaceDataAttributesPoint {
+func (o *CreatePlaceDataAttributes) GetPoint() Point {
 	if o == nil {
-		var ret CreatePlaceDataAttributesPoint
+		var ret Point
 		return ret
 	}
 
@@ -123,7 +123,7 @@ func (o *CreatePlaceDataAttributes) GetPoint() CreatePlaceDataAttributesPoint {
 
 // GetPointOk returns a tuple with the Point field value
 // and a boolean to check if the value has been set.
-func (o *CreatePlaceDataAttributes) GetPointOk() (*CreatePlaceDataAttributesPoint, bool) {
+func (o *CreatePlaceDataAttributes) GetPointOk() (*Point, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -131,7 +131,7 @@ func (o *CreatePlaceDataAttributes) GetPointOk() (*CreatePlaceDataAttributesPoin
 }
 
 // SetPoint sets field value
-func (o *CreatePlaceDataAttributes) SetPoint(v CreatePlaceDataAttributesPoint) {
+func (o *CreatePlaceDataAttributes) SetPoint(v Point) {
 	o.Point = v
 }
 

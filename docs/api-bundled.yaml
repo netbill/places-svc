@@ -14,6 +14,20 @@ paths:
           description: successfully
 components:
   schemas:
+    Point:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          format: float64
+          description: The latitude coordinate of the place
+        longitude:
+          type: number
+          format: float64
+          description: The longitude coordinate of the place
     CreatePlace:
       type: object
       required:
@@ -47,19 +61,7 @@ components:
                   format: uuid
                   description: The ID of the organization this place belongs to
                 point:
-                  type: object
-                  required:
-                    - latitude
-                    - longitude
-                  properties:
-                    latitude:
-                      type: number
-                      format: float64
-                      description: The latitude coordinate of the place
-                    longitude:
-                      type: number
-                      format: float64
-                      description: The longitude coordinate of the place
+                  $ref: '#/components/schemas/Point'
                 address:
                   type: string
                   description: The physical address of the place
@@ -397,117 +399,114 @@ components:
         - data
       properties:
         data:
+          $ref: '#/components/schemas/PlaceData'
+        included:
+          $ref: '#/components/schemas/PlaceIncluded'
+    PlaceData:
+      type: object
+      required:
+        - id
+        - type
+        - attributes
+        - relationships
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: place ID
+        type:
+          type: string
+          enum:
+            - place
+        attributes:
           type: object
           required:
-            - id
-            - type
-            - attributes
-            - relationships
+            - status
+            - verified
+            - point
+            - address
+            - name
+            - version
+            - created_at
+            - updated_at
           properties:
-            id:
+            status:
               type: string
-              format: uuid
-              description: place ID
-            type:
+              description: 'The status of the place (e.g., active, inactive)'
+            verified:
+              type: boolean
+              description: Indicates if the place has been verified
+            point:
+              $ref: '#/components/schemas/Point'
+            address:
               type: string
-              enum:
-                - place
-            attributes:
+              description: The physical address of the place
+            name:
+              type: string
+              description: The name of the place
+            description:
+              type: string
+              description: A brief description of the place
+            icon_key:
+              type: string
+              format: uri
+              description: A URL to an icon representing the place
+            banner_key:
+              type: string
+              format: uri
+              description: A URL to a banner image for the place
+            website:
+              type: string
+              format: uri
+              description: The website URL of the place
+            phone:
+              type: string
+              description: The contact phone number of the place
+            version:
+              type: integer
+              description: 'The version number of the place data, used for concurrency control'
+            created_at:
+              type: string
+              format: date-time
+              description: The date and time when the place was created
+            updated_at:
+              type: string
+              format: date-time
+              description: The date and time when the place was last updated
+        relationships:
+          type: object
+          required:
+            - organization
+            - place_class
+          properties:
+            organization:
               type: object
               required:
-                - status
-                - verified
-                - point
-                - address
-                - name
-                - version
-                - created_at
-                - updated_at
+                - id
+                - type
               properties:
-                status:
+                id:
                   type: string
-                  description: 'The status of the place (e.g., active, inactive)'
-                verified:
-                  type: boolean
-                  description: Indicates if the place has been verified
-                point:
-                  $ref: '#/components/schemas/CreatePlace/properties/data/properties/attributes/properties/point'
-                address:
+                  format: uuid
+                  description: The ID of the organization associated with the place
+                type:
                   type: string
-                  description: The physical address of the place
-                name:
-                  type: string
-                  description: The name of the place
-                description:
-                  type: string
-                  description: A brief description of the place
-                icon_key:
-                  type: string
-                  format: uri
-                  description: A URL to an icon representing the place
-                banner_key:
-                  type: string
-                  format: uri
-                  description: A URL to a banner image for the place
-                website:
-                  type: string
-                  format: uri
-                  description: The website URL of the place
-                phone:
-                  type: string
-                  description: The contact phone number of the place
-                version:
-                  type: integer
-                  description: 'The version number of the place data, used for concurrency control'
-                created_at:
-                  type: string
-                  format: date-time
-                  description: The date and time when the place was created
-                updated_at:
-                  type: string
-                  format: date-time
-                  description: The date and time when the place was last updated
-            relationships:
+                  enum:
+                    - organization
+            place_class:
               type: object
               required:
-                - organization
-                - place_class
+                - id
+                - type
               properties:
-                organization:
-                  type: object
-                  required:
-                    - id
-                    - type
-                  properties:
-                    id:
-                      type: string
-                      format: uuid
-                      description: The ID of the organization associated with the place
-                    type:
-                      type: string
-                      enum:
-                        - organization
-                place_class:
-                  type: object
-                  required:
-                    - id
-                    - type
-                  properties:
-                    id:
-                      type: string
-                      format: uuid
-                      description: The ID of the class associated with the place
-                    type:
-                      type: string
-                      enum:
-                        - place_class
-        included:
-          type: array
-          description: 'Included related resources (e.g., organization)'
-          items:
-            oneOf:
-              - $ref: '#/components/schemas/OrganizationData'
-              - $ref: '#/components/schemas/PlaceClassData'
+                id:
+                  type: string
+                  format: uuid
+                  description: The ID of the class associated with the place
+                type:
+                  type: string
+                  enum:
+                    - place_class
     PlacesCollection:
       type: object
       required:
@@ -517,9 +516,18 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Place/properties/data'
+            $ref: '#/components/schemas/PlaceData'
+        included:
+          $ref: '#/components/schemas/PlaceIncluded'
         links:
           $ref: '#/components/schemas/PaginationData'
+    PlaceIncluded:
+      type: array
+      description: 'Included related resources (e.g., organization)'
+      items:
+        oneOf:
+          - $ref: '#/components/schemas/OrganizationData'
+          - $ref: '#/components/schemas/PlaceClassData'
     PlaceClass:
       type: object
       required:
@@ -528,11 +536,9 @@ components:
         data:
           $ref: '#/components/schemas/PlaceClassData'
         included:
-          type: array
-          description: 'Included related resources (e.g., organization)'
-          items:
-            oneOf:
-              - $ref: '#/components/schemas/PlaceClassData'
+          $ref: '#/components/schemas/PlaceClassIncluded'
+        links:
+          $ref: '#/components/schemas/PaginationData'
     PlaceClassData:
       type: object
       required:
@@ -609,8 +615,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PlaceClassData'
+        included:
+          $ref: '#/components/schemas/PlaceClassIncluded'
         links:
           $ref: '#/components/schemas/PaginationData'
+    PlaceClassIncluded:
+      type: array
+      description: 'Included related resources (e.g., organization)'
+      items:
+        oneOf:
+          - $ref: '#/components/schemas/PlaceClassData'
     Organization:
       type: object
       required:
@@ -778,7 +792,7 @@ components:
         included:
           type: array
           items:
-            $ref: '#/components/schemas/Place/properties/data'
+            $ref: '#/components/schemas/PlaceData'
     UploadResourcesLink:
       type: object
       required:

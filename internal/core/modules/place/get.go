@@ -55,3 +55,15 @@ func (m *Module) GetList(
 
 	return res, nil
 }
+
+func (m *Module) GetByIDs(
+	ctx context.Context,
+	ids []uuid.UUID,
+) ([]models.Place, error) {
+	res, err := m.repo.GetPlacesByIDs(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}

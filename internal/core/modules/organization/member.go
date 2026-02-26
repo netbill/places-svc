@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core/models"
 )
 
 type CreateMemberParams struct {

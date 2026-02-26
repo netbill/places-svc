@@ -11,6 +11,7 @@ import (
 	"github.com/netbill/places-svc/internal/rest/responses"
 	"github.com/netbill/places-svc/internal/rest/scope"
 	"github.com/netbill/restkit/problems"
+	"github.com/netbill/restkit/render"
 )
 
 const operationUpdatePlaceClass = "update_place_class"
@@ -21,7 +22,7 @@ func (c *Controller) UpdatePlaceClass(w http.ResponseWriter, r *http.Request) {
 	req, err := requests.UpdatePlaceClass(r)
 	if err != nil {
 		log.WithError(err).Info("invalid update Place class request")
-		c.responser.RenderErr(w, problems.BadRequest(err)...)
+		render.ResponseError(w, problems.BadRequest(err)...)
 		return
 	}
 
@@ -40,35 +41,35 @@ func (c *Controller) UpdatePlaceClass(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
 		log.WithError(err).Info("Place class not found")
-		c.responser.RenderErr(w, problems.NotFound("Place class not found"))
+		render.ResponseError(w, problems.NotFound("Place class not found"))
 	case errors.Is(err, errx.ErrorPlaceClassParentCycle):
 		log.WithError(err).Info("setting parent would create a cycle")
-		c.responser.RenderErr(w, problems.Conflict("setting parent would create a cycle"))
+		render.ResponseError(w, problems.Conflict("setting parent would create a cycle"))
 	case errors.Is(err, errx.ErrorPlaceClassIconKeyIsInvalid):
 		log.WithError(err).Info("icon key is invalid")
-		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceClassIconFormatIsNotAllowed):
 		log.WithError(err).Info("icon format is not allowed")
-		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceClassIconContentIsExceedsMax):
 		log.WithError(err).Info("icon content is exceeds max")
-		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceClassIconResolutionIsInvalid):
 		log.WithError(err).Info("icon resolution is invalid")
-		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case err != nil:
 		log.WithError(err).Error("failed to update Place class")
-		c.responser.RenderErr(w, problems.InternalError())
+		render.ResponseError(w, problems.InternalError())
 	default:
 		log.Info("Place class updated")
-		c.responser.Render(w, http.StatusOK, responses.PlaceClass(res))
+		render.Response(w, http.StatusOK, responses.PlaceClass(res))
 	}
 }

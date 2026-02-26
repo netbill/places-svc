@@ -12,6 +12,7 @@ import (
 	"github.com/netbill/places-svc/internal/rest/responses"
 	"github.com/netbill/places-svc/internal/rest/scope"
 	"github.com/netbill/restkit/problems"
+	"github.com/netbill/restkit/render"
 )
 
 const operationGetPlaceClass = "get_place_class"
@@ -22,7 +23,7 @@ func (c *Controller) GetPlaceClass(w http.ResponseWriter, r *http.Request) {
 	classID, err := uuid.Parse(chi.URLParam(r, "place_class_id"))
 	if err != nil {
 		log.WithError(err).Info("invalid Place class id")
-		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid Place class id"))...)
+		render.ResponseError(w, problems.BadRequest(fmt.Errorf("invalid Place class id"))...)
 		return
 	}
 
@@ -32,11 +33,11 @@ func (c *Controller) GetPlaceClass(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
 		log.Info("Place class not found")
-		c.responser.RenderErr(w, problems.NotFound("Place class not found"))
+		render.ResponseError(w, problems.NotFound("Place class not found"))
 		return
 	case err != nil:
 		log.WithError(err).Error("failed to get Place class")
-		c.responser.RenderErr(w, problems.InternalError())
+		render.ResponseError(w, problems.InternalError())
 		return
 	}
 
@@ -48,16 +49,16 @@ func (c *Controller) GetPlaceClass(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, errx.ErrorPlaceClassNotExists):
 			log.WithField("parent_class_id", class.ParentID).Info("parent Place class not found")
-			c.responser.RenderErr(w, problems.NotFound("parent Place class not found"))
+			render.ResponseError(w, problems.NotFound("parent Place class not found"))
 			return
 		case err != nil:
 			log.WithError(err).Error("failed to get parent Place class")
-			c.responser.RenderErr(w, problems.InternalError())
+			render.ResponseError(w, problems.InternalError())
 			return
 		default:
 			opts = append(opts, responses.WithParentClass(parent))
 		}
 	}
 
-	c.responser.Render(w, http.StatusOK, responses.PlaceClass(class, opts...))
+	render.Response(w, http.StatusOK, responses.PlaceClass(class, opts...))
 }

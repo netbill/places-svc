@@ -34,25 +34,6 @@ func PlaceClass(model models.PlaceClass, opts ...PlaceClassOption) resources.Pla
 	}
 }
 
-func PlaceClasses(req *http.Request, page pagi.Page[[]models.PlaceClass]) resources.PlaceClassesCollection {
-	data := make([]resources.PlaceClassData, len(page.Data))
-	for i, mod := range page.Data {
-		data[i] = PlaceClass(mod).Data
-	}
-
-	links := pagi.BuildPageLinks(req, page.Page, page.Size, page.Total)
-
-	return resources.PlaceClassesCollection{
-		Data: data,
-		Links: resources.PaginationData{
-			First: links.First,
-			Last:  links.Last,
-			Prev:  links.Prev,
-			Next:  links.Next,
-		},
-	}
-}
-
 func placeClassData(model models.PlaceClass) resources.PlaceClassData {
 	res := resources.PlaceClassData{
 		Id:   model.ID,
@@ -78,4 +59,61 @@ func placeClassData(model models.PlaceClass) resources.PlaceClassData {
 	}
 
 	return res
+}
+
+type placeClassCollectionResponse struct {
+	data     []resources.PlaceClassData
+	included []resources.PlaceClassData
+}
+
+type PlaceClassCollectionOption func(*placeClassCollectionResponse)
+
+func WithCollectionParentClass(models []models.PlaceClass) PlaceClassCollectionOption {
+	return func(r *placeClassCollectionResponse) {
+		for _, model := range models {
+			r.included = append(r.included, placeClassData(model))
+		}
+	}
+}
+
+func PlaceClasses(req *http.Request, page pagi.Page[[]models.PlaceClass], opts ...PlaceClassCollectionOption) resources.PlaceClassesCollection {
+	data := make([]resources.PlaceClassData, len(page.Data))
+	for i, mod := range page.Data {
+		data[i] = placeClassData(mod)
+	}
+
+	links := pagi.BuildPageLinks(req, page.Page, page.Size, page.Total)
+
+	resp := &placeClassCollectionResponse{
+		data: data,
+	}
+	for _, opt := range opts {
+		opt(resp)
+	}
+
+	return resources.PlaceClassesCollection{
+		Data:     resp.data,
+		Included: deduplicatePlaceClassIncluded(resp.included),
+		Links: resources.PaginationData{
+			First: links.First,
+			Last:  links.Last,
+			Prev:  links.Prev,
+			Next:  links.Next,
+		},
+	}
+}
+
+func deduplicatePlaceClassIncluded(items []resources.PlaceClassData) []resources.PlaceClassData {
+	seen := make(map[string]struct{})
+	result := make([]resources.PlaceClassData, 0, len(items))
+
+	for _, item := range items {
+		key := item.Id.String()
+		if _, exists := seen[key]; !exists {
+			seen[key] = struct{}{}
+			result = append(result, item)
+		}
+	}
+
+	return result
 }

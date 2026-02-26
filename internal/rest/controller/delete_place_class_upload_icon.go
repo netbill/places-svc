@@ -9,6 +9,7 @@ import (
 	"github.com/netbill/places-svc/internal/rest/requests"
 	"github.com/netbill/places-svc/internal/rest/scope"
 	"github.com/netbill/restkit/problems"
+	"github.com/netbill/restkit/render"
 )
 
 const operationDeleteUploadPlaceClassIcon = "delete_upload_place_class_icon"
@@ -19,7 +20,7 @@ func (c *Controller) DeletePlaceClassUploadIcon(w http.ResponseWriter, r *http.R
 	req, err := requests.DeleteUploadPlaceClassIcon(r)
 	if err != nil {
 		log.WithError(err).Info("invalid delete upload Place class icon requests")
-		c.responser.RenderErr(w, problems.BadRequest(err)...)
+		render.ResponseError(w, problems.BadRequest(err)...)
 
 		return
 	}
@@ -34,15 +35,15 @@ func (c *Controller) DeletePlaceClassUploadIcon(w http.ResponseWriter, r *http.R
 	switch {
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
 		log.Info("Place class does not exist")
-		c.responser.RenderErr(w, problems.NotFound("Place class does not exist"))
+		render.ResponseError(w, problems.NotFound("Place class does not exist"))
 	case errors.Is(err, errx.ErrorPlaceClassIconKeyIsInvalid):
 		log.WithError(err).Info("Place class icon key is invalid")
-		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case err != nil:
 		log.WithError(err).Error("failed to delete Place class icon in upload session")
-		c.responser.RenderErr(w, problems.InternalError())
+		render.ResponseError(w, problems.InternalError())
 	default:
 		w.WriteHeader(http.StatusNoContent)
 	}

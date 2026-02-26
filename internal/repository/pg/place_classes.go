@@ -15,23 +15,24 @@ import (
 )
 
 const placeClassesTable = "place_classes"
-
-const placeClassesColumns = "id, parent_id, code, name, description, icon, created_at, updated_at"
-const placeClassesColumnsP = "pc.id, pc.parent_id, pc.code, pc.name, pc.description, pc.icon, pc.created_at, pc.updated_at"
+const placeClassesColumns = "id, parent_id, name, description, icon_key, version, created_at, updated_at, deprecated_at"
+const placeClassesColumnsP = "pc.id, pc.parent_id, pc.name, pc.description, pc.icon_key, pc.version, pc.created_at, pc.updated_at, pc.deprecated_at"
 
 func scanPlaceClass(row sq.RowScanner) (pc repository.PlaceClassRow, err error) {
 	var parentID pgtype.UUID
-	var icon pgtype.Text
+	var iconKey pgtype.Text
+	var deprecatedAt pgtype.Timestamptz
 
 	err = row.Scan(
 		&pc.ID,
 		&parentID,
-		&pc.Code,
 		&pc.Name,
 		&pc.Description,
-		&icon,
+		&iconKey,
+		&pc.Version,
 		&pc.CreatedAt,
 		&pc.UpdatedAt,
+		&deprecatedAt,
 	)
 	switch {
 	case errors.Is(err, pgx.ErrNoRows):
@@ -44,8 +45,12 @@ func scanPlaceClass(row sq.RowScanner) (pc repository.PlaceClassRow, err error) 
 		v := uuid.UUID(parentID.Bytes)
 		pc.ParentID = &v
 	}
-	if icon.Valid {
-		pc.Icon = &icon.String
+	if iconKey.Valid {
+		pc.IconKey = &iconKey.String
+	}
+	if deprecatedAt.Valid {
+		t := deprecatedAt.Time
+		pc.DeprecatedAt = &t
 	}
 
 	return pc, nil
@@ -77,27 +82,11 @@ func (q *placeClasses) New() repository.PlaceClassesQ {
 }
 
 func (q *placeClasses) Insert(ctx context.Context, data repository.PlaceClassRow) (repository.PlaceClassRow, error) {
-	now := time.Now().UTC()
-
-	if data.ID == uuid.Nil {
-		return repository.PlaceClassRow{}, fmt.Errorf("missing id")
-	}
-	if data.Code == "" {
-		return repository.PlaceClassRow{}, fmt.Errorf("missing code")
-	}
-	if data.Name == "" {
-		return repository.PlaceClassRow{}, fmt.Errorf("missing name")
-	}
-
 	query, args, err := q.inserter.SetMap(map[string]any{
-		"id":          data.ID,
 		"parent_id":   data.ParentID,
-		"code":        data.Code,
 		"name":        data.Name,
 		"description": data.Description,
-		"icon":        data.Icon,
-		"created_at":  now,
-		"updated_at":  now,
+		"icon_key":    data.IconKey,
 	}).Suffix("RETURNING " + placeClassesColumns).ToSql()
 	if err != nil {
 		return repository.PlaceClassRow{}, fmt.Errorf("building insert query for %s: %w", placeClassesTable, err)
@@ -122,53 +111,22 @@ func (q *placeClasses) FilterByParentID(parentID ...uuid.UUID) repository.PlaceC
 	return q
 }
 
-func (q *placeClasses) FilterRoots() repository.PlaceClassesQ {
-	q.selector = q.selector.Where(sq.Expr("pc.parent_id IS NULL"))
-	q.counter = q.counter.Where(sq.Expr("pc.parent_id IS NULL"))
-	q.updater = q.updater.Where(sq.Expr("pc.parent_id IS NULL"))
-	q.deleter = q.deleter.Where(sq.Expr("pc.parent_id IS NULL"))
-	return q
-}
-
-func (q *placeClasses) FilterByCode(code string) repository.PlaceClassesQ {
-	q.selector = q.selector.Where(sq.Eq{"pc.code": code})
-	q.counter = q.counter.Where(sq.Eq{"pc.code": code})
-	q.updater = q.updater.Where(sq.Eq{"pc.code": code})
-	q.deleter = q.deleter.Where(sq.Eq{"pc.code": code})
-	return q
-}
-
-func (q *placeClasses) FilterNameLike(name string) repository.PlaceClassesQ {
-	q.selector = q.selector.Where(sq.ILike{"pc.name": "%" + name + "%"})
-	q.counter = q.counter.Where(sq.ILike{"pc.name": "%" + name + "%"})
-	return q
-}
-
-func (q *placeClasses) FilterDescriptionLike(description string) repository.PlaceClassesQ {
-	q.selector = q.selector.Where(sq.ILike{"pc.description": "%" + description + "%"})
-	q.counter = q.counter.Where(sq.ILike{"pc.description": "%" + description + "%"})
-	return q
-}
-
-func (q *placeClasses) FilterByText(text string) repository.PlaceClassesQ {
+func (q *placeClasses) FilterBestMatch(text string) repository.PlaceClassesQ {
 	if text == "" {
 		return q
 	}
-
 	pattern := "%" + text + "%"
 	expr := sq.Or{
 		sq.Expr("pc.name ILIKE ?", pattern),
 		sq.Expr("pc.description ILIKE ?", pattern),
 	}
-
 	q.selector = q.selector.Where(expr)
 	q.counter = q.counter.Where(expr)
-
 	return q
 }
 
-func (q *placeClasses) FilterByClassID(classID uuid.UUID, includeChild, includeParent bool) repository.PlaceClassesQ {
-	if !includeChild && !includeParent {
+func (q *placeClasses) FilterByClassID(classID uuid.UUID, includeChildren, includeParents bool) repository.PlaceClassesQ {
+	if !includeChildren && !includeParents {
 		q.selector = q.selector.Where(sq.Eq{"pc.id": classID})
 		q.counter = q.counter.Where(sq.Eq{"pc.id": classID})
 		return q
@@ -177,42 +135,30 @@ func (q *placeClasses) FilterByClassID(classID uuid.UUID, includeChild, includeP
 	subSQL := `
 		WITH RECURSIVE
 		anc AS (
-			SELECT id, parent_id
-			FROM place_classes
-			WHERE id = ?
+			SELECT id, parent_id FROM place_classes WHERE id = ?
 			UNION ALL
-			SELECT pc2.id, pc2.parent_id
-			FROM place_classes pc2
-			JOIN anc ON anc.parent_id = pc2.id
-			WHERE (? = TRUE)
+			SELECT c.id, c.parent_id FROM place_classes c
+			JOIN anc ON anc.parent_id = c.id
+			WHERE ? = TRUE
 		),
 		des AS (
-			SELECT id
-			FROM place_classes
-			WHERE id = ?
+			SELECT id FROM place_classes WHERE id = ?
 			UNION ALL
-			SELECT pc2.id
-			FROM place_classes pc2
-			JOIN des ON pc2.parent_id = des.id
-			WHERE (? = TRUE)
+			SELECT c.id FROM place_classes c
+			JOIN des ON c.parent_id = des.id
+			WHERE ? = TRUE
 		)
-		SELECT DISTINCT id
-		FROM (
-			SELECT id FROM anc
-			UNION
-			SELECT id FROM des
-		) t
+		SELECT DISTINCT id FROM (SELECT id FROM anc UNION SELECT id FROM des) t
 	`
 
 	expr := sq.Expr(
 		"pc.id IN ("+subSQL+")",
-		classID, includeParent,
-		classID, includeChild,
+		classID, includeParents,
+		classID, includeChildren,
 	)
 
 	q.selector = q.selector.Where(expr)
 	q.counter = q.counter.Where(expr)
-
 	return q
 }
 
@@ -221,6 +167,15 @@ func (q *placeClasses) OrderName(asc bool) repository.PlaceClassesQ {
 		q.selector = q.selector.OrderBy("pc.name ASC", "pc.id ASC")
 	} else {
 		q.selector = q.selector.OrderBy("pc.name DESC", "pc.id DESC")
+	}
+	return q
+}
+
+func (q *placeClasses) OrderRoot(asc bool) repository.PlaceClassesQ {
+	if asc {
+		q.selector = q.selector.OrderBy("pc.parent_id ASC NULLS FIRST", "pc.name ASC")
+	} else {
+		q.selector = q.selector.OrderBy("pc.parent_id DESC NULLS LAST", "pc.name DESC")
 	}
 	return q
 }
@@ -267,10 +222,8 @@ func (q *placeClasses) Exists(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("building exists query for %s: %w", placeClassesTable, err)
 	}
 
-	sqlq := "SELECT EXISTS (" + subSQL + ")"
-
 	var ok bool
-	if err = q.db.QueryRow(ctx, sqlq, subArgs...).Scan(&ok); err != nil {
+	if err = q.db.QueryRow(ctx, "SELECT EXISTS ("+subSQL+")", subArgs...).Scan(&ok); err != nil {
 		return false, fmt.Errorf("scanning exists for %s: %w", placeClassesTable, err)
 	}
 
@@ -297,7 +250,9 @@ func (q *placeClasses) Count(ctx context.Context) (uint, error) {
 }
 
 func (q *placeClasses) UpdateOne(ctx context.Context) (repository.PlaceClassRow, error) {
-	q.updater = q.updater.Set("updated_at", time.Now().UTC())
+	q.updater = q.updater.
+		Set("updated_at", time.Now().UTC()).
+		Set("version", sq.Expr("version + 1"))
 
 	query, args, err := q.updater.Suffix("RETURNING " + placeClassesColumns).ToSql()
 	if err != nil {
@@ -307,29 +262,8 @@ func (q *placeClasses) UpdateOne(ctx context.Context) (repository.PlaceClassRow,
 	return scanPlaceClass(q.db.QueryRow(ctx, query, args...))
 }
 
-func (q *placeClasses) UpdateMany(ctx context.Context) (int64, error) {
-	q.updater = q.updater.Set("updated_at", time.Now().UTC())
-
-	query, args, err := q.updater.ToSql()
-	if err != nil {
-		return 0, fmt.Errorf("building update query for %s: %w", placeClassesTable, err)
-	}
-
-	res, err := q.db.Exec(ctx, query, args...)
-	if err != nil {
-		return 0, fmt.Errorf("executing update query for %s: %w", placeClassesTable, err)
-	}
-
-	return res.RowsAffected(), nil
-}
-
 func (q *placeClasses) UpdateParent(parentID *uuid.UUID) repository.PlaceClassesQ {
 	q.updater = q.updater.Set("parent_id", parentID)
-	return q
-}
-
-func (q *placeClasses) UpdateCode(code string) repository.PlaceClassesQ {
-	q.updater = q.updater.Set("code", code)
 	return q
 }
 
@@ -343,8 +277,13 @@ func (q *placeClasses) UpdateDescription(description string) repository.PlaceCla
 	return q
 }
 
-func (q *placeClasses) UpdateIcon(icon *string) repository.PlaceClassesQ {
-	q.updater = q.updater.Set("icon", icon)
+func (q *placeClasses) UpdateIconKey(key *string) repository.PlaceClassesQ {
+	q.updater = q.updater.Set("icon_key", key)
+	return q
+}
+
+func (q *placeClasses) UpdateDeprecatedAt(t *time.Time) repository.PlaceClassesQ {
+	q.updater = q.updater.Set("deprecated_at", t)
 	return q
 }
 

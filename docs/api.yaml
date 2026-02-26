@@ -16,6 +16,9 @@ paths:
 
 components:
   schemas:
+    Point:
+      $ref: './spec/components/schemas/Point.yaml'
+
     # requests:
     CreatePlace:
       $ref: './spec/components/schemas/requests/CreatePlace.yaml'
@@ -43,16 +46,24 @@ components:
     # responses:
     PaginationData:
       $ref: './spec/components/schemas/responses/PaginationData.yaml'
+
     Place:
       $ref: './spec/components/schemas/responses/Place.yaml'
+    PlaceData:
+      $ref: './spec/components/schemas/responses/PlaceData.yaml'
     PlacesCollection:
       $ref: './spec/components/schemas/responses/PlacesCollection.yaml'
+    PlaceIncluded:
+      $ref: './spec/components/schemas/responses/PlaceIncluded.yaml'
+
     PlaceClass:
       $ref: './spec/components/schemas/responses/PlaceClass.yaml'
     PlaceClassData:
       $ref: './spec/components/schemas/responses/PlaceClassData.yaml'
     PlaceClassesCollection:
       $ref: './spec/components/schemas/responses/PlaceClassesCollection.yaml'
+    PlaceClassIncluded:
+      $ref: './spec/components/schemas/responses/PlaceClassIncluded.yaml'
 
     Organization:
       $ref: './spec/components/schemas/responses/Organization.yaml'

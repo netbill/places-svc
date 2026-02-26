@@ -32,6 +32,18 @@ func (m *Module) Get(
 	return m.repo.GetOrganization(ctx, orgID)
 }
 
+func (m *Module) GetByIDs(
+	ctx context.Context,
+	ids []uuid.UUID,
+) ([]models.Organization, error) {
+	res, err := m.repo.GetOrgsByIDs(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 type UpdateParams struct {
 	Name      string    `json:"name"`
 	Status    string    `json:"status"`

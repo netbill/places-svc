@@ -10,6 +10,7 @@ import (
 	"github.com/netbill/places-svc/internal/rest/responses"
 	"github.com/netbill/places-svc/internal/rest/scope"
 	"github.com/netbill/restkit/problems"
+	"github.com/netbill/restkit/render"
 	"github.com/paulmach/orb"
 )
 
@@ -21,7 +22,7 @@ func (c *Controller) CreatePlace(w http.ResponseWriter, r *http.Request) {
 	req, err := requests.CreatePlace(r)
 	if err != nil {
 		log.WithError(err).Info("invalid create Place request")
-		c.responser.RenderErr(w, problems.BadRequest(err)...)
+		render.ResponseError(w, problems.BadRequest(err)...)
 		return
 	}
 
@@ -44,24 +45,24 @@ func (c *Controller) CreatePlace(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case errors.Is(err, errx.ErrorNotEnoughRights):
 		log.Info("not enough rights to create Place")
-		c.responser.RenderErr(w, problems.Forbidden("not enough rights to create Place"))
+		render.ResponseError(w, problems.Forbidden("not enough rights to create Place"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.Info("organization is suspended")
-		c.responser.RenderErr(w, problems.Forbidden("organization is suspended"))
+		render.ResponseError(w, problems.Forbidden("organization is suspended"))
 	case errors.Is(err, errx.ErrorPlaceOutOfTerritory):
 		log.Info("Place is out of organization's territory")
-		c.responser.RenderErr(w, problems.Forbidden("Place is out of organization's territory"))
+		render.ResponseError(w, problems.Forbidden("Place is out of organization's territory"))
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
 		log.Info("Place class not found")
-		c.responser.RenderErr(w, problems.NotFound("Place class not found"))
+		render.ResponseError(w, problems.NotFound("Place class not found"))
 	case errors.Is(err, errx.ErrorPlaceClassIsDeprecated):
 		log.Info("Place class is deprecated")
-		c.responser.RenderErr(w, problems.Conflict("Place class is deprecated"))
+		render.ResponseError(w, problems.Conflict("Place class is deprecated"))
 	case err != nil:
 		log.WithError(err).Error("failed to create Place")
-		c.responser.RenderErr(w, problems.InternalError())
+		render.ResponseError(w, problems.InternalError())
 	default:
 		log.WithField("place_id", res.ID).Info("Place created")
-		c.responser.Render(w, http.StatusCreated, responses.Place(res))
+		render.Response(w, http.StatusCreated, responses.Place(res))
 	}
 }

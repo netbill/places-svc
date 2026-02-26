@@ -10,7 +10,7 @@ CREATE TABLE place_classes (
     name        VARCHAR(128) NOT NULL,
     description VARCHAR(255) NOT NULL,
     icon_key    TEXT,
-    version     INT          NOT NULL CHECK (version > 0),
+    version     INT          NOT NULL DEFAULT 1 CHECK (version > 0),
 
     created_at    TIMESTAMPTZ  NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
     updated_at    TIMESTAMPTZ  NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
@@ -85,7 +85,7 @@ CREATE TABLE places (
     point    geography(POINT, 4326) NOT NULL,
     address  VARCHAR(255)           NOT NULL,
     name     VARCHAR(128)           NOT NULL,
-    version  INT                    NOT NULL CHECK (version > 0),
+    version  INT                    NOT NULL DEFAULT 1 CHECK (version > 0),
 
     description VARCHAR(1024),
     icon_key    VARCHAR(255),

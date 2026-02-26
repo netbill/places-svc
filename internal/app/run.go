@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/netbill/awsx"
 	"github.com/netbill/eventbox"
+	"github.com/netbill/places-svc/internal/repository/pg"
 
 	awscfg "github.com/aws/aws-sdk-go-v2/config"
 	eventpg "github.com/netbill/eventbox/pg"
@@ -25,7 +26,6 @@ import (
 	"github.com/netbill/places-svc/internal/rest/controller"
 	"github.com/netbill/places-svc/internal/rest/middlewares"
 	"github.com/netbill/places-svc/internal/tokenmanager"
-	"github.com/netbill/restkit"
 )
 
 func (a *App) Run(ctx context.Context) error {
@@ -50,11 +50,11 @@ func (a *App) Run(ctx context.Context) error {
 	db := pgdbx.NewDB(pool)
 
 	repo := &repository.Repository{
-		Transactioner:  nil,
-		PlacesQ:        nil,
-		PlaceClassesQ:  nil,
-		OrganizationsQ: nil,
-		OrgMembersQ:    nil,
+		TransactionSql:   pg.NewTransaction(db),
+		PlacesSql:        pg.NewPlacesQ(db),
+		PlaceClassesSql:  pg.NewPlaceClassesQ(db),
+		OrganizationsSql: pg.NewOrganizationsQ(db),
+		OrgMembersSql:    pg.NewOrgMembersQ(db),
 	}
 
 	cfg, err := awscfg.LoadDefaultConfig(
@@ -118,14 +118,13 @@ func (a *App) Run(ctx context.Context) error {
 		AccessSK: a.config.Auth.Tokens.AccountAccess.SecretKey,
 	})
 
-	responser := restkit.NewResponser()
 	ctrl := controller.New(&controller.Modules{
 		Place: placeCore,
 		Org:   orgCore,
 		Class: classCore,
-	}, responser)
-	mdll := middlewares.New(responser, tokenManager)
-	router := rest.New(mdll, ctrl)
+	})
+	mdlv := middlewares.New(tokenManager)
+	router := rest.New(mdlv, ctrl)
 
 	run(func() {
 		router.Run(ctx, a.log, rest.Config{

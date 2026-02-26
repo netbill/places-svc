@@ -24,6 +24,7 @@ type PlaceClass struct {
 	Data PlaceClassData `json:"data"`
 	// Included related resources (e.g., organization)
 	Included []PlaceClassData `json:"included,omitempty"`
+	Links *PaginationData `json:"links,omitempty"`
 }
 
 type _PlaceClass PlaceClass
@@ -102,6 +103,38 @@ func (o *PlaceClass) SetIncluded(v []PlaceClassData) {
 	o.Included = v
 }
 
+// GetLinks returns the Links field value if set, zero value otherwise.
+func (o *PlaceClass) GetLinks() PaginationData {
+	if o == nil || IsNil(o.Links) {
+		var ret PaginationData
+		return ret
+	}
+	return *o.Links
+}
+
+// GetLinksOk returns a tuple with the Links field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *PlaceClass) GetLinksOk() (*PaginationData, bool) {
+	if o == nil || IsNil(o.Links) {
+		return nil, false
+	}
+	return o.Links, true
+}
+
+// HasLinks returns a boolean if a field has been set.
+func (o *PlaceClass) HasLinks() bool {
+	if o != nil && !IsNil(o.Links) {
+		return true
+	}
+
+	return false
+}
+
+// SetLinks gets a reference to the given PaginationData and assigns it to the Links field.
+func (o *PlaceClass) SetLinks(v PaginationData) {
+	o.Links = &v
+}
+
 func (o PlaceClass) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
@@ -115,6 +148,9 @@ func (o PlaceClass) ToMap() (map[string]interface{}, error) {
 	toSerialize["data"] = o.Data
 	if !IsNil(o.Included) {
 		toSerialize["included"] = o.Included
+	}
+	if !IsNil(o.Links) {
+		toSerialize["links"] = o.Links
 	}
 	return toSerialize, nil
 }

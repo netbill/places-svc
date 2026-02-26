@@ -26,6 +26,10 @@ type repo interface {
 		ctx context.Context,
 		orgID uuid.UUID,
 	) (models.Organization, error)
+	GetOrgsByIDs(
+		ctx context.Context,
+		ids []uuid.UUID,
+	) ([]models.Organization, error)
 	UpdateOrganization(
 		ctx context.Context,
 		orgID uuid.UUID,

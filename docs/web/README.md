@@ -89,8 +89,6 @@ Class | Method | HTTP request | Description
  - [CreatePlaceClassDataAttributes](docs/CreatePlaceClassDataAttributes.md)
  - [CreatePlaceData](docs/CreatePlaceData.md)
  - [CreatePlaceDataAttributes](docs/CreatePlaceDataAttributes.md)
- - [CreatePlaceDataAttributesPoint](docs/CreatePlaceDataAttributesPoint.md)
- - [Data](docs/Data.md)
  - [DeleteUploadPlaceBanner](docs/DeleteUploadPlaceBanner.md)
  - [DeleteUploadPlaceBannerData](docs/DeleteUploadPlaceBannerData.md)
  - [DeleteUploadPlaceBannerDataAttributes](docs/DeleteUploadPlaceBannerDataAttributes.md)

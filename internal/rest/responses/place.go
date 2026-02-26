@@ -45,26 +45,6 @@ func Place(model models.Place, opts ...PlaceOption) resources.Place {
 	}
 }
 
-func Places(req *http.Request, page pagi.Page[[]models.Place]) resources.PlacesCollection {
-	data := make([]resources.PlaceData, len(page.Data))
-	for i, mod := range page.Data {
-		data[i] = Place(mod).Data
-	}
-
-	links := pagi.BuildPageLinks(req, page.Page, page.Size, page.Total)
-
-	return resources.PlacesCollection{
-		Data: data,
-		Links: resources.PaginationData{
-			First: links.First,
-			Last:  links.Last,
-			Prev:  links.Prev,
-			Next:  links.Next,
-			Self:  links.Self,
-		},
-	}
-}
-
 func placeData(model models.Place) resources.PlaceData {
 	return resources.PlaceData{
 		Id:   model.ID,
@@ -98,4 +78,84 @@ func placeData(model models.Place) resources.PlaceData {
 			},
 		},
 	}
+}
+
+type placeCollectionResponse struct {
+	data     []resources.PlaceData
+	included []resources.PlaceIncludedInner
+}
+
+type PlaceCollectionOption func(*placeCollectionResponse)
+
+func WithCollectionClass(models []models.PlaceClass) PlaceCollectionOption {
+	return func(r *placeCollectionResponse) {
+		for _, model := range models {
+			inner := placeClassData(model)
+			r.included = append(r.included, resources.PlaceIncludedInner{
+				PlaceClassData: &inner,
+			})
+		}
+	}
+}
+
+func WithCollectionOrganization(models []models.Organization) PlaceCollectionOption {
+	return func(r *placeCollectionResponse) {
+		for _, model := range models {
+			r.included = append(r.included, resources.PlaceIncludedInner{
+				OrganizationData: organizationData(model),
+			})
+		}
+	}
+}
+
+func Places(req *http.Request, page pagi.Page[[]models.Place], opts ...PlaceCollectionOption) resources.PlacesCollection {
+	data := make([]resources.PlaceData, len(page.Data))
+	for i, mod := range page.Data {
+		data[i] = placeData(mod)
+	}
+
+	links := pagi.BuildPageLinks(req, page.Page, page.Size, page.Total)
+
+	resp := &placeCollectionResponse{
+		data: data,
+	}
+	for _, opt := range opts {
+		opt(resp)
+	}
+
+	return resources.PlacesCollection{
+		Data:     resp.data,
+		Included: deduplicatePlaceIncluded(resp.included),
+		Links: resources.PaginationData{
+			First: links.First,
+			Last:  links.Last,
+			Prev:  links.Prev,
+			Next:  links.Next,
+			Self:  links.Self,
+		},
+	}
+}
+
+func deduplicatePlaceIncluded(items []resources.PlaceIncludedInner) []resources.PlaceIncludedInner {
+	seen := make(map[string]struct{})
+	result := make([]resources.PlaceIncludedInner, 0, len(items))
+
+	for _, item := range items {
+		var key string
+		switch {
+		case item.PlaceClassData != nil:
+			key = "place_class:" + item.PlaceClassData.Id.String()
+		case item.OrganizationData != nil:
+			key = "organization:" + item.OrganizationData.Id.String()
+		default:
+			continue
+		}
+
+		if _, exists := seen[key]; !exists {
+			seen[key] = struct{}{}
+			result = append(result, item)
+		}
+	}
+
+	return result
 }

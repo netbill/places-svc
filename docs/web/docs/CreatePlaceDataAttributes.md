@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **ClassId** | [**uuid.UUID**](uuid.UUID.md) | The ID of the class this place belongs to | 
 **OrganizationId** | [**uuid.UUID**](uuid.UUID.md) | The ID of the organization this place belongs to | 
-**Point** | [**CreatePlaceDataAttributesPoint**](CreatePlaceDataAttributesPoint.md) |  | 
+**Point** | [**Point**](Point.md) |  | 
 **Address** | **string** | The physical address of the place | 
 **Name** | **string** | The name of the place | 
 **Description** | Pointer to **string** | A brief description of the place | [optional] 
@@ -17,7 +17,7 @@ Name | Type | Description | Notes
 
 ### NewCreatePlaceDataAttributes
 
-`func NewCreatePlaceDataAttributes(classId uuid.UUID, organizationId uuid.UUID, point CreatePlaceDataAttributesPoint, address string, name string, ) *CreatePlaceDataAttributes`
+`func NewCreatePlaceDataAttributes(classId uuid.UUID, organizationId uuid.UUID, point Point, address string, name string, ) *CreatePlaceDataAttributes`
 
 NewCreatePlaceDataAttributes instantiates a new CreatePlaceDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -74,20 +74,20 @@ SetOrganizationId sets OrganizationId field to given value.
 
 ### GetPoint
 
-`func (o *CreatePlaceDataAttributes) GetPoint() CreatePlaceDataAttributesPoint`
+`func (o *CreatePlaceDataAttributes) GetPoint() Point`
 
 GetPoint returns the Point field if non-nil, zero value otherwise.
 
 ### GetPointOk
 
-`func (o *CreatePlaceDataAttributes) GetPointOk() (*CreatePlaceDataAttributesPoint, bool)`
+`func (o *CreatePlaceDataAttributes) GetPointOk() (*Point, bool)`
 
 GetPointOk returns a tuple with the Point field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetPoint
 
-`func (o *CreatePlaceDataAttributes) SetPoint(v CreatePlaceDataAttributesPoint)`
+`func (o *CreatePlaceDataAttributes) SetPoint(v Point)`
 
 SetPoint sets Point field to given value.
 

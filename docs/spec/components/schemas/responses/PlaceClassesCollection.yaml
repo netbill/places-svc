@@ -7,5 +7,7 @@ properties:
     type: array
     items:
       $ref: './PlaceClassData.yaml'
+  included:
+    $ref: './PlaceClassIncluded.yaml'
   links:
     $ref: './PaginationData.yaml'

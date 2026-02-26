@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/netbill/places-svc/internal/core/models"
@@ -25,6 +24,11 @@ type placeSvc interface {
 	) error
 
 	Get(ctx context.Context, placeID uuid.UUID) (models.Place, error)
+
+	GetByIDs(
+		ctx context.Context,
+		ids []uuid.UUID,
+	) ([]models.Place, error)
 
 	GetList(
 		ctx context.Context,
@@ -72,6 +76,11 @@ type placeSvc interface {
 
 type organizationSvc interface {
 	Get(ctx context.Context, id uuid.UUID) (models.Organization, error)
+
+	GetByIDs(
+		ctx context.Context,
+		ids []uuid.UUID,
+	) ([]models.Organization, error)
 }
 
 type placeClassSvc interface {
@@ -82,6 +91,11 @@ type placeClassSvc interface {
 
 	Get(ctx context.Context, id uuid.UUID) (models.PlaceClass, error)
 
+	GetByIDs(
+		ctx context.Context,
+		ids []uuid.UUID,
+	) ([]models.PlaceClass, error)
+
 	GetList(
 		ctx context.Context,
 		params pclass.FilterParams,
@@ -91,6 +105,7 @@ type placeClassSvc interface {
 	Deprecate(
 		ctx context.Context,
 		classID uuid.UUID,
+		value bool,
 	) (models.PlaceClass, error)
 
 	Update(
@@ -111,11 +126,6 @@ type placeClassSvc interface {
 	) error
 }
 
-type responser interface {
-	Render(w http.ResponseWriter, status int, res interface{})
-	RenderErr(w http.ResponseWriter, errs ...error)
-}
-
 type Modules struct {
 	Place placeSvc
 	Class placeClassSvc
@@ -123,13 +133,11 @@ type Modules struct {
 }
 
 type Controller struct {
-	modules   *Modules
-	responser responser
+	modules *Modules
 }
 
-func New(modules *Modules, responser responser) *Controller {
+func New(modules *Modules) *Controller {
 	return &Controller{
-		modules:   modules,
-		responser: responser,
+		modules: modules,
 	}
 }

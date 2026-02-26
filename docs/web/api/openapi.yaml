@@ -16,6 +16,19 @@ paths:
       - Test
 components:
   schemas:
+    Point:
+      properties:
+        latitude:
+          description: The latitude coordinate of the place
+          format: float64
+          type: number
+        longitude:
+          description: The longitude coordinate of the place
+          format: float64
+          type: number
+      required:
+      - latitude
+      - longitude
     CreatePlace:
       properties:
         data:
@@ -103,25 +116,54 @@ components:
     Place:
       properties:
         data:
-          $ref: "#/components/schemas/Place_data"
+          $ref: "#/components/schemas/PlaceData"
         included:
           description: "Included related resources (e.g., organization)"
           items:
-            $ref: "#/components/schemas/Place_included_inner"
+            $ref: "#/components/schemas/PlaceIncluded_inner"
           type: array
       required:
       - data
+    PlaceData:
+      properties:
+        id:
+          description: place ID
+          format: uuid
+          type: string
+        type:
+          enum:
+          - place
+          type: string
+        attributes:
+          $ref: "#/components/schemas/PlaceData_attributes"
+        relationships:
+          $ref: "#/components/schemas/PlaceData_relationships"
+      required:
+      - attributes
+      - id
+      - relationships
+      - type
     PlacesCollection:
       properties:
         data:
           items:
-            $ref: "#/components/schemas/Place/properties/data"
+            $ref: "#/components/schemas/PlaceData"
+          type: array
+        included:
+          description: "Included related resources (e.g., organization)"
+          items:
+            $ref: "#/components/schemas/PlaceIncluded_inner"
           type: array
         links:
           $ref: "#/components/schemas/PaginationData"
       required:
       - data
       - links
+    PlaceIncluded:
+      description: "Included related resources (e.g., organization)"
+      items:
+        $ref: "#/components/schemas/PlaceIncluded_inner"
+      type: array
     PlaceClass:
       properties:
         data:
@@ -131,6 +173,8 @@ components:
           items:
             $ref: "#/components/schemas/PlaceClassData"
           type: array
+        links:
+          $ref: "#/components/schemas/PaginationData"
       required:
       - data
     PlaceClassData:
@@ -157,11 +201,21 @@ components:
           items:
             $ref: "#/components/schemas/PlaceClassData"
           type: array
+        included:
+          description: "Included related resources (e.g., organization)"
+          items:
+            $ref: "#/components/schemas/PlaceClassData"
+          type: array
         links:
           $ref: "#/components/schemas/PaginationData"
       required:
       - data
       - links
+    PlaceClassIncluded:
+      description: "Included related resources (e.g., organization)"
+      items:
+        $ref: "#/components/schemas/PlaceClassData"
+      type: array
     Organization:
       properties:
         data:
@@ -201,7 +255,7 @@ components:
           $ref: "#/components/schemas/UploadPlaceMediaLinks_data"
         included:
           items:
-            $ref: "#/components/schemas/Place/properties/data"
+            $ref: "#/components/schemas/PlaceData"
           type: array
       required:
       - data
@@ -223,51 +277,6 @@ components:
       - key
       - preload_url
       - upload_url
-    point:
-      properties:
-        latitude:
-          description: The latitude coordinate of the place
-          format: float64
-          type: number
-        longitude:
-          description: The longitude coordinate of the place
-          format: float64
-          type: number
-      required:
-      - latitude
-      - longitude
-    data:
-      properties:
-        id:
-          description: place ID
-          format: uuid
-          type: string
-        type:
-          enum:
-          - place
-          type: string
-        attributes:
-          $ref: "#/components/schemas/Place_data_attributes"
-        relationships:
-          $ref: "#/components/schemas/Place_data_relationships"
-      required:
-      - attributes
-      - id
-      - relationships
-      - type
-    CreatePlace_data_attributes_point:
-      properties:
-        latitude:
-          description: The latitude coordinate of the place
-          format: float64
-          type: number
-        longitude:
-          description: The longitude coordinate of the place
-          format: float64
-          type: number
-      required:
-      - latitude
-      - longitude
     CreatePlace_data_attributes:
       properties:
         class_id:
@@ -279,7 +288,7 @@ components:
           format: uuid
           type: string
         point:
-          $ref: "#/components/schemas/CreatePlace_data_attributes_point"
+          $ref: "#/components/schemas/Point"
         address:
           description: The physical address of the place
           type: string
@@ -551,7 +560,7 @@ components:
       - attributes
       - id
       - type
-    Place_data_attributes:
+    PlaceData_attributes:
       properties:
         status:
           description: "The status of the place (e.g., active, inactive)"
@@ -560,7 +569,7 @@ components:
           description: Indicates if the place has been verified
           type: boolean
         point:
-          $ref: "#/components/schemas/CreatePlace/properties/data/properties/attributes/properties/point"
+          $ref: "#/components/schemas/Point"
         address:
           description: The physical address of the place
           type: string
@@ -606,7 +615,7 @@ components:
       - updated_at
       - verified
       - version
-    Place_data_relationships_organization:
+    PlaceData_relationships_organization:
       properties:
         id:
           description: The ID of the organization associated with the place
@@ -619,7 +628,7 @@ components:
       required:
       - id
       - type
-    Place_data_relationships_place_class:
+    PlaceData_relationships_place_class:
       properties:
         id:
           description: The ID of the class associated with the place
@@ -632,35 +641,16 @@ components:
       required:
       - id
       - type
-    Place_data_relationships:
+    PlaceData_relationships:
       properties:
         organization:
-          $ref: "#/components/schemas/Place_data_relationships_organization"
+          $ref: "#/components/schemas/PlaceData_relationships_organization"
         place_class:
-          $ref: "#/components/schemas/Place_data_relationships_place_class"
+          $ref: "#/components/schemas/PlaceData_relationships_place_class"
       required:
       - organization
       - place_class
-    Place_data:
-      properties:
-        id:
-          description: place ID
-          format: uuid
-          type: string
-        type:
-          enum:
-          - place
-          type: string
-        attributes:
-          $ref: "#/components/schemas/Place_data_attributes"
-        relationships:
-          $ref: "#/components/schemas/Place_data_relationships"
-      required:
-      - attributes
-      - id
-      - relationships
-      - type
-    Place_included_inner:
+    PlaceIncluded_inner:
       oneOf:
       - $ref: "#/components/schemas/OrganizationData"
       - $ref: "#/components/schemas/PlaceClassData"

@@ -53,7 +53,6 @@ type PlaceClassesQ interface {
 	Page(limit, offset uint) PlaceClassesQ
 	Count(ctx context.Context) (uint, error)
 
-	UpdateMany(ctx context.Context) (int64, error)
 	UpdateOne(ctx context.Context) (PlaceClassRow, error)
 
 	UpdateParent(parentID *uuid.UUID) PlaceClassesQ
@@ -61,8 +60,6 @@ type PlaceClassesQ interface {
 	UpdateDescription(description string) PlaceClassesQ
 	UpdateIconKey(key *string) PlaceClassesQ
 	UpdateDeprecatedAt(time *time.Time) PlaceClassesQ
-
-	FilterRoots() PlaceClassesQ
 
 	FilterByID(id ...uuid.UUID) PlaceClassesQ
 	FilterByParentID(parentID ...uuid.UUID) PlaceClassesQ
@@ -76,7 +73,7 @@ type PlaceClassesQ interface {
 }
 
 func (r *Repository) CreatePlaceClass(ctx context.Context, params pclass.CreateParams) (models.PlaceClass, error) {
-	row, err := r.PlaceClassesQ.New().Insert(ctx, PlaceClassRow{
+	row, err := r.PlaceClassesSql.New().Insert(ctx, PlaceClassRow{
 		ParentID:    params.ParentID,
 		Name:        params.Name,
 		Description: params.Description,
@@ -90,7 +87,7 @@ func (r *Repository) CreatePlaceClass(ctx context.Context, params pclass.CreateP
 }
 
 func (r *Repository) PlaceClassExists(ctx context.Context, id uuid.UUID) (bool, error) {
-	res, err := r.PlaceClassesQ.New().FilterByID(id).Exists(ctx)
+	res, err := r.PlaceClassesSql.New().FilterByID(id).Exists(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -98,7 +95,7 @@ func (r *Repository) PlaceClassExists(ctx context.Context, id uuid.UUID) (bool, 
 }
 
 func (r *Repository) GetPlaceClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error) {
-	row, err := r.PlaceClassesQ.New().FilterByID(id).Get(ctx)
+	row, err := r.PlaceClassesSql.New().FilterByID(id).Get(ctx)
 	if err != nil {
 		return models.PlaceClass{}, err
 	}
@@ -106,12 +103,33 @@ func (r *Repository) GetPlaceClass(ctx context.Context, id uuid.UUID) (models.Pl
 	return row.ToModel(), nil
 }
 
+func (r *Repository) GetPlaceClassesByIDs(ctx context.Context, ids []uuid.UUID) ([]models.PlaceClass, error) {
+	rows, err := r.PlaceClassesSql.New().FilterByID(ids...).Select(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	collection := make([]models.PlaceClass, len(rows))
+	for i, row := range rows {
+		collection[i] = row.ToModel()
+	}
+
+	return collection, nil
+}
+
 func (r *Repository) GetPlaceClasses(
 	ctx context.Context,
 	params pclass.FilterParams,
 	limit, offset uint,
 ) (pagi.Page[[]models.PlaceClass], error) {
-	q := r.PlaceClassesQ.New()
+	if limit == 0 {
+		limit = 20
+	}
+	if limit > 1000 {
+		limit = 1000
+	}
+
+	q := r.PlaceClassesSql.New()
 
 	if params.BestMatch != nil {
 		q = q.FilterBestMatch(*params.BestMatch)
@@ -144,7 +162,7 @@ func (r *Repository) GetPlaceClasses(
 }
 
 func (r *Repository) UpdatePlaceClass(ctx context.Context, classID uuid.UUID, params pclass.UpdateParams) (models.PlaceClass, error) {
-	row, err := r.PlaceClassesQ.New().
+	row, err := r.PlaceClassesSql.New().
 		FilterByID(classID).
 		UpdateParent(params.ParentID).
 		UpdateName(params.Name).
@@ -159,7 +177,7 @@ func (r *Repository) UpdatePlaceClass(ctx context.Context, classID uuid.UUID, pa
 }
 
 func (r *Repository) CheckParentCycle(ctx context.Context, classID, newParentID uuid.UUID) (bool, error) {
-	res, err := r.PlaceClassesQ.New().FilterByClassID(newParentID, true, true).FilterByID(classID).Exists(ctx)
+	res, err := r.PlaceClassesSql.New().FilterByClassID(newParentID, true, true).FilterByID(classID).Exists(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -171,15 +189,7 @@ func (r *Repository) CheckParentCycle(ctx context.Context, classID, newParentID 
 }
 
 func (r *Repository) CheckPlaceClassHasChildren(ctx context.Context, classID uuid.UUID) (bool, error) {
-	res, err := r.PlaceClassesQ.New().FilterByClassID(classID, true, false).Exists(ctx)
-	if err != nil {
-		return false, err
-	}
-	return res, nil
-}
-
-func (r *Repository) CheckPlaceExistForClass(ctx context.Context, classID uuid.UUID) (bool, error) {
-	res, err := r.PlacesQ.New().FilterByParentID(classID).Exists(ctx)
+	res, err := r.PlaceClassesSql.New().FilterByClassID(classID, true, false).Exists(ctx)
 	if err != nil {
 		return false, err
 	}
@@ -187,7 +197,7 @@ func (r *Repository) CheckPlaceExistForClass(ctx context.Context, classID uuid.U
 }
 
 func (r *Repository) DeletePlaceClass(ctx context.Context, classID uuid.UUID) error {
-	return r.PlaceClassesQ.New().FilterByID(classID).Delete(ctx)
+	return r.PlaceClassesSql.New().FilterByID(classID).Delete(ctx)
 }
 
 func (r *Repository) DeprecatedPlaceClass(
@@ -202,7 +212,7 @@ func (r *Repository) DeprecatedPlaceClass(
 		deprecateAt = &now
 	}
 
-	row, err := r.PlaceClassesQ.New().
+	row, err := r.PlaceClassesSql.New().
 		FilterByID(classID).
 		UpdateDeprecatedAt(deprecateAt).
 		UpdateOne(ctx)

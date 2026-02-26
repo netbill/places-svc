@@ -9,6 +9,7 @@ import (
 	"github.com/netbill/places-svc/internal/rest/requests"
 	"github.com/netbill/places-svc/internal/rest/scope"
 	"github.com/netbill/restkit/problems"
+	"github.com/netbill/restkit/render"
 )
 
 const operationDeleteUploadPlaceBanner = "delete_upload_place_banner"
@@ -19,7 +20,7 @@ func (c *Controller) DeletePlaceUploadBanner(w http.ResponseWriter, r *http.Requ
 	req, err := requests.DeleteUploadPlaceBanner(r)
 	if err != nil {
 		log.WithError(err).Info("invalid delete upload Place  banner requests")
-		c.responser.RenderErr(w, problems.BadRequest(err)...)
+		render.ResponseError(w, problems.BadRequest(err)...)
 
 		return
 	}
@@ -35,21 +36,21 @@ func (c *Controller) DeletePlaceUploadBanner(w http.ResponseWriter, r *http.Requ
 	switch {
 	case errors.Is(err, errx.ErrorNotEnoughRights):
 		log.Info("not enough rights to delete Place banner in upload session")
-		c.responser.RenderErr(w, problems.Forbidden("not enough rights to delete Place banner in upload session"))
+		render.ResponseError(w, problems.Forbidden("not enough rights to delete Place banner in upload session"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.Info("organization is suspended")
-		c.responser.RenderErr(w, problems.Forbidden("organization is suspended"))
+		render.ResponseError(w, problems.Forbidden("organization is suspended"))
 	case errors.Is(err, errx.ErrorPlaceBannerKeyIsInvalid):
 		log.WithError(err).Info("Place banner key is invalid")
-		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"banner": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceNotExists):
 		log.Info("Place does not exist")
-		c.responser.RenderErr(w, problems.NotFound("Place does not exist"))
+		render.ResponseError(w, problems.NotFound("Place does not exist"))
 	case err != nil:
 		log.WithError(err).Error("failed to delete Place banner in upload session")
-		c.responser.RenderErr(w, problems.InternalError())
+		render.ResponseError(w, problems.InternalError())
 	default:
 		w.WriteHeader(http.StatusNoContent)
 	}
