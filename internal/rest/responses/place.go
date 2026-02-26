@@ -4,59 +4,54 @@ import (
 	"net/http"
 
 	"github.com/netbill/places-svc/internal/core/models"
-	"github.com/netbill/places-svc/resources"
+	"github.com/netbill/places-svc/pkg/resources"
 	"github.com/netbill/restkit/pagi"
 )
 
-func Place(model models.Place) resources.Place {
-	res := resources.Place{
-		Data: resources.PlaceData{
-			Id:   model.ID,
-			Type: "place",
-			Attributes: resources.PlaceDataAttributes{
-				Status:   model.Status,
-				Verified: model.Verified,
-				Point: resources.Point{
-					Latitude:  model.Point[1],
-					Longitude: model.Point[0],
-				},
-
-				Address:     model.Address,
-				Name:        model.Name,
-				Description: model.Description,
-				Icon:        model.Icon,
-				Banner:      model.Banner,
-				Website:     model.Website,
-				Phone:       model.Phone,
-				CreatedAt:   model.CreatedAt,
-				UpdatedAt:   model.UpdatedAt,
-			},
-			Relationships: resources.PlaceDataRelationships{
-				Class: resources.PlaceDataRelationshipsClass{
-					Id:   model.ClassID,
-					Type: "class",
-				},
-			},
-		},
-	}
-
-	if model.OrganizationID != nil {
-		res.Data.Relationships.Organization = &resources.PlaceDataRelationshipsOrganization{
-			Id:   *model.OrganizationID,
-			Type: "organization",
-		}
-	}
-
-	return res
+type placeResponse struct {
+	place    resources.PlaceData
+	included []resources.PlaceIncludedInner
 }
 
-func Places(r *http.Request, page pagi.Page[[]models.Place]) resources.PlacesCollection {
+type PlaceOption func(*placeResponse)
+
+func WithClass(model models.PlaceClass) PlaceOption {
+	return func(r *placeResponse) {
+		inner := placeClassData(model)
+		r.included = append(r.included, resources.PlaceIncludedInner{
+			PlaceClassData: &inner,
+		})
+	}
+}
+
+func WithOrganization(model models.Organization) PlaceOption {
+	return func(r *placeResponse) {
+		r.included = append(r.included, resources.PlaceIncludedInner{
+			OrganizationData: organizationData(model),
+		})
+	}
+}
+
+func Place(model models.Place, opts ...PlaceOption) resources.Place {
+	r := &placeResponse{
+		place: placeData(model),
+	}
+	for _, opt := range opts {
+		opt(r)
+	}
+	return resources.Place{
+		Data:     r.place,
+		Included: r.included,
+	}
+}
+
+func Places(req *http.Request, page pagi.Page[[]models.Place]) resources.PlacesCollection {
 	data := make([]resources.PlaceData, len(page.Data))
 	for i, mod := range page.Data {
 		data[i] = Place(mod).Data
 	}
 
-	links := pagi.BuildPageLinks(r, page.Page, page.Size, page.Total)
+	links := pagi.BuildPageLinks(req, page.Page, page.Size, page.Total)
 
 	return resources.PlacesCollection{
 		Data: data,
@@ -68,35 +63,39 @@ func Places(r *http.Request, page pagi.Page[[]models.Place]) resources.PlacesCol
 			Self:  links.Self,
 		},
 	}
-
 }
 
-func OpenUpdatePlaceSession(
-	place models.Place,
-	uploadLinks models.UpdatePlaceMedia,
-) resources.OpenUpdatePlaceMediaLinks {
-	return resources.OpenUpdatePlaceMediaLinks{
-		Data: resources.OpenUpdatePlaceMediaLinksData{
-			Id:   uploadLinks.UploadSessionID,
-			Type: "update_place_session",
-			Attributes: resources.OpenUpdatePlaceMediaLinksDataAttributes{
-				UploadToken:     uploadLinks.UploadToken,
-				IconGetUrl:      uploadLinks.Links.IconGetURL,
-				IconUploadUrl:   uploadLinks.Links.IconUploadURL,
-				BannerGetUrl:    uploadLinks.Links.BannerGetURL,
-				BannerUploadUrl: uploadLinks.Links.BannerUploadURL,
+func placeData(model models.Place) resources.PlaceData {
+	return resources.PlaceData{
+		Id:   model.ID,
+		Type: "place",
+		Attributes: resources.PlaceDataAttributes{
+			Status:   model.Status,
+			Verified: model.Verified,
+			Point: resources.Point{
+				Latitude:  model.Point[1],
+				Longitude: model.Point[0],
 			},
-			Relationships: resources.OpenUpdatePlaceMediaLinksDataRelationships{
-				Place: &resources.OpenUpdatePlaceMediaLinksDataRelationshipsPlace{
-					Data: resources.OpenUpdatePlaceMediaLinksDataRelationshipsPlaceData{
-						Id:   place.ID,
-						Type: "place",
-					},
-				},
-			},
+			Address:     model.Address,
+			Name:        model.Name,
+			Description: model.Description,
+			IconKey:     model.IconKey,
+			BannerKey:   model.BannerKey,
+			Website:     model.Website,
+			Phone:       model.Phone,
+			Version:     model.Version,
+			CreatedAt:   model.CreatedAt,
+			UpdatedAt:   model.UpdatedAt,
 		},
-		Included: []resources.PlaceData{
-			Place(place).Data,
+		Relationships: resources.PlaceDataRelationships{
+			PlaceClass: resources.PlaceDataRelationshipsPlaceClass{
+				Id:   model.ClassID,
+				Type: "place_class",
+			},
+			Organization: resources.PlaceDataRelationshipsOrganization{
+				Id:   model.OrganizationID,
+				Type: "organization",
+			},
 		},
 	}
 }

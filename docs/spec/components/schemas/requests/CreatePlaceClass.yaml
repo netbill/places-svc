@@ -5,21 +5,15 @@ properties:
   data:
     type: object
     required:
-      - id
       - type
       - attributes
     properties:
-      id:
-        type: string
-        format: uuid
-        description: "place ID"
       type:
         type: string
-        enum: [ place_class_create ]
+        enum: [ place_class ]
       attributes:
         type: object
         required:
-          - code
           - name
           - description
         properties:
@@ -27,17 +21,9 @@ properties:
             type: string
             format: uuid
             description: "The ID of the parent class, if any"
-          code:
-            type: string
-            description: "The unique code of the class"
-            example: "japanese_cuisine"
           name:
             type: string
             description: "The name of the class"
           description:
             type: string
             description: "A brief description of the class"
-          icon:
-            type: string
-            format: uri
-            description: "A URL to an icon representing the class"

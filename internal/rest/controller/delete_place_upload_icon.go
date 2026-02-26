@@ -2,62 +2,55 @@ package controller
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/google/uuid"
 	"github.com/netbill/places-svc/internal/core/errx"
-	"github.com/netbill/places-svc/internal/rest/contexter"
+	"github.com/netbill/places-svc/internal/rest/requests"
+	"github.com/netbill/places-svc/internal/rest/scope"
 	"github.com/netbill/restkit/problems"
 )
 
+const operationDeleteUploadPlaceIcon = "delete_upload_place_icon"
+
 func (c *Controller) DeletePlaceUploadIcon(w http.ResponseWriter, r *http.Request) {
-	initiator, err := contexter.AccountData(r.Context())
+	log := scope.Log(r).WithOperation(operationDeleteUploadPlaceIcon)
+
+	req, err := requests.DeleteUploadPlaceIcon(r)
 	if err != nil {
-		c.log.WithError(err).Errorf("failed to get initiator account data")
-		c.responser.RenderErr(w, problems.Unauthorized("failed to get initiator account data"))
+		log.WithError(err).Info("invalid delete upload place  icon requests")
+		c.responser.RenderErr(w, problems.BadRequest(err)...)
 
 		return
 	}
 
-	placeID, err := uuid.Parse(chi.URLParam(r, "place_id"))
-	if err != nil {
-		c.log.WithError(err).Errorf("invalid place id")
-		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
-			"query": fmt.Errorf("invalid place id: %s", chi.URLParam(r, "place_id")),
-		})...)
+	log = log.WithField("place_id", req.Data.Id)
 
-		return
-	}
-
-	uploadContentData, err := contexter.UploadContentData(r.Context())
-	if err != nil {
-		c.log.WithError(err).Error("failed to get upload session id")
-		c.responser.RenderErr(w, problems.Unauthorized("failed to get upload session id"))
-
-		return
-	}
-
-	if err = c.core.place.DeleteUpdateIconInSession(
+	err = c.modules.place.DeleteUploadPlaceIcon(
 		r.Context(),
-		initiator,
-		placeID,
-		uploadContentData.GetUploadSessionID(),
-	); err != nil {
-		c.log.WithError(err).Errorf("failed to delete place icon in upload session")
-		switch {
-		case errors.Is(err, errx.ErrorPlaceNotExists):
-			c.responser.RenderErr(w, problems.NotFound("place does not exist"))
-		case errors.Is(err, errx.ErrorNotEnoughRights):
-			c.responser.RenderErr(w, problems.Forbidden("not enough rights to update place"))
-		default:
-			c.responser.RenderErr(w, problems.InternalError())
-		}
-
-		return
+		scope.AccountActor(r),
+		req.Data.Id,
+		req.Data.Attributes.IconKey,
+	)
+	switch {
+	case errors.Is(err, errx.ErrorNotEnoughRights):
+		log.Info("not enough rights to delete place icon in upload session")
+		c.responser.RenderErr(w, problems.Forbidden("not enough rights to delete place icon in upload session"))
+	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
+		log.Info("organization is suspended")
+		c.responser.RenderErr(w, problems.Forbidden("organization is suspended"))
+	case errors.Is(err, errx.ErrorPlaceIconKeyIsInvalid):
+		log.WithError(err).Info("place icon key is invalid")
+		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+			"icon": err,
+		})...)
+	case errors.Is(err, errx.ErrorPlaceNotExists):
+		log.Info("place does not exist")
+		c.responser.RenderErr(w, problems.NotFound("place does not exist"))
+	case err != nil:
+		log.WithError(err).Error("failed to delete place icon in upload session")
+		c.responser.RenderErr(w, problems.InternalError())
+	default:
+		w.WriteHeader(http.StatusNoContent)
 	}
-
-	c.responser.Render(w, http.StatusOK)
 }

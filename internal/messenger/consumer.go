@@ -1,138 +1,63 @@
 package messenger
 
 import (
-	"context"
-	"sync"
 	"time"
 
-	"github.com/netbill/evebox/box/inbox"
-	"github.com/netbill/evebox/consumer"
-	"github.com/netbill/places-svc/internal/messenger/contracts"
-	"github.com/segmentio/kafka-go"
+	"github.com/netbill/eventbox"
+	"github.com/netbill/evtypes"
+	"github.com/netbill/places-svc/pkg/log"
 )
 
-type handlers interface {
-	OrgMemberCreated(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-	OrgMemberDeleted(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-	OrgMemberAddedRole(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-	OrgMemberRemovedRole(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
+type ConsumerConfig struct {
+	GroupID string   `json:"group_id"`
+	Brokers []string `json:"brokers"`
 
-	OrgRoleCreated(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-	OrgRoleDeleted(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-	OrgRolePermissionsUpdated(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-	OrgRolesRanksUpdated(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
+	MinBackoff time.Duration `json:"min_backoff"`
+	MaxBackoff time.Duration `json:"max_backoff"`
 
-	OrganizationCreated(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-	OrganizationDeleted(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-	OrganizationActivated(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
-	OrganizationDeactivated(
-		ctx context.Context,
-		event inbox.Event,
-	) inbox.EventStatus
+	OrganizationsV1 ConsumeKafkaConfig `json:"organizations_v1"`
+	OrgMembersV1    ConsumeKafkaConfig `json:"organization_members_v1"`
 }
 
-func (m *Messenger) RunConsumer(ctx context.Context, handlers handlers) {
-	wg := &sync.WaitGroup{}
-	run := func(f func()) {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			f()
-		}()
-	}
+type ConsumeKafkaConfig struct {
+	Instances     int           `json:"instances"`
+	MinBytes      int           `json:"min_bytes"`
+	MaxBytes      int           `json:"max_bytes"`
+	MaxWait       time.Duration `json:"max_wait"`
+	QueueCapacity int           `json:"queue_capacity"`
+}
 
-	orgConsumer := consumer.New(
-		consumer.NewConsumerParams{
-			Log:  m.log,
-			DB:   m.db,
-			Name: "profiles-svc-profile-consumer",
-			Addr: m.addr,
-			OnUnknown: func(ctx context.Context, m kafka.Message, eventType string) error {
-				return nil
-			},
-		},
-	)
-
-	orgConsumer.Handle(contracts.OrgMemberCreatedEvent, handlers.OrgMemberCreated)
-	orgConsumer.Handle(contracts.OrgMemberDeletedEvent, handlers.OrgMemberDeleted)
-	orgConsumer.Handle(contracts.OrgMemberRoleAddedEvent, handlers.OrgMemberAddedRole)
-	orgConsumer.Handle(contracts.OrgMemberRoleRemovedEvent, handlers.OrgMemberRemovedRole)
-
-	orgConsumer.Handle(contracts.OrgRoleCreatedEvent, handlers.OrgRoleCreated)
-	orgConsumer.Handle(contracts.OrgRoleDeletedEvent, handlers.OrgRoleDeleted)
-	orgConsumer.Handle(contracts.OrgRolePermissionsUpdatedEvent, handlers.OrgRolePermissionsUpdated)
-	orgConsumer.Handle(contracts.OrgRolesRanksUpdatedEvent, handlers.OrgRolesRanksUpdated)
-
-	orgConsumer.Handle(contracts.OrganizationCreatedEvent, handlers.OrganizationCreated)
-	orgConsumer.Handle(contracts.OrganizationDeletedEvent, handlers.OrganizationDeleted)
-	orgConsumer.Handle(contracts.OrganizationActivatedEvent, handlers.OrganizationActivated)
-	orgConsumer.Handle(contracts.OrganizationDeactivatedEvent, handlers.OrganizationDeactivated)
-
-	inboxer1 := consumer.NewInboxer(consumer.NewInboxerParams{
-		Log:        m.log,
-		Pool:       m.db,
-		Name:       "places-svc-inbox-worker-1",
-		BatchSize:  10,
-		RetryDelay: 1 * time.Minute,
-		MinSleep:   100 * time.Millisecond,
-		MaxSleep:   1 * time.Second,
+func NewConsumer(
+	logger *log.Logger,
+	inbox eventbox.Inbox,
+	config ConsumerConfig,
+) *eventbox.Consumer {
+	consumer := eventbox.NewConsumer(logger, inbox, eventbox.ConsumerConfig{
+		MinBackoff: config.MinBackoff,
+		MaxBackoff: config.MaxBackoff,
 	})
 
-	inboxer1.Handle(contracts.OrgMemberCreatedEvent, handlers.OrgMemberCreated)
-	inboxer1.Handle(contracts.OrgMemberDeletedEvent, handlers.OrgMemberDeleted)
-	inboxer1.Handle(contracts.OrgMemberRoleAddedEvent, handlers.OrgMemberAddedRole)
-	inboxer1.Handle(contracts.OrgMemberRoleRemovedEvent, handlers.OrgMemberRemovedRole)
-
-	inboxer1.Handle(contracts.OrgRoleCreatedEvent, handlers.OrgRoleCreated)
-	inboxer1.Handle(contracts.OrgRoleDeletedEvent, handlers.OrgRoleDeleted)
-	inboxer1.Handle(contracts.OrgRolePermissionsUpdatedEvent, handlers.OrgRolePermissionsUpdated)
-	inboxer1.Handle(contracts.OrgRolesRanksUpdatedEvent, handlers.OrgRolesRanksUpdated)
-
-	inboxer1.Handle(contracts.OrganizationCreatedEvent, handlers.OrganizationCreated)
-	inboxer1.Handle(contracts.OrganizationDeletedEvent, handlers.OrganizationDeleted)
-	inboxer1.Handle(contracts.OrganizationActivatedEvent, handlers.OrganizationActivated)
-	inboxer1.Handle(contracts.OrganizationDeactivatedEvent, handlers.OrganizationDeactivated)
-
-	run(func() {
-		orgConsumer.Run(ctx, contracts.PlaceSvcGroup, contracts.OrganizationsTopicV1, m.addr...)
+	consumer.AddReader(eventbox.ReaderConfig{
+		Brokers:       config.Brokers,
+		GroupID:       config.GroupID,
+		Topic:         evtypes.OrganizationsTopicV1,
+		Instances:     config.OrganizationsV1.Instances,
+		MaxWait:       config.OrganizationsV1.MaxWait,
+		MinBytes:      config.OrganizationsV1.MinBytes,
+		MaxBytes:      config.OrganizationsV1.MaxBytes,
+		QueueCapacity: config.OrganizationsV1.QueueCapacity,
 	})
 
-	run(func() {
-		inboxer1.Run(ctx)
+	consumer.AddReader(eventbox.ReaderConfig{
+		Brokers:       config.Brokers,
+		GroupID:       config.GroupID,
+		Topic:         evtypes.OrgMembersTopicV1,
+		Instances:     config.OrgMembersV1.Instances,
+		MaxWait:       config.OrgMembersV1.MaxWait,
+		MinBytes:      config.OrgMembersV1.MinBytes,
+		MaxBytes:      config.OrgMembersV1.MaxBytes,
+		QueueCapacity: config.OrgMembersV1.QueueCapacity,
 	})
 
-	wg.Wait()
+	return consumer
 }

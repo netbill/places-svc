@@ -1,0 +1,48 @@
+package controller
+
+import (
+	"errors"
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/google/uuid"
+	"github.com/netbill/places-svc/internal/core/errx"
+	"github.com/netbill/places-svc/internal/rest/responses"
+	"github.com/netbill/places-svc/internal/rest/scope"
+	"github.com/netbill/restkit/problems"
+)
+
+const operationCreatePlaceUploadMediaLink = "create_place__upload_media_link"
+
+func (c *Controller) CreatePlaceUploadMediaLink(w http.ResponseWriter, r *http.Request) {
+	log := scope.Log(r).WithOperation(operationCreatePlaceUploadMediaLink)
+
+	ID, err := uuid.Parse(chi.URLParam(r, "place__id"))
+	if err != nil {
+		log.WithError(err).Info("invalid place  id")
+		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+			"place__id": err,
+		})...)
+
+		return
+	}
+
+	place, media, err := c.modules.place.CreateUploadMediaLinks(r.Context(), ID)
+	switch {
+	case errors.Is(err, errx.ErrorPlaceNotExists):
+		log.Info("place does not exist")
+		c.responser.RenderErr(w, problems.NotFound("place does not exist"))
+	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
+		log.Info("organization is suspended")
+		c.responser.RenderErr(w, problems.Forbidden("organization is suspended"))
+	case errors.Is(err, errx.ErrorNotEnoughRights):
+		log.Info("not enough rights to create place upload media link")
+		c.responser.RenderErr(w, problems.Forbidden("not enough rights to create place upload media link"))
+	case err != nil:
+		log.WithError(err).Error("failed to create place upload media link")
+		c.responser.RenderErr(w, problems.InternalError())
+	default:
+		c.responser.Render(w, http.StatusOK, responses.UploadPlaceMediaLink(place, media))
+	}
+}

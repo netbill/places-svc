@@ -19,12 +19,10 @@ components:
     # requests:
     CreatePlace:
       $ref: './spec/components/schemas/requests/CreatePlace.yaml'
-    ConfirmUpdatePlace:
-      $ref: './spec/components/schemas/requests/ConfirmUpdatePlace.yaml'
-    UpdateClassForPlace:
-      $ref: './spec/components/schemas/requests/UpdateClassForPlace.yaml'
-    VerifyPlace:
-      $ref: './spec/components/schemas/requests/VerifyPlace.yaml'
+    UpdatePlace:
+      $ref: './spec/components/schemas/requests/UpdatePlace.yaml'
+    UpdatePlaceClass:
+      $ref: './spec/components/schemas/requests/UpdatePlaceClass.yaml'
     UpdatePlaceStatus:
       $ref: './spec/components/schemas/requests/UpdatePlaceStatus.yaml'
     UpdatePlaceVerify:
@@ -32,10 +30,15 @@ components:
 
     CreatePlaceClass:
       $ref: './spec/components/schemas/requests/CreatePlaceClass.yaml'
-    ConfirmUpdatePlaceClass:
-      $ref: './spec/components/schemas/requests/ConfirmUpdatePlaceClass.yaml'
-    ReplacePlaceClass:
-      $ref: './spec/components/schemas/requests/ReplacePlaceClass.yaml'
+    DeprecatedPlaceClass:
+      $ref: './spec/components/schemas/requests/DeprecatedPlaceClass.yaml'
+
+    DeleteUploadPlaceIcon:
+      $ref: './spec/components/schemas/requests/DeleteUploadPlaceIcon.yaml'
+    DeleteUploadPlaceBanner:
+      $ref: './spec/components/schemas/requests/DeleteUploadPlaceBanner.yaml'
+    DeleteUploadPlaceClassIcon:
+      $ref: './spec/components/schemas/requests/DeleteUploadPlaceClassIcon.yaml'
 
     # responses:
     PaginationData:
@@ -46,10 +49,20 @@ components:
       $ref: './spec/components/schemas/responses/PlacesCollection.yaml'
     PlaceClass:
       $ref: './spec/components/schemas/responses/PlaceClass.yaml'
+    PlaceClassData:
+      $ref: './spec/components/schemas/responses/PlaceClassData.yaml'
     PlaceClassesCollection:
       $ref: './spec/components/schemas/responses/PlaceClassesCollection.yaml'
-    OpenUpdatePlaceClassMediaLinks:
-      $ref: './spec/components/schemas/responses/OpenUpdatePlaceClassMediaLinks.yaml'
-    OpenUpdatePlaceMediaLinks:
-      $ref: './spec/components/schemas/responses/OpenUpdatePlaceMediaLinks.yaml'
+
+    Organization:
+      $ref: './spec/components/schemas/responses/Organization.yaml'
+    OrganizationData:
+      $ref: './spec/components/schemas/responses/OrganizationData.yaml'
+
+    UploadPlaceClassMediaLinks:
+      $ref: './spec/components/schemas/responses/UploadPlaceClassMediaLinks.yaml'
+    UploadPlaceMediaLinks:
+      $ref: './spec/components/schemas/responses/UploadPlaceMediaLinks.yaml'
+    UploadResourcesLink:
+      $ref: './spec/components/schemas/responses/UploadResourcesLink.yaml'
       

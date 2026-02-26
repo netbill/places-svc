@@ -28,11 +28,12 @@ components:
             type:
               type: string
               enum:
-                - create_place
+                - place
             attributes:
               type: object
               required:
                 - class_id
+                - organization_id
                 - point
                 - address
                 - name
@@ -68,14 +69,6 @@ components:
                 description:
                   type: string
                   description: A brief description of the place
-                icon:
-                  type: string
-                  format: uri
-                  description: A URL to an icon representing the place
-                banner:
-                  type: string
-                  format: uri
-                  description: A URL to a banner image for the place
                 website:
                   type: string
                   format: uri
@@ -83,7 +76,7 @@ components:
                 phone:
                   type: string
                   description: The contact phone number of the place
-    ConfirmUpdatePlace:
+    UpdatePlace:
       type: object
       required:
         - data
@@ -98,74 +91,44 @@ components:
             id:
               type: string
               format: uuid
-              description: The unique identifier of the place to be updated
+              description: The unique identifier of the place
             type:
               type: string
               enum:
-                - update_place
-            attributes:
-              type: object
-              required:
-                - status
-                - verified
-                - address
-                - name
-              properties:
-                status:
-                  type: string
-                  description: 'The status of the place (e.g., active, inactive)'
-                address:
-                  type: string
-                  description: The physical address of the place
-                name:
-                  type: string
-                  description: The name of the place
-                description:
-                  type: string
-                  description: A brief description of the place
-                website:
-                  type: string
-                  format: uri
-                  description: The website URL of the place
-                phone:
-                  type: string
-                  description: The contact phone number of the place
-                delete_icon:
-                  type: boolean
-                  description: Flag to indicate if the place's icon should be deleted
-                delete_banner:
-                  type: boolean
-                  description: Flag to indicate if the place's banner should be deleted
-    UpdateClassForPlace:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - id
-            - type
-            - attributes
-          properties:
-            id:
-              type: string
-              format: uuid
-              description: The ID of the place to update
-            type:
-              type: string
-              enum:
-                - update_place_class_for_place
+                - place
             attributes:
               type: object
               required:
                 - class_id
+                - name
+                - address
               properties:
                 class_id:
                   type: string
                   format: uuid
-                  description: The ID of the class this place belongs to
-    VerifyPlace:
+                  description: 'The class ID of the place (e.g., restaurant, park)'
+                name:
+                  type: string
+                  description: The name of the place
+                address:
+                  type: string
+                  description: The address of the place
+                description:
+                  type: string
+                  description: A brief description of the place
+                icon_key:
+                  type: string
+                  description: The S3 key for the place's icon image
+                banner_key:
+                  type: string
+                  description: The S3 key for the place's banner image
+                website:
+                  type: string
+                  description: The website URL of the place
+                phone:
+                  type: string
+                  description: The contact phone number of the place
+    UpdatePlaceClass:
       type: object
       required:
         - data
@@ -173,21 +136,37 @@ components:
         data:
           type: object
           required:
+            - id
             - type
             - attributes
           properties:
+            id:
+              type: string
+              format: uuid
+              description: The unique identifier for the place class
             type:
               type: string
               enum:
-                - update_place_verify
+                - place_class
             attributes:
               type: object
               required:
-                - verify
+                - name
+                - description
               properties:
-                verify:
-                  type: boolean
-                  description: Indicates whether the place has been verified
+                parent_id:
+                  type: string
+                  format: uuid
+                  description: 'The ID of the parent class, if any'
+                name:
+                  type: string
+                  description: The name of the class
+                description:
+                  type: string
+                  description: A brief description of the class
+                icon_key:
+                  type: string
+                  description: The S3 key for the class icon
     UpdatePlaceStatus:
       type: object
       required:
@@ -207,7 +186,7 @@ components:
             type:
               type: string
               enum:
-                - update_place_status
+                - update_place
             attributes:
               type: object
               required:
@@ -235,7 +214,7 @@ components:
             type:
               type: string
               enum:
-                - update_place_verify
+                - update_place
             attributes:
               type: object
               required:
@@ -252,22 +231,16 @@ components:
         data:
           type: object
           required:
-            - id
             - type
             - attributes
           properties:
-            id:
-              type: string
-              format: uuid
-              description: place ID
             type:
               type: string
               enum:
-                - place_class_create
+                - place_class
             attributes:
               type: object
               required:
-                - code
                 - name
                 - description
               properties:
@@ -275,21 +248,13 @@ components:
                   type: string
                   format: uuid
                   description: 'The ID of the parent class, if any'
-                code:
-                  type: string
-                  description: The unique code of the class
-                  example: japanese_cuisine
                 name:
                   type: string
                   description: The name of the class
                 description:
                   type: string
                   description: A brief description of the class
-                icon:
-                  type: string
-                  format: uri
-                  description: A URL to an icon representing the class
-    ConfirmUpdatePlaceClass:
+    DeprecatedPlaceClass:
       type: object
       required:
         - data
@@ -304,36 +269,20 @@ components:
             id:
               type: string
               format: uuid
-              description: place ID
+              description: The unique identifier for the place class
             type:
               type: string
               enum:
-                - confirm_place_class_update
+                - place_class
             attributes:
               type: object
               required:
-                - code
-                - name
-                - description
+                - deprecated
               properties:
-                parent_id:
-                  type: string
-                  format: uuid
-                  description: The ID of the parent class
-                code:
-                  type: string
-                  description: The unique code of the class
-                  example: japanese_cuisine
-                name:
-                  type: string
-                  description: The name of the class
-                description:
-                  type: string
-                  description: A brief description of the class
-                delete_icon:
-                  type: bool
-                  description: Flag to indicate if the place class banner should be deleted
-    ReplacePlaceClass:
+                deprecated:
+                  type: boolean
+                  description: place class is deprecated?
+    DeleteUploadPlaceIcon:
       type: object
       required:
         - data
@@ -348,20 +297,75 @@ components:
             id:
               type: string
               format: uuid
-              description: The unique identifier for the replace place class operation
+              description: place id
             type:
               type: string
               enum:
-                - replace_place_class
+                - place
             attributes:
               type: object
               required:
-                - class_replace_id
+                - icon_key
               properties:
-                class_replace_id:
+                icon_key:
                   type: string
-                  format: uuid
-                  description: The ID of the class to replace with
+                  description: icon media key
+    DeleteUploadPlaceBanner:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - id
+            - type
+            - attributes
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: place id
+            type:
+              type: string
+              enum:
+                - place
+            attributes:
+              type: object
+              required:
+                - banner_key
+              properties:
+                banner_key:
+                  type: string
+                  description: icon media key
+    DeleteUploadPlaceClassIcon:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: object
+          required:
+            - id
+            - type
+            - attributes
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: place class id
+            type:
+              type: string
+              enum:
+                - place_class
+            attributes:
+              type: object
+              required:
+                - icon_key
+              properties:
+                icon_key:
+                  type: string
+                  description: icon media key
     PaginationData:
       type: object
       required:
@@ -416,6 +420,7 @@ components:
                 - point
                 - address
                 - name
+                - version
                 - created_at
                 - updated_at
               properties:
@@ -436,11 +441,11 @@ components:
                 description:
                   type: string
                   description: A brief description of the place
-                icon:
+                icon_key:
                   type: string
                   format: uri
                   description: A URL to an icon representing the place
-                banner:
+                banner_key:
                   type: string
                   format: uri
                   description: A URL to a banner image for the place
@@ -451,6 +456,9 @@ components:
                 phone:
                   type: string
                   description: The contact phone number of the place
+                version:
+                  type: integer
+                  description: 'The version number of the place data, used for concurrency control'
                 created_at:
                   type: string
                   format: date-time
@@ -462,7 +470,8 @@ components:
             relationships:
               type: object
               required:
-                - class
+                - organization
+                - place_class
               properties:
                 organization:
                   type: object
@@ -478,7 +487,7 @@ components:
                       type: string
                       enum:
                         - organization
-                class:
+                place_class:
                   type: object
                   required:
                     - id
@@ -492,6 +501,13 @@ components:
                       type: string
                       enum:
                         - place_class
+        included:
+          type: array
+          description: 'Included related resources (e.g., organization)'
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/OrganizationData'
+              - $ref: '#/components/schemas/PlaceClassData'
     PlacesCollection:
       type: object
       required:
@@ -510,68 +526,79 @@ components:
         - data
       properties:
         data:
+          $ref: '#/components/schemas/PlaceClassData'
+        included:
+          type: array
+          description: 'Included related resources (e.g., organization)'
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/PlaceClassData'
+    PlaceClassData:
+      type: object
+      required:
+        - id
+        - type
+        - attributes
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: place ID
+        type:
+          type: string
+          enum:
+            - place_class
+        attributes:
           type: object
           required:
-            - id
-            - type
-            - attributes
+            - name
+            - description
+            - version
+            - updated_at
+            - created_at
           properties:
-            id:
+            name:
               type: string
-              format: uuid
-              description: place ID
-            type:
+              description: The name of the class
+            description:
               type: string
-              enum:
-                - place_class
-            attributes:
+              description: A brief description of the class
+            icon_key:
+              type: string
+              format: uri
+              description: A URL to an icon representing the class
+            version:
+              type: integer
+              description: 'The version number of the class data, used for concurrency control'
+            created_at:
+              type: string
+              format: date-time
+              description: The date and time when the class was created
+            updated_at:
+              type: string
+              format: date-time
+              description: The date and time when the class was last updated
+            deprecated_at:
+              type: string
+              format: date-time
+              description: 'The date and time when the class was deprecated, if applicable'
+        relationships:
+          type: object
+          properties:
+            parent:
               type: object
               required:
-                - code
-                - name
-                - description
-                - updated_at
-                - created_at
+                - id
+                - type
               properties:
-                code:
+                id:
                   type: string
-                  description: The unique code of the class
-                  example: japanese_cuisine
-                name:
+                  format: uuid
+                  description: The ID of the parent class
+                type:
                   type: string
-                  description: The name of the class
-                description:
-                  type: string
-                  description: A brief description of the class
-                icon:
-                  type: string
-                  format: uri
-                  description: A URL to an icon representing the class
-                updated_at:
-                  type: string
-                  format: date-time
-                  description: The date and time when the class was last updated
-                created_at:
-                  type: string
-                  format: date-time
-                  description: The date and time when the class was created
-            relationships:
-              type: object
-              properties:
-                parent:
-                  type: object
-                  required:
-                    - id
-                    - type
-                  properties:
-                    id:
-                      type: string
-                      format: uuid
-                      description: The ID of the parent class
-                    type:
-                      type: string
-                      enum:
-                        - place_class
+                  enum:
+                    - place_class
     PlaceClassesCollection:
       type: object
       required:
@@ -581,10 +608,64 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/PlaceClass/properties/data'
+            $ref: '#/components/schemas/PlaceClassData'
         links:
           $ref: '#/components/schemas/PaginationData'
-    OpenUpdatePlaceClassMediaLinks:
+    Organization:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/OrganizationData'
+    OrganizationData:
+      type: object
+      required:
+        - id
+        - type
+        - attributes
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: organization ID
+        type:
+          type: string
+          enum:
+            - organization
+        attributes:
+          type: object
+          required:
+            - status
+            - name
+            - version
+            - created_at
+            - updated_at
+          properties:
+            status:
+              type: string
+              description: The status of the organization
+            name:
+              type: string
+              description: The name of the organization
+            icon_key:
+              type: string
+              description: The media key for the organization's icon
+            banner_key:
+              type: string
+              description: The media key for the organization's banner
+            version:
+              type: integer
+              description: 'The version number of the organization, used for optimistic concurrency control'
+            created_at:
+              type: string
+              format: date-time
+              description: The date and time when the organization was created
+            updated_at:
+              type: string
+              format: date-time
+              description: The date and time when the organization was last updated
+    UploadPlaceClassMediaLinks:
       type: object
       required:
         - data
@@ -601,29 +682,19 @@ components:
             id:
               type: string
               format: uuid
-              description: Upload session id
+              description: place class id
             type:
               type: string
               enum:
-                - place_class_avatar_upload
+                - place_class_upload_links
             attributes:
               type: object
               required:
-                - upload_token
-                - icon_upload_url
-                - icon_get_url
+                - icon
+                - banner
               properties:
-                upload_token:
-                  type: string
-                  description: JWT upload session token
-                icon_upload_url:
-                  type: string
-                  format: uri
-                  description: Pre-signed PUT URL for icon upload
-                icon_get_url:
-                  type: string
-                  format: uri
-                  description: Pre-signed GET URL to read uploaded icon
+                icon:
+                  $ref: '#/components/schemas/UploadResourcesLink'
             relationships:
               type: object
               properties:
@@ -641,7 +712,7 @@ components:
                         id:
                           type: string
                           format: uuid
-                          description: place_class id
+                          description: place id
                         type:
                           type: string
                           enum:
@@ -649,8 +720,8 @@ components:
         included:
           type: array
           items:
-            $ref: '#/components/schemas/PlaceClass/properties/data'
-    OpenUpdatePlaceMediaLinks:
+            $ref: '#/components/schemas/PlaceClassData'
+    UploadPlaceMediaLinks:
       type: object
       required:
         - data
@@ -667,39 +738,21 @@ components:
             id:
               type: string
               format: uuid
-              description: Upload session id
+              description: place id
             type:
               type: string
               enum:
-                - place_avatar_upload
+                - place_upload_links
             attributes:
               type: object
               required:
-                - upload_token
-                - icon_upload_url
-                - icon_get_url
-                - banner_upload_url
-                - banner_get_url
+                - icon
+                - banner
               properties:
-                upload_token:
-                  type: string
-                  description: JWT upload session token
-                icon_upload_url:
-                  type: string
-                  format: uri
-                  description: Pre-signed PUT URL for icon upload
-                icon_get_url:
-                  type: string
-                  format: uri
-                  description: Pre-signed GET URL to read uploaded icon
-                banner_upload_url:
-                  type: string
-                  format: uri
-                  description: Pre-signed PUT URL for banner upload
-                banner_get_url:
-                  type: string
-                  format: uri
-                  description: Pre-signed GET URL to read uploaded banner
+                icon:
+                  $ref: '#/components/schemas/UploadResourcesLink'
+                banner:
+                  $ref: '#/components/schemas/UploadResourcesLink'
             relationships:
               type: object
               properties:
@@ -726,3 +779,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Place/properties/data'
+    UploadResourcesLink:
+      type: object
+      required:
+        - key
+        - upload_url
+        - preload_url
+      properties:
+        key:
+          type: string
+          description: Key for the avatar in the storage service
+        upload_url:
+          type: string
+          format: uri
+          description: Pre-signed URL for uploading the avatar
+        preload_url:
+          type: string
+          format: uri
+          description: URL for preloading the avatar after upload

@@ -4,17 +4,16 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**ParentId** | [**uuid.UUID**](uuid.UUID.md) | The ID of the parent class | 
-**Code** | **string** | The unique code of the class | 
+**ParentId** | Pointer to [**uuid.UUID**](uuid.UUID.md) | The ID of the parent class, if any | [optional] 
 **Name** | **string** | The name of the class | 
 **Description** | **string** | A brief description of the class | 
-**DeleteIcon** | **bool** | Flag to indicate if the place class banner should be deleted | 
+**IconKey** | Pointer to **string** | The S3 key for the class icon | [optional] 
 
 ## Methods
 
 ### NewUpdatePlaceClassDataAttributes
 
-`func NewUpdatePlaceClassDataAttributes(parentId uuid.UUID, code string, name string, description string, deleteIcon bool, ) *UpdatePlaceClassDataAttributes`
+`func NewUpdatePlaceClassDataAttributes(name string, description string, ) *UpdatePlaceClassDataAttributes`
 
 NewUpdatePlaceClassDataAttributes instantiates a new UpdatePlaceClassDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -48,26 +47,11 @@ and a boolean to check if the value has been set.
 
 SetParentId sets ParentId field to given value.
 
+### HasParentId
 
-### GetCode
+`func (o *UpdatePlaceClassDataAttributes) HasParentId() bool`
 
-`func (o *UpdatePlaceClassDataAttributes) GetCode() string`
-
-GetCode returns the Code field if non-nil, zero value otherwise.
-
-### GetCodeOk
-
-`func (o *UpdatePlaceClassDataAttributes) GetCodeOk() (*string, bool)`
-
-GetCodeOk returns a tuple with the Code field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetCode
-
-`func (o *UpdatePlaceClassDataAttributes) SetCode(v string)`
-
-SetCode sets Code field to given value.
-
+HasParentId returns a boolean if a field has been set.
 
 ### GetName
 
@@ -109,25 +93,30 @@ and a boolean to check if the value has been set.
 SetDescription sets Description field to given value.
 
 
-### GetDeleteIcon
+### GetIconKey
 
-`func (o *UpdatePlaceClassDataAttributes) GetDeleteIcon() bool`
+`func (o *UpdatePlaceClassDataAttributes) GetIconKey() string`
 
-GetDeleteIcon returns the DeleteIcon field if non-nil, zero value otherwise.
+GetIconKey returns the IconKey field if non-nil, zero value otherwise.
 
-### GetDeleteIconOk
+### GetIconKeyOk
 
-`func (o *UpdatePlaceClassDataAttributes) GetDeleteIconOk() (*bool, bool)`
+`func (o *UpdatePlaceClassDataAttributes) GetIconKeyOk() (*string, bool)`
 
-GetDeleteIconOk returns a tuple with the DeleteIcon field if it's non-nil, zero value otherwise
+GetIconKeyOk returns a tuple with the IconKey field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetDeleteIcon
+### SetIconKey
 
-`func (o *UpdatePlaceClassDataAttributes) SetDeleteIcon(v bool)`
+`func (o *UpdatePlaceClassDataAttributes) SetIconKey(v string)`
 
-SetDeleteIcon sets DeleteIcon field to given value.
+SetIconKey sets IconKey field to given value.
 
+### HasIconKey
+
+`func (o *UpdatePlaceClassDataAttributes) HasIconKey() bool`
+
+HasIconKey returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

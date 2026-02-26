@@ -14,9 +14,10 @@ type PlaceClass struct {
 	Description string  `json:"description"`
 	IconKey     *string `json:"icon_key,omitempty"`
 
-	Version   int32     `json:"version"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Version      int32      `json:"version"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+	DeprecatedAt *time.Time `json:"deprecated_at,omitempty"`
 }
 
 type UploadPlaceClassMediaLinks struct {

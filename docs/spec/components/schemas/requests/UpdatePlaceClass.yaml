@@ -1,0 +1,37 @@
+type: object
+required:
+  - data
+properties:
+  data:
+    type: object
+    required:
+      - id
+      - type
+      - attributes
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: "The unique identifier for the place class"
+      type:
+        type: string
+        enum: [ place_class ]
+      attributes:
+        type: object
+        required:
+          - name
+          - description
+        properties:
+          parent_id:
+            type: string
+            format: uuid
+            description: "The ID of the parent class, if any"
+          name:
+            type: string
+            description: "The name of the class"
+          description:
+            type: string
+            description: "A brief description of the class"
+          icon_key:
+            type: string
+            description: "The S3 key for the class icon"

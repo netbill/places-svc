@@ -37,19 +37,29 @@ func (m *Module) Create(
 		)
 	}
 
+	org, err := m.repo.GetOrganization(ctx, place.OrganizationID)
+	if err != nil {
+		return models.Place{}, err
+	}
+	if org.Status == models.OrganizationStatusSuspended {
+		return models.Place{}, errx.ErrorOrganizationIsSuspended.Raise(
+			fmt.Errorf("organization %s is suspended", place.OrganizationID),
+		)
+	}
+
 	if !m.territory.ContainsLatLng(params.Point[1], params.Point[0]) {
 		return models.Place{}, errx.ErrorPlaceOutOfTerritory.Raise(
 			fmt.Errorf("place point %v is out of allowed territory", params.Point),
 		)
 	}
 
-	classExists, err := m.repo.CheckPlaceClassExists(ctx, params.ClassID)
+	class, err := m.repo.GetPlaceClass(ctx, params.ClassID)
 	if err != nil {
 		return models.Place{}, err
 	}
-	if !classExists {
-		return models.Place{}, errx.ErrorPlaceClassNotExists.Raise(
-			fmt.Errorf("place class %v not found", params.ClassID),
+	if class.DeprecatedAt != nil {
+		return models.Place{}, errx.ErrorPlaceClassIsDeprecated.Raise(
+			fmt.Errorf("place class %s is deprecated", params.ClassID),
 		)
 	}
 

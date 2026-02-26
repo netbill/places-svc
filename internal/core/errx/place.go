@@ -10,13 +10,13 @@ var (
 
 	ErrorPlaceOutOfTerritory = ape.DeclareError("PLACE_OUT_OF_TERRITORY")
 
-	ErrorPlaceIconTooLarge                = ape.DeclareError("PLACE_ICON_TOO_LARGE")
-	ErrorPlaceIconContentTypeNotAllowed   = ape.DeclareError("PLACE_ICON_CONTENT_TYPE_NOT_ALLOWED")
-	ErrorPlaceIconContentFormatNotAllowed = ape.DeclareError("PLACE_ICON_CONTENT_FORMAT_NOT_ALLOWED")
-	ErrorPlaceIconResolutionNotAllowed    = ape.DeclareError("PLACE_ICON_RESOLUTION_NOT_ALLOWED")
+	ErrorPlaceIconKeyIsInvalid        = ape.DeclareError("PLACE_ICON_KEY_IS_INVALID")
+	ErrorPlaceIconContentIsExceedsMax = ape.DeclareError("PLACE_ICON_CONTENT_EXCEEDS_MAX")
+	ErrorPlaceIconResolutionIsInvalid = ape.DeclareError("PLACE_ICON_RESOLUTION_IS_INVALID")
+	ErrorPlaceIconFormatIsNotAllowed  = ape.DeclareError("PLACE_ICON_FORMAT_IS_NOT_ALLOWED")
 
-	ErrorPlaceBannerTooLarge                = ape.DeclareError("PLACE_BANNER_TOO_LARGE")
-	ErrorPlaceBannerContentTypeNotAllowed   = ape.DeclareError("PLACE_BANNER_CONTENT_TYPE_NOT_ALLOWED")
-	ErrorPlaceBannerContentFormatNotAllowed = ape.DeclareError("PLACE_BANNER_CONTENT_FORMAT_NOT_ALLOWED")
-	ErrorPlaceBannerResolutionNotAllowed    = ape.DeclareError("PLACE_BANNER_RESOLUTION_NOT_ALLOWED")
+	ErrorPlaceBannerKeyIsInvalid        = ape.DeclareError("PLACE_BANNER_KEY_IS_INVALID")
+	ErrorPlaceBannerContentIsExceedsMax = ape.DeclareError("PLACE_BANNER_CONTENT_EXCEEDS_MAX")
+	ErrorPlaceBannerResolutionIsInvalid = ape.DeclareError("PLACE_BANNER_RESOLUTION_IS_INVALID")
+	ErrorPlaceBannerFormatIsNotAllowed  = ape.DeclareError("PLACE_BANNER_FORMAT_IS_NOT_ALLOWED")
 )

@@ -10,11 +10,12 @@ properties:
     properties:
       type:
         type: string
-        enum: [ create_place ]
+        enum: [ place ]
       attributes:
         type: object
         required:
           - class_id
+          - organization_id
           - point
           - address
           - name
@@ -38,14 +39,6 @@ properties:
           description:
             type: string
             description: "A brief description of the place"
-          icon:
-            type: string
-            format: uri
-            description: "A URL to an icon representing the place"
-          banner:
-            type: string
-            format: uri
-            description: "A URL to a banner image for the place"
           website:
             type: string
             format: uri

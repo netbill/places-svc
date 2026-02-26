@@ -1,58 +1,53 @@
 package messenger
 
 import (
-	"context"
-	"sync"
 	"time"
 
-	"github.com/netbill/evebox/producer"
-	"github.com/segmentio/kafka-go"
+	"github.com/netbill/eventbox"
+	"github.com/netbill/evtypes"
+	"github.com/netbill/places-svc/pkg/log"
 )
 
-func (m *Messenger) RunProducer(ctx context.Context) {
-	wg := &sync.WaitGroup{}
+type ProducerConfig struct {
+	Producer string   `json:"producer"`
+	Brokers  []string `json:"brokers"`
 
-	run := func(f func()) {
-		wg.Add(1)
-		go func() {
-			f()
-			wg.Done()
-		}()
+	PlacesV1        ProduceKafkaConfig `json:"places_v1"`
+	PlacesClassesV1 ProduceKafkaConfig `json:"place_classes_v1"`
+}
+
+type ProduceKafkaConfig struct {
+	RequiredAcks string        `json:"required_acks"`
+	Compression  string        `json:"compression"`
+	Balancer     string        `json:"balancer"`
+	BatchSize    int           `json:"batch_size"`
+	BatchTimeout time.Duration `json:"batch_timeout"`
+}
+
+func NewProducer(log *log.Logger, cfg ProducerConfig) *eventbox.Producer {
+	producer := eventbox.NewProducer(log, cfg.Brokers...)
+
+	err := producer.AddWriter(evtypes.PlacesTopicV1, eventbox.WriterTopicConfig{
+		RequiredAcks: cfg.PlacesV1.RequiredAcks,
+		Compression:  cfg.PlacesV1.Compression,
+		Balancer:     cfg.PlacesV1.Balancer,
+		BatchSize:    cfg.PlacesV1.BatchSize,
+		BatchTimeout: cfg.PlacesV1.BatchTimeout,
+	})
+	if err != nil {
+		panic(err)
 	}
 
-	worker1 := producer.New(producer.NewProducerParams{
-		Name:            "outbox-worker-1",
-		KafkaAddr:       m.addr,
-		DB:              m.db,
-		BatchLimit:      10,
-		LockTTL:         30 * time.Second,
-		EventRetryDelay: 1 * time.Minute,
-		MinSleep:        100 * time.Millisecond,
-		MaxSleep:        1 * time.Second,
-		RequiredAcks:    kafka.RequireAll,
-		Compression:     kafka.Snappy,
-		BatchTimeout:    50,
-		Balancer:        &kafka.LeastBytes{},
+	err = producer.AddWriter(evtypes.PlaceClassesTopicV1, eventbox.WriterTopicConfig{
+		RequiredAcks: cfg.PlacesClassesV1.RequiredAcks,
+		Compression:  cfg.PlacesClassesV1.Compression,
+		Balancer:     cfg.PlacesClassesV1.Balancer,
+		BatchSize:    cfg.PlacesClassesV1.BatchSize,
+		BatchTimeout: cfg.PlacesClassesV1.BatchTimeout,
 	})
+	if err != nil {
+		panic(err)
+	}
 
-	worker2 := producer.New(producer.NewProducerParams{
-		Name:            "outbox-worker-2",
-		KafkaAddr:       m.addr,
-		DB:              m.db,
-		BatchLimit:      10,
-		LockTTL:         30 * time.Second,
-		EventRetryDelay: 1 * time.Minute,
-		MinSleep:        100 * time.Millisecond,
-		MaxSleep:        1 * time.Second,
-		RequiredAcks:    kafka.RequireAll,
-		Compression:     kafka.Snappy,
-		BatchTimeout:    50,
-		Balancer:        &kafka.LeastBytes{},
-	})
-
-	run(func() { worker1.Run(ctx) })
-
-	run(func() { worker2.Run(ctx) })
-
-	wg.Wait()
+	return producer
 }

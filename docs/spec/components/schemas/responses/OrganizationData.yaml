@@ -1,0 +1,45 @@
+type: object
+required:
+  - id
+  - type
+  - attributes
+properties:
+  id:
+    type: string
+    format: uuid
+    description: "organization ID"
+  type:
+    type: string
+    enum: [ organization ]
+  attributes:
+    type: object
+    required:
+      - status
+      - name
+      - version
+      - created_at
+      - updated_at
+    properties:
+      status:
+        type: string
+        description: "The status of the organization"
+      name:
+        type: string
+        description: "The name of the organization"
+      icon_key:
+        type: string
+        description: "The media key for the organization's icon"
+      banner_key:
+        type: string
+        description: "The media key for the organization's banner"
+      version:
+        type: integer
+        description: "The version number of the organization, used for optimistic concurrency control"
+      created_at:
+        type: string
+        format: date-time
+        description: "The date and time when the organization was created"
+      updated_at:
+        type: string
+        format: date-time
+        description: "The date and time when the organization was last updated"

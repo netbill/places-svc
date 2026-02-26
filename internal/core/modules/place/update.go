@@ -10,8 +10,9 @@ import (
 )
 
 type UpdateParams struct {
-	Address string `json:"address"`
-	Name    string `json:"name"`
+	ClassID uuid.UUID `json:"class_id"`
+	Name    string    `json:"name"`
+	Address string    `json:"address"`
 
 	Description *string `json:"description"`
 	Website     *string `json:"website"`
@@ -21,7 +22,7 @@ type UpdateParams struct {
 	BannerKey *string `json:"banner_key,omitempty"`
 }
 
-func (m *Module) ConfirmUpdateSession(
+func (m *Module) Update(
 	ctx context.Context,
 	actor models.AccountActor,
 	placeID uuid.UUID,
@@ -36,10 +37,19 @@ func (m *Module) ConfirmUpdateSession(
 	if err != nil {
 		return models.Place{}, err
 	}
-
 	if org.Status == models.OrganizationStatusSuspended {
 		return models.Place{}, errx.ErrorOrganizationIsSuspended.Raise(
 			fmt.Errorf("organization %s is suspended", place.OrganizationID),
+		)
+	}
+
+	class, err := m.repo.GetPlaceClass(ctx, params.ClassID)
+	if err != nil {
+		return models.Place{}, err
+	}
+	if class.DeprecatedAt != nil {
+		return models.Place{}, errx.ErrorPlaceClassIsDeprecated.Raise(
+			fmt.Errorf("place class %s is deprecated", params.ClassID),
 		)
 	}
 

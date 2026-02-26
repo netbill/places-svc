@@ -27,7 +27,7 @@ func (m *Module) UpdateVerified(
 			return err
 		}
 
-		err = m.messenger.PublishUpdatePlaceVerified(ctx, place)
+		err = m.messenger.PublishUpdatePlace(ctx, place)
 		if err != nil {
 			return err
 		}

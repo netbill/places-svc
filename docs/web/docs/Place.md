@@ -5,6 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Data** | [**PlaceData**](PlaceData.md) |  | 
+**Included** | Pointer to [**[]PlaceIncludedInner**](PlaceIncludedInner.md) | Included related resources (e.g., organization) | [optional] 
 
 ## Methods
 
@@ -44,6 +45,31 @@ and a boolean to check if the value has been set.
 
 SetData sets Data field to given value.
 
+
+### GetIncluded
+
+`func (o *Place) GetIncluded() []PlaceIncludedInner`
+
+GetIncluded returns the Included field if non-nil, zero value otherwise.
+
+### GetIncludedOk
+
+`func (o *Place) GetIncludedOk() (*[]PlaceIncludedInner, bool)`
+
+GetIncludedOk returns a tuple with the Included field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetIncluded
+
+`func (o *Place) SetIncluded(v []PlaceIncludedInner)`
+
+SetIncluded sets Included field to given value.
+
+### HasIncluded
+
+`func (o *Place) HasIncluded() bool`
+
+HasIncluded returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -8,16 +8,21 @@ import (
 	"github.com/google/uuid"
 	"github.com/netbill/places-svc/internal/core/modules/place"
 	"github.com/netbill/places-svc/internal/rest/responses"
+	"github.com/netbill/places-svc/internal/rest/scope"
 	"github.com/netbill/restkit/pagi"
 	"github.com/netbill/restkit/problems"
+	"github.com/paulmach/orb"
 )
 
+const operationGetPlaces = "get_places"
+
 func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
+	log := scope.Log(r).WithOperation(operationGetPlaces)
+
 	limit, offset := pagi.GetPagination(r)
 	if limit > 100 {
-		c.log.WithError(fmt.Errorf("invalid pagination limit %d", limit)).Errorf("invalid pagination limit")
+		log.WithField("limit", limit).Info("invalid pagination limit")
 		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("pagination limit must be between 1 and 100"))...)
-
 		return
 	}
 
@@ -26,11 +31,10 @@ func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 	if orgIDStr := r.URL.Query().Get("organization_id"); orgIDStr != "" {
 		orgID, err := uuid.Parse(orgIDStr)
 		if err != nil {
+			log.WithError(err).Info("invalid organization id")
 			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid organization id"))...)
-
 			return
 		}
-
 		params.OrganizationID = &orgID
 	}
 
@@ -38,90 +42,95 @@ func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 		params.Status = statuses
 	}
 
+	if statuses, ok := r.URL.Query()["org_status"]; ok {
+		params.OrgStatus = statuses
+	}
+
 	if verified := r.URL.Query().Get("verified"); verified != "" {
 		value, err := strconv.ParseBool(verified)
 		if err != nil {
+			log.WithError(err).Info("invalid verified flag")
 			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid verified flag"))...)
-
 			return
 		}
-
 		params.Verified = &value
 	}
 
-	if _, ok := r.URL.Query()["text"]; ok {
-		text := r.URL.Query().Get("text")
+	if text := r.URL.Query().Get("text"); text != "" {
 		params.BestMatch = &text
 	}
 
 	if classIDs, ok := r.URL.Query()["class_ids"]; ok {
 		ids := make([]uuid.UUID, 0, len(classIDs))
-
 		for _, classID := range classIDs {
 			id, err := uuid.Parse(classID)
 			if err != nil {
-				c.log.WithError(err).Errorf("invalid class_id %s", classID)
+				log.WithError(err).WithField("class_id", classID).Info("invalid class_id")
 				c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid class_id"))...)
-
 				return
 			}
 			ids = append(ids, id)
 		}
 
+		class := &place.FilterClassParams{ClassID: ids}
+
 		if incParentStr := r.URL.Query().Get("include_parent"); incParentStr != "" {
 			value, err := strconv.ParseBool(incParentStr)
 			if err != nil {
-				c.log.WithError(err).Errorf("invalid include_parent flag")
+				log.WithError(err).Info("invalid include_parent flag")
 				c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid include_parent"))...)
-
 				return
 			}
-
-			params.Class.Parents = value
+			class.Parents = value
 		}
 
 		if includeChildStr := r.URL.Query().Get("include_children"); includeChildStr != "" {
 			value, err := strconv.ParseBool(includeChildStr)
 			if err != nil {
-				c.log.WithError(err).Errorf("invalid include_children")
+				log.WithError(err).Info("invalid include_children flag")
 				c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid include_children"))...)
-
 				return
 			}
-
-			params.Class.Children = value
+			class.Children = value
 		}
 
-		params.Class.ClassID = ids
+		params.Class = class
 	}
 
-	if lon, err := strconv.ParseFloat(r.URL.Query().Get("lon"), 64); err == nil {
-		params.Near.Point[0] = lon
+	if lonStr := r.URL.Query().Get("lon"); lonStr != "" {
+		lon, err := strconv.ParseFloat(lonStr, 64)
+		if err != nil {
+			log.WithError(err).Info("invalid lon")
+			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid lon"))...)
+			return
+		}
 
 		lat, err := strconv.ParseFloat(r.URL.Query().Get("lat"), 64)
 		if err != nil {
+			log.WithError(err).Info("invalid lat")
 			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid lat"))...)
-
 			return
 		}
-		params.Near.Point[1] = lat
 
 		radius, err := strconv.ParseUint(r.URL.Query().Get("radius"), 10, 64)
 		if err != nil {
+			log.WithError(err).Info("invalid radius")
 			c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid radius"))...)
-
 			return
 		}
-		params.Near.RadiusM = uint(radius)
+
+		params.Near = &place.FilterNearParams{
+			Point:   orb.Point{lon, lat},
+			RadiusM: uint(radius),
+		}
 	}
 
-	res, err := c.core.place.GetList(r.Context(), params, limit, offset)
-	if err != nil {
-		c.log.WithError(err).Errorf("error getting places")
+	res, err := c.modules.place.GetList(r.Context(), params, limit, offset)
+	switch {
+	case err != nil:
+		log.WithError(err).Error("failed to get places")
 		c.responser.RenderErr(w, problems.InternalError())
-
-		return
+	default:
+		c.responser.Render(w, http.StatusOK, responses.Places(r, res))
 	}
-
-	c.responser.Render(w, http.StatusOK, responses.Places(r, res))
 }

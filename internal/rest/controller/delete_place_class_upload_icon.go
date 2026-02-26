@@ -2,53 +2,48 @@ package controller
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/google/uuid"
 	"github.com/netbill/places-svc/internal/core/errx"
-	"github.com/netbill/places-svc/internal/rest/contexter"
+	"github.com/netbill/places-svc/internal/rest/requests"
+	"github.com/netbill/places-svc/internal/rest/scope"
 	"github.com/netbill/restkit/problems"
 )
 
+const operationDeleteUploadPlaceClassIcon = "delete_upload_place_class_icon"
+
 func (c *Controller) DeletePlaceClassUploadIcon(w http.ResponseWriter, r *http.Request) {
-	placeClassID, err := uuid.Parse(chi.URLParam(r, "place_class_id"))
+	log := scope.Log(r).WithOperation(operationDeleteUploadPlaceClassIcon)
+
+	req, err := requests.DeleteUploadPlaceClassIcon(r)
 	if err != nil {
-		c.log.WithError(err).Errorf("invalid place class id")
-		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
-			"query": fmt.Errorf("invalid placeClass id: %s", chi.URLParam(r, "place_class_id")),
-		})...)
+		log.WithError(err).Info("invalid delete upload place class icon requests")
+		c.responser.RenderErr(w, problems.BadRequest(err)...)
 
 		return
 	}
 
-	uploadContentData, err := contexter.UploadContentData(r.Context())
-	if err != nil {
-		c.log.WithError(err).Error("failed to get upload session id")
-		c.responser.RenderErr(w, problems.Unauthorized("failed to get upload session id"))
+	log = log.WithField("place_class_id", req.Data.Id)
 
-		return
-	}
-
-	if err = c.core.pclass.DeleteUpdateIconInSession(
+	err = c.modules.pclass.DeleteUploadPlaceClassIcon(
 		r.Context(),
-		placeClassID,
-		uploadContentData.GetUploadSessionID(),
-	); err != nil {
-		c.log.WithError(err).Errorf("failed to delete place class icon in upload session")
-		switch {
-		case errors.Is(err, errx.ErrorPlaceClassNotExists):
-			c.responser.RenderErr(w, problems.NotFound("place class does not exist"))
-		case errors.Is(err, errx.ErrorNotEnoughRights):
-			c.responser.RenderErr(w, problems.Forbidden("not enough rights to update place class"))
-		default:
-			c.responser.RenderErr(w, problems.InternalError())
-		}
-
-		return
+		req.Data.Id,
+		req.Data.Attributes.IconKey,
+	)
+	switch {
+	case errors.Is(err, errx.ErrorPlaceClassNotExists):
+		log.Info("place class does not exist")
+		c.responser.RenderErr(w, problems.NotFound("place class does not exist"))
+	case errors.Is(err, errx.ErrorPlaceClassIconKeyIsInvalid):
+		log.WithError(err).Info("place class icon key is invalid")
+		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
+			"icon": err,
+		})...)
+	case err != nil:
+		log.WithError(err).Error("failed to delete place class icon in upload session")
+		c.responser.RenderErr(w, problems.InternalError())
+	default:
+		w.WriteHeader(http.StatusNoContent)
 	}
-
-	c.responser.Render(w, http.StatusOK)
 }

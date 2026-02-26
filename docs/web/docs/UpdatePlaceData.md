@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Id** | [**uuid.UUID**](uuid.UUID.md) | The unique identifier of the place to be updated | 
+**Id** | [**uuid.UUID**](uuid.UUID.md) | The unique identifier of the place | 
 **Type** | **string** |  | 
 **Attributes** | [**UpdatePlaceDataAttributes**](UpdatePlaceDataAttributes.md) |  | 
 

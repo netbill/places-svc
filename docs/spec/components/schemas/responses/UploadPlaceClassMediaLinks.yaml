@@ -1,0 +1,54 @@
+type: object
+required:
+  - data
+  - included
+properties:
+  data:
+    type: object
+    required:
+      - id
+      - type
+      - attributes
+      - relationships
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: "place class id"
+      type:
+        type: string
+        enum: [ place_class_upload_links ]
+      attributes:
+        type: object
+        required:
+          - icon
+          - banner
+        properties:
+          icon:
+            $ref: './UploadResourcesLink.yaml'
+      relationships:
+        type: object
+        properties:
+          place_class:
+            type: object
+            required:
+              - data
+            properties:
+              data:
+                type: object
+                required:
+                  - id
+                  - type
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: "place id"
+                  type:
+                    type: string
+                    enum: [ place_class ]
+
+  included:
+    type: array
+    items:
+      $ref: './PlaceClassData.yaml'

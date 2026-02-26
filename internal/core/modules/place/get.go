@@ -23,6 +23,7 @@ type FilterParams struct {
 	Near           *FilterNearParams
 	OrganizationID *uuid.UUID
 	Status         []string
+	OrgStatus      []string
 	Verified       *bool
 
 	BestMatch *string

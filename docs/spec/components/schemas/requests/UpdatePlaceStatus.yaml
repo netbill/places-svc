@@ -15,7 +15,7 @@ properties:
         description: "The unique identifier of the place"
       type:
         type: string
-        enum: [ update_place_status]
+        enum: [ update_place]
       attributes:
         type: object
         required:

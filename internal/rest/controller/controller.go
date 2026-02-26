@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/netbill/logium"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/core/modules/pclass"
 	"github.com/netbill/places-svc/internal/core/modules/place"
@@ -19,39 +18,26 @@ type placeSvc interface {
 		params place.CreateParams,
 	) (place models.Place, err error)
 
+	Delete(
+		ctx context.Context,
+		actor models.AccountActor,
+		placeID uuid.UUID,
+	) error
+
 	Get(ctx context.Context, placeID uuid.UUID) (models.Place, error)
+
 	GetList(
 		ctx context.Context,
 		params place.FilterParams,
 		limit, offset uint,
-	) (places pagi.Page[[]models.Place], err error)
+	) (pagi.Page[[]models.Place], error)
 
-	OpenUpdateSession(
-		ctx context.Context,
-		actor models.AccountActor,
-		placeID uuid.UUID,
-	) (models.Place, models.UpdatePlaceMedia, error)
-	ConfirmUpdateSession(
+	Update(
 		ctx context.Context,
 		actor models.AccountActor,
 		placeID uuid.UUID,
 		params place.UpdateParams,
 	) (place models.Place, err error)
-	DeleteUpdateIconInSession(
-		ctx context.Context,
-		actor models.AccountActor,
-		placeID, uploadSessionID uuid.UUID,
-	) error
-	DeleteUpdateBannerInSession(
-		ctx context.Context,
-		actor models.AccountActor,
-		placeID, uploadSessionID uuid.UUID,
-	) error
-	CancelUpdate(
-		ctx context.Context,
-		actor models.AccountActor,
-		placeID, uploadSessionID uuid.UUID,
-	) error
 
 	UpdateStatus(
 		ctx context.Context,
@@ -59,50 +45,70 @@ type placeSvc interface {
 		placeID uuid.UUID,
 		status string,
 	) (place models.Place, err error)
+
 	UpdateVerified(
 		ctx context.Context,
 		placeID uuid.UUID,
 		verified bool,
 	) (place models.Place, err error)
 
-	Delete(
+	CreateUploadMediaLinks(
+		ctx context.Context,
+		placeID uuid.UUID,
+	) (models.Place, models.UploadPlaceMediaLinks, error)
+	DeleteUploadPlaceBanner(
 		ctx context.Context,
 		actor models.AccountActor,
-		placeID uuid.UUID) error
+		placeID uuid.UUID,
+		key string,
+	) error
+	DeleteUploadPlaceIcon(
+		ctx context.Context,
+		actor models.AccountActor,
+		placeID uuid.UUID,
+		key string,
+	) error
+}
+
+type organizationSvc interface {
+	Get(ctx context.Context, id uuid.UUID) (models.Organization, error)
 }
 
 type placeClassSvc interface {
-	Create(ctx context.Context, params pclass.CreateParams) (class models.PlaceClass, err error)
+	Create(
+		ctx context.Context,
+		params pclass.CreateParams,
+	) (class models.PlaceClass, err error)
+
+	Get(ctx context.Context, id uuid.UUID) (models.PlaceClass, error)
 
 	GetList(
 		ctx context.Context,
 		params pclass.FilterParams,
 		limit, offset uint,
-	) (classes pagi.Page[[]models.PlaceClass], err error)
-	Get(ctx context.Context, id uuid.UUID) (models.PlaceClass, error)
+	) (pagi.Page[[]models.PlaceClass], error)
 
-	OpenUpdateSession(
+	Deprecate(
 		ctx context.Context,
-		actor models.AccountActor,
-		placeClassID uuid.UUID,
-	) (models.PlaceClass, models.UpdatePlaceClassMedia, error)
-	ConfirmUpdateSession(
+		classID uuid.UUID,
+	) (models.PlaceClass, error)
+
+	Update(
 		ctx context.Context,
-		ID uuid.UUID,
+		classID uuid.UUID,
 		params pclass.UpdateParams,
 	) (class models.PlaceClass, err error)
-	DeleteUpdateIconInSession(
-		ctx context.Context,
-		placeID, uploadSessionID uuid.UUID,
-	) error
-	CancelUpdate(
-		ctx context.Context,
-		placeID, uploadSessionID uuid.UUID,
-	) error
 
-	Delete(ctx context.Context, classID uuid.UUID) error
+	CreateUploadMediaLinks(
+		ctx context.Context,
+		placeClassID uuid.UUID,
+	) (models.PlaceClass, models.UploadPlaceClassMediaLinks, error)
 
-	Replace(ctx context.Context, oldClassID, newClassID uuid.UUID) error
+	DeleteUploadPlaceClassIcon(
+		ctx context.Context,
+		classID uuid.UUID,
+		key string,
+	) error
 }
 
 type responser interface {
@@ -110,29 +116,20 @@ type responser interface {
 	RenderErr(w http.ResponseWriter, errs ...error)
 }
 
-type core struct {
-	place  placeSvc
-	pclass placeClassSvc
+type Modules struct {
+	place        placeSvc
+	pclass       placeClassSvc
+	organization organizationSvc
 }
 
 type Controller struct {
-	log       *logium.Logger
-	core      core
+	modules   *Modules
 	responser responser
 }
 
-func New(
-	log *logium.Logger,
-	responser responser,
-	placeSvc placeSvc,
-	placeClassSvc placeClassSvc,
-) *Controller {
+func New(modules *Modules, responser responser) *Controller {
 	return &Controller{
-		log: log,
-		core: core{
-			place:  placeSvc,
-			pclass: placeClassSvc,
-		},
+		modules:   modules,
 		responser: responser,
 	}
 }

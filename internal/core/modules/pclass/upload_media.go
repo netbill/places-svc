@@ -29,15 +29,15 @@ func (m *Module) CreateUploadMediaLinks(
 
 func (m *Module) DeleteUploadPlaceClassIcon(
 	ctx context.Context,
-	actor models.AccountActor,
+	classID uuid.UUID,
 	key string,
 ) error {
-	err := m.bucket.DeleteUploadPlaceClassIcon(ctx, actor, key)
+	_, err := m.repo.GetPlaceClass(ctx, classID)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return m.bucket.DeleteUploadPlaceClassIcon(ctx, classID, key)
 }
 
 func (m *Module) updatePlaceClassIcon(

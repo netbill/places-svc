@@ -10,10 +10,11 @@ Name | Type | Description | Notes
 **Address** | **string** | The physical address of the place | 
 **Name** | **string** | The name of the place | 
 **Description** | Pointer to **string** | A brief description of the place | [optional] 
-**Icon** | Pointer to **string** | A URL to an icon representing the place | [optional] 
-**Banner** | Pointer to **string** | A URL to a banner image for the place | [optional] 
+**IconKey** | Pointer to **string** | A URL to an icon representing the place | [optional] 
+**BannerKey** | Pointer to **string** | A URL to a banner image for the place | [optional] 
 **Website** | Pointer to **string** | The website URL of the place | [optional] 
 **Phone** | Pointer to **string** | The contact phone number of the place | [optional] 
+**Version** | **int32** | The version number of the place data, used for concurrency control | 
 **CreatedAt** | **time.Time** | The date and time when the place was created | 
 **UpdatedAt** | **time.Time** | The date and time when the place was last updated | 
 
@@ -21,7 +22,7 @@ Name | Type | Description | Notes
 
 ### NewPlaceDataAttributes
 
-`func NewPlaceDataAttributes(status string, verified bool, point Point, address string, name string, createdAt time.Time, updatedAt time.Time, ) *PlaceDataAttributes`
+`func NewPlaceDataAttributes(status string, verified bool, point Point, address string, name string, version int32, createdAt time.Time, updatedAt time.Time, ) *PlaceDataAttributes`
 
 NewPlaceDataAttributes instantiates a new PlaceDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -161,55 +162,55 @@ SetDescription sets Description field to given value.
 
 HasDescription returns a boolean if a field has been set.
 
-### GetIcon
+### GetIconKey
 
-`func (o *PlaceDataAttributes) GetIcon() string`
+`func (o *PlaceDataAttributes) GetIconKey() string`
 
-GetIcon returns the Icon field if non-nil, zero value otherwise.
+GetIconKey returns the IconKey field if non-nil, zero value otherwise.
 
-### GetIconOk
+### GetIconKeyOk
 
-`func (o *PlaceDataAttributes) GetIconOk() (*string, bool)`
+`func (o *PlaceDataAttributes) GetIconKeyOk() (*string, bool)`
 
-GetIconOk returns a tuple with the Icon field if it's non-nil, zero value otherwise
+GetIconKeyOk returns a tuple with the IconKey field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetIcon
+### SetIconKey
 
-`func (o *PlaceDataAttributes) SetIcon(v string)`
+`func (o *PlaceDataAttributes) SetIconKey(v string)`
 
-SetIcon sets Icon field to given value.
+SetIconKey sets IconKey field to given value.
 
-### HasIcon
+### HasIconKey
 
-`func (o *PlaceDataAttributes) HasIcon() bool`
+`func (o *PlaceDataAttributes) HasIconKey() bool`
 
-HasIcon returns a boolean if a field has been set.
+HasIconKey returns a boolean if a field has been set.
 
-### GetBanner
+### GetBannerKey
 
-`func (o *PlaceDataAttributes) GetBanner() string`
+`func (o *PlaceDataAttributes) GetBannerKey() string`
 
-GetBanner returns the Banner field if non-nil, zero value otherwise.
+GetBannerKey returns the BannerKey field if non-nil, zero value otherwise.
 
-### GetBannerOk
+### GetBannerKeyOk
 
-`func (o *PlaceDataAttributes) GetBannerOk() (*string, bool)`
+`func (o *PlaceDataAttributes) GetBannerKeyOk() (*string, bool)`
 
-GetBannerOk returns a tuple with the Banner field if it's non-nil, zero value otherwise
+GetBannerKeyOk returns a tuple with the BannerKey field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetBanner
+### SetBannerKey
 
-`func (o *PlaceDataAttributes) SetBanner(v string)`
+`func (o *PlaceDataAttributes) SetBannerKey(v string)`
 
-SetBanner sets Banner field to given value.
+SetBannerKey sets BannerKey field to given value.
 
-### HasBanner
+### HasBannerKey
 
-`func (o *PlaceDataAttributes) HasBanner() bool`
+`func (o *PlaceDataAttributes) HasBannerKey() bool`
 
-HasBanner returns a boolean if a field has been set.
+HasBannerKey returns a boolean if a field has been set.
 
 ### GetWebsite
 
@@ -260,6 +261,26 @@ SetPhone sets Phone field to given value.
 `func (o *PlaceDataAttributes) HasPhone() bool`
 
 HasPhone returns a boolean if a field has been set.
+
+### GetVersion
+
+`func (o *PlaceDataAttributes) GetVersion() int32`
+
+GetVersion returns the Version field if non-nil, zero value otherwise.
+
+### GetVersionOk
+
+`func (o *PlaceDataAttributes) GetVersionOk() (*int32, bool)`
+
+GetVersionOk returns a tuple with the Version field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetVersion
+
+`func (o *PlaceDataAttributes) SetVersion(v int32)`
+
+SetVersion sets Version field to given value.
+
 
 ### GetCreatedAt
 

@@ -23,7 +23,6 @@ func (m *Module) Delete(
 	if err != nil {
 		return err
 	}
-
 	if org.Status == models.OrganizationStatusSuspended {
 		return errx.ErrorOrganizationIsSuspended.Raise(
 			fmt.Errorf("organization %s is suspended", place.OrganizationID),

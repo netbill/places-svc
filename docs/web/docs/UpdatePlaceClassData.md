@@ -4,7 +4,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Id** | [**uuid.UUID**](uuid.UUID.md) | place ID | 
+**Id** | [**uuid.UUID**](uuid.UUID.md) | The unique identifier for the place class | 
 **Type** | **string** |  | 
 **Attributes** | [**UpdatePlaceClassDataAttributes**](UpdatePlaceClassDataAttributes.md) |  | 
 

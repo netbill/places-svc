@@ -4,18 +4,19 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Code** | **string** | The unique code of the class | 
 **Name** | **string** | The name of the class | 
 **Description** | **string** | A brief description of the class | 
-**Icon** | Pointer to **string** | A URL to an icon representing the class | [optional] 
-**UpdatedAt** | **time.Time** | The date and time when the class was last updated | 
+**IconKey** | Pointer to **string** | A URL to an icon representing the class | [optional] 
+**Version** | **int32** | The version number of the class data, used for concurrency control | 
 **CreatedAt** | **time.Time** | The date and time when the class was created | 
+**UpdatedAt** | **time.Time** | The date and time when the class was last updated | 
+**DeprecatedAt** | Pointer to **time.Time** | The date and time when the class was deprecated, if applicable | [optional] 
 
 ## Methods
 
 ### NewPlaceClassDataAttributes
 
-`func NewPlaceClassDataAttributes(code string, name string, description string, updatedAt time.Time, createdAt time.Time, ) *PlaceClassDataAttributes`
+`func NewPlaceClassDataAttributes(name string, description string, version int32, createdAt time.Time, updatedAt time.Time, ) *PlaceClassDataAttributes`
 
 NewPlaceClassDataAttributes instantiates a new PlaceClassDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -29,26 +30,6 @@ will change when the set of required properties is changed
 NewPlaceClassDataAttributesWithDefaults instantiates a new PlaceClassDataAttributes object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
-
-### GetCode
-
-`func (o *PlaceClassDataAttributes) GetCode() string`
-
-GetCode returns the Code field if non-nil, zero value otherwise.
-
-### GetCodeOk
-
-`func (o *PlaceClassDataAttributes) GetCodeOk() (*string, bool)`
-
-GetCodeOk returns a tuple with the Code field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetCode
-
-`func (o *PlaceClassDataAttributes) SetCode(v string)`
-
-SetCode sets Code field to given value.
-
 
 ### GetName
 
@@ -90,49 +71,49 @@ and a boolean to check if the value has been set.
 SetDescription sets Description field to given value.
 
 
-### GetIcon
+### GetIconKey
 
-`func (o *PlaceClassDataAttributes) GetIcon() string`
+`func (o *PlaceClassDataAttributes) GetIconKey() string`
 
-GetIcon returns the Icon field if non-nil, zero value otherwise.
+GetIconKey returns the IconKey field if non-nil, zero value otherwise.
 
-### GetIconOk
+### GetIconKeyOk
 
-`func (o *PlaceClassDataAttributes) GetIconOk() (*string, bool)`
+`func (o *PlaceClassDataAttributes) GetIconKeyOk() (*string, bool)`
 
-GetIconOk returns a tuple with the Icon field if it's non-nil, zero value otherwise
+GetIconKeyOk returns a tuple with the IconKey field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetIcon
+### SetIconKey
 
-`func (o *PlaceClassDataAttributes) SetIcon(v string)`
+`func (o *PlaceClassDataAttributes) SetIconKey(v string)`
 
-SetIcon sets Icon field to given value.
+SetIconKey sets IconKey field to given value.
 
-### HasIcon
+### HasIconKey
 
-`func (o *PlaceClassDataAttributes) HasIcon() bool`
+`func (o *PlaceClassDataAttributes) HasIconKey() bool`
 
-HasIcon returns a boolean if a field has been set.
+HasIconKey returns a boolean if a field has been set.
 
-### GetUpdatedAt
+### GetVersion
 
-`func (o *PlaceClassDataAttributes) GetUpdatedAt() time.Time`
+`func (o *PlaceClassDataAttributes) GetVersion() int32`
 
-GetUpdatedAt returns the UpdatedAt field if non-nil, zero value otherwise.
+GetVersion returns the Version field if non-nil, zero value otherwise.
 
-### GetUpdatedAtOk
+### GetVersionOk
 
-`func (o *PlaceClassDataAttributes) GetUpdatedAtOk() (*time.Time, bool)`
+`func (o *PlaceClassDataAttributes) GetVersionOk() (*int32, bool)`
 
-GetUpdatedAtOk returns a tuple with the UpdatedAt field if it's non-nil, zero value otherwise
+GetVersionOk returns a tuple with the Version field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetUpdatedAt
+### SetVersion
 
-`func (o *PlaceClassDataAttributes) SetUpdatedAt(v time.Time)`
+`func (o *PlaceClassDataAttributes) SetVersion(v int32)`
 
-SetUpdatedAt sets UpdatedAt field to given value.
+SetVersion sets Version field to given value.
 
 
 ### GetCreatedAt
@@ -154,6 +135,51 @@ and a boolean to check if the value has been set.
 
 SetCreatedAt sets CreatedAt field to given value.
 
+
+### GetUpdatedAt
+
+`func (o *PlaceClassDataAttributes) GetUpdatedAt() time.Time`
+
+GetUpdatedAt returns the UpdatedAt field if non-nil, zero value otherwise.
+
+### GetUpdatedAtOk
+
+`func (o *PlaceClassDataAttributes) GetUpdatedAtOk() (*time.Time, bool)`
+
+GetUpdatedAtOk returns a tuple with the UpdatedAt field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetUpdatedAt
+
+`func (o *PlaceClassDataAttributes) SetUpdatedAt(v time.Time)`
+
+SetUpdatedAt sets UpdatedAt field to given value.
+
+
+### GetDeprecatedAt
+
+`func (o *PlaceClassDataAttributes) GetDeprecatedAt() time.Time`
+
+GetDeprecatedAt returns the DeprecatedAt field if non-nil, zero value otherwise.
+
+### GetDeprecatedAtOk
+
+`func (o *PlaceClassDataAttributes) GetDeprecatedAtOk() (*time.Time, bool)`
+
+GetDeprecatedAtOk returns a tuple with the DeprecatedAt field if it's non-nil, zero value otherwise
+and a boolean to check if the value has been set.
+
+### SetDeprecatedAt
+
+`func (o *PlaceClassDataAttributes) SetDeprecatedAt(v time.Time)`
+
+SetDeprecatedAt sets DeprecatedAt field to given value.
+
+### HasDeprecatedAt
+
+`func (o *PlaceClassDataAttributes) HasDeprecatedAt() bool`
+
+HasDeprecatedAt returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

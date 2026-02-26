@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
@@ -30,9 +31,30 @@ func (m *Module) CreateUploadMediaLinks(
 func (m *Module) DeleteUploadPlaceIcon(
 	ctx context.Context,
 	actor models.AccountActor,
+	placeID uuid.UUID,
 	key string,
 ) error {
-	err := m.bucket.DeleteUploadPlaceIcon(ctx, actor, key)
+	place, err := m.repo.GetPlaceByID(ctx, placeID)
+	if err != nil {
+		return err
+	}
+
+	org, err := m.repo.GetOrganization(ctx, place.OrganizationID)
+	if err != nil {
+		return err
+	}
+	if org.Status == models.OrganizationStatusSuspended {
+		return errx.ErrorOrganizationIsSuspended.Raise(
+			fmt.Errorf("organization %s is suspended", place.OrganizationID),
+		)
+	}
+
+	_, err = m.repo.GetOrgMemberByAccountID(ctx, actor, place.OrganizationID)
+	if err != nil {
+		return err
+	}
+
+	err = m.bucket.DeleteUploadPlaceIcon(ctx, actor, key)
 	if err != nil {
 		return err
 	}
@@ -72,9 +94,30 @@ func (m *Module) updatePlaceIcon(
 func (m *Module) DeleteUploadPlaceBanner(
 	ctx context.Context,
 	actor models.AccountActor,
+	placeID uuid.UUID,
 	key string,
 ) error {
-	err := m.bucket.DeleteUploadPlaceBanner(ctx, actor, key)
+	place, err := m.repo.GetPlaceByID(ctx, placeID)
+	if err != nil {
+		return err
+	}
+
+	org, err := m.repo.GetOrganization(ctx, place.OrganizationID)
+	if err != nil {
+		return err
+	}
+	if org.Status == models.OrganizationStatusSuspended {
+		return errx.ErrorOrganizationIsSuspended.Raise(
+			fmt.Errorf("organization %s is suspended", place.OrganizationID),
+		)
+	}
+
+	_, err = m.repo.GetOrgMemberByAccountID(ctx, actor, place.OrganizationID)
+	if err != nil {
+		return err
+	}
+
+	err = m.bucket.DeleteUploadPlaceBanner(ctx, actor, key)
 	if err != nil {
 		return err
 	}

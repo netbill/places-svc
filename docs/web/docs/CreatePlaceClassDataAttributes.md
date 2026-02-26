@@ -5,16 +5,14 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **ParentId** | Pointer to [**uuid.UUID**](uuid.UUID.md) | The ID of the parent class, if any | [optional] 
-**Code** | **string** | The unique code of the class | 
 **Name** | **string** | The name of the class | 
 **Description** | **string** | A brief description of the class | 
-**Icon** | Pointer to **string** | A URL to an icon representing the class | [optional] 
 
 ## Methods
 
 ### NewCreatePlaceClassDataAttributes
 
-`func NewCreatePlaceClassDataAttributes(code string, name string, description string, ) *CreatePlaceClassDataAttributes`
+`func NewCreatePlaceClassDataAttributes(name string, description string, ) *CreatePlaceClassDataAttributes`
 
 NewCreatePlaceClassDataAttributes instantiates a new CreatePlaceClassDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -53,26 +51,6 @@ SetParentId sets ParentId field to given value.
 `func (o *CreatePlaceClassDataAttributes) HasParentId() bool`
 
 HasParentId returns a boolean if a field has been set.
-
-### GetCode
-
-`func (o *CreatePlaceClassDataAttributes) GetCode() string`
-
-GetCode returns the Code field if non-nil, zero value otherwise.
-
-### GetCodeOk
-
-`func (o *CreatePlaceClassDataAttributes) GetCodeOk() (*string, bool)`
-
-GetCodeOk returns a tuple with the Code field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetCode
-
-`func (o *CreatePlaceClassDataAttributes) SetCode(v string)`
-
-SetCode sets Code field to given value.
-
 
 ### GetName
 
@@ -113,31 +91,6 @@ and a boolean to check if the value has been set.
 
 SetDescription sets Description field to given value.
 
-
-### GetIcon
-
-`func (o *CreatePlaceClassDataAttributes) GetIcon() string`
-
-GetIcon returns the Icon field if non-nil, zero value otherwise.
-
-### GetIconOk
-
-`func (o *CreatePlaceClassDataAttributes) GetIconOk() (*string, bool)`
-
-GetIconOk returns a tuple with the Icon field if it's non-nil, zero value otherwise
-and a boolean to check if the value has been set.
-
-### SetIcon
-
-`func (o *CreatePlaceClassDataAttributes) SetIcon(v string)`
-
-SetIcon sets Icon field to given value.
-
-### HasIcon
-
-`func (o *CreatePlaceClassDataAttributes) HasIcon() bool`
-
-HasIcon returns a boolean if a field has been set.
 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)

@@ -2,8 +2,10 @@ package pclass
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
@@ -14,10 +16,20 @@ type CreateParams struct {
 	Icon        *string    `json:"icon,omitempty"`
 }
 
-func (m *Module) Create(ctx context.Context, params CreateParams) (class models.PlaceClass, err error) {
+func (m *Module) Create(
+	ctx context.Context,
+	params CreateParams,
+) (class models.PlaceClass, err error) {
 	if params.ParentID != nil {
-		if _, err = m.repo.GetPlaceClass(ctx, *params.ParentID); err != nil {
+		class, err = m.repo.GetPlaceClass(ctx, *params.ParentID)
+		if err != nil {
 			return models.PlaceClass{}, err
+		}
+
+		if class.DeprecatedAt != nil {
+			return models.PlaceClass{}, errx.ErrorPlaceClassIsDeprecated.Raise(
+				fmt.Errorf("parent place class %s is deprecated", *params.ParentID),
+			)
 		}
 	}
 

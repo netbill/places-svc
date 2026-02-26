@@ -60,7 +60,7 @@ func (m *Module) UpdateStatus(
 			return err
 		}
 
-		if err = m.messenger.PublishUpdatePlaceStatus(txCtx, place); err != nil {
+		if err = m.messenger.PublishUpdatePlace(txCtx, place); err != nil {
 			return err
 		}
 

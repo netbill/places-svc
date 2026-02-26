@@ -1,0 +1,26 @@
+type: object
+required:
+  - data
+properties:
+  data:
+    type: object
+    required:
+      - id
+      - type
+      - attributes
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: "The unique identifier for the place class"
+      type:
+        type: string
+        enum: [ place_class ]
+      attributes:
+        type: object
+        required:
+          - deprecated
+        properties:
+          deprecated:
+            type: boolean
+            description: "place class is deprecated?"

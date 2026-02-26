@@ -4,13 +4,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**ClassReplaceId** | [**uuid.UUID**](uuid.UUID.md) | The ID of the class to replace with | 
+**Deprecated** | **bool** | Whether the place class is deprecated or not | 
 
 ## Methods
 
 ### NewReplacePlaceClassDataAttributes
 
-`func NewReplacePlaceClassDataAttributes(classReplaceId uuid.UUID, ) *ReplacePlaceClassDataAttributes`
+`func NewReplacePlaceClassDataAttributes(deprecated bool, ) *ReplacePlaceClassDataAttributes`
 
 NewReplacePlaceClassDataAttributes instantiates a new ReplacePlaceClassDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -25,24 +25,24 @@ NewReplacePlaceClassDataAttributesWithDefaults instantiates a new ReplacePlaceCl
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
-### GetClassReplaceId
+### GetDeprecated
 
-`func (o *ReplacePlaceClassDataAttributes) GetClassReplaceId() uuid.UUID`
+`func (o *ReplacePlaceClassDataAttributes) GetDeprecated() bool`
 
-GetClassReplaceId returns the ClassReplaceId field if non-nil, zero value otherwise.
+GetDeprecated returns the Deprecated field if non-nil, zero value otherwise.
 
-### GetClassReplaceIdOk
+### GetDeprecatedOk
 
-`func (o *ReplacePlaceClassDataAttributes) GetClassReplaceIdOk() (*uuid.UUID, bool)`
+`func (o *ReplacePlaceClassDataAttributes) GetDeprecatedOk() (*bool, bool)`
 
-GetClassReplaceIdOk returns a tuple with the ClassReplaceId field if it's non-nil, zero value otherwise
+GetDeprecatedOk returns a tuple with the Deprecated field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetClassReplaceId
+### SetDeprecated
 
-`func (o *ReplacePlaceClassDataAttributes) SetClassReplaceId(v uuid.UUID)`
+`func (o *ReplacePlaceClassDataAttributes) SetDeprecated(v bool)`
 
-SetClassReplaceId sets ClassReplaceId field to given value.
+SetDeprecated sets Deprecated field to given value.
 
 
 

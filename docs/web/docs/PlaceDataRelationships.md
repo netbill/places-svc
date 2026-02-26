@@ -4,14 +4,14 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Organization** | Pointer to [**PlaceDataRelationshipsOrganization**](PlaceDataRelationshipsOrganization.md) |  | [optional] 
-**Class** | [**PlaceDataRelationshipsClass**](PlaceDataRelationshipsClass.md) |  | 
+**Organization** | [**PlaceDataRelationshipsOrganization**](PlaceDataRelationshipsOrganization.md) |  | 
+**PlaceClass** | [**PlaceDataRelationshipsPlaceClass**](PlaceDataRelationshipsPlaceClass.md) |  | 
 
 ## Methods
 
 ### NewPlaceDataRelationships
 
-`func NewPlaceDataRelationships(class PlaceDataRelationshipsClass, ) *PlaceDataRelationships`
+`func NewPlaceDataRelationships(organization PlaceDataRelationshipsOrganization, placeClass PlaceDataRelationshipsPlaceClass, ) *PlaceDataRelationships`
 
 NewPlaceDataRelationships instantiates a new PlaceDataRelationships object
 This constructor will assign default values to properties that have it defined,
@@ -45,30 +45,25 @@ and a boolean to check if the value has been set.
 
 SetOrganization sets Organization field to given value.
 
-### HasOrganization
 
-`func (o *PlaceDataRelationships) HasOrganization() bool`
+### GetPlaceClass
 
-HasOrganization returns a boolean if a field has been set.
+`func (o *PlaceDataRelationships) GetPlaceClass() PlaceDataRelationshipsPlaceClass`
 
-### GetClass
+GetPlaceClass returns the PlaceClass field if non-nil, zero value otherwise.
 
-`func (o *PlaceDataRelationships) GetClass() PlaceDataRelationshipsClass`
+### GetPlaceClassOk
 
-GetClass returns the Class field if non-nil, zero value otherwise.
+`func (o *PlaceDataRelationships) GetPlaceClassOk() (*PlaceDataRelationshipsPlaceClass, bool)`
 
-### GetClassOk
-
-`func (o *PlaceDataRelationships) GetClassOk() (*PlaceDataRelationshipsClass, bool)`
-
-GetClassOk returns a tuple with the Class field if it's non-nil, zero value otherwise
+GetPlaceClassOk returns a tuple with the PlaceClass field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetClass
+### SetPlaceClass
 
-`func (o *PlaceDataRelationships) SetClass(v PlaceDataRelationshipsClass)`
+`func (o *PlaceDataRelationships) SetPlaceClass(v PlaceDataRelationshipsPlaceClass)`
 
-SetClass sets Class field to given value.
+SetPlaceClass sets PlaceClass field to given value.
 
 
 

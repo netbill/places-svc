@@ -93,8 +93,8 @@ func (r *Repository) UpdateOrganization(
 	res, err := r.OrganizationsQ.New().
 		FilterByID(orgID).
 		UpdateName(params.Name).
-		UpdateIcon(params.Icon).
-		UpdateBanner(params.Banner).
+		UpdateIcon(params.IconKey).
+		UpdateBanner(params.BannerKey).
 		UpdateSourceUpdatedAt(params.UpdatedAt).
 		UpdateOne(ctx)
 	if err != nil {

@@ -3,15 +3,17 @@ package errx
 import "github.com/netbill/ape"
 
 var (
-	ErrorPlaceClassNotExists = ape.DeclareError("CLASS_NOT_FOUND")
-
-	ErrorPlaceClassParentCycle = ape.DeclareError("CLASS_PARENT_CYCLE")
+	ErrorPlaceClassNotExists    = ape.DeclareError("CLASS_NOT_FOUND")
+	ErrorPlaceClassIsDeprecated = ape.DeclareError("CLASS_IS_DEPRECATED")
+	ErrorPlaceClassParentCycle  = ape.DeclareError("CLASS_PARENT_CYCLE")
 
 	ErrorPlaceClassHaveChildren   = ape.DeclareError("CLASS_HAVE_CHILDREN")
 	ErrorPlacesExitsWithThisClass = ape.DeclareError("CLASS_EXIT_WITH_THIS_CLASS")
 
-	ErrorPlaceClassIconTooLarge                = ape.DeclareError("CLASS_ICON_TOO_LARGE")
-	ErrorPlaceClassIconContentTypeNotAllowed   = ape.DeclareError("CLASS_ICON_CONTENT_TYPE_NOT_ALLOWED")
-	ErrorPlaceClassIconContentFormatNotAllowed = ape.DeclareError("CLASS_ICON_CONTENT_FORMAT_NOT_ALLOWED")
-	ErrorPlaceClassIconResolutionNotAllowed    = ape.DeclareError("CLASS_ICON_RESOLUTION_NOT_ALLOWED")
+	ErrorNoContentUploaded = ape.DeclareError("NO_CONTENT_UPLOADED")
+
+	ErrorPlaceClassIconKeyIsInvalid        = ape.DeclareError("PLACE_CLASS_AVATAR_KEY_IS_INVALID")
+	ErrorPlaceClassIconContentIsExceedsMax = ape.DeclareError("PLACE_CLASS_AVATAR_CONTENT_EXCEEDS_MAX")
+	ErrorPlaceClassIconResolutionIsInvalid = ape.DeclareError("PLACE_CLASS_AVATAR_RESOLUTION_IS_INVALID")
+	ErrorPlaceClassIconFormatIsNotAllowed  = ape.DeclareError("PLACE_CLASS_AVATAR_FORMAT_IS_NOT_ALLOWED")
 )

@@ -4,44 +4,43 @@ import (
 	"net/http"
 
 	"github.com/netbill/places-svc/internal/core/models"
-	"github.com/netbill/places-svc/resources"
+	"github.com/netbill/places-svc/pkg/resources"
 	"github.com/netbill/restkit/pagi"
 )
 
-func PlaceClass(model models.PlaceClass) resources.PlaceClass {
-	res := resources.PlaceClass{
-		Data: resources.PlaceClassData{
-			Id:   model.ID,
-			Type: "class",
-			Attributes: resources.PlaceClassDataAttributes{
-				Code:        model.Code,
-				Name:        model.Name,
-				Description: model.Description,
-				Icon:        model.Icon,
-				CreatedAt:   model.CreatedAt,
-				UpdatedAt:   model.UpdatedAt,
-			},
-		},
-	}
-	if model.ParentID != nil {
-		res.Data.Relationships = &resources.PlaceClassDataRelationships{
-			Parent: &resources.PlaceClassDataRelationshipsParent{
-				Id:   *model.ParentID,
-				Type: "class",
-			},
-		}
-	}
-
-	return res
+type placeClassResponse struct {
+	class    resources.PlaceClassData
+	included []resources.PlaceClassData
 }
 
-func PlaceClasses(r *http.Request, page pagi.Page[[]models.PlaceClass]) resources.PlaceClassesCollection {
+type PlaceClassOption func(*placeClassResponse)
+
+func WithParentClass(model models.PlaceClass) PlaceClassOption {
+	return func(r *placeClassResponse) {
+		r.included = append(r.included, placeClassData(model))
+	}
+}
+
+func PlaceClass(model models.PlaceClass, opts ...PlaceClassOption) resources.PlaceClass {
+	r := &placeClassResponse{
+		class: placeClassData(model),
+	}
+	for _, opt := range opts {
+		opt(r)
+	}
+	return resources.PlaceClass{
+		Data:     r.class,
+		Included: r.included,
+	}
+}
+
+func PlaceClasses(req *http.Request, page pagi.Page[[]models.PlaceClass]) resources.PlaceClassesCollection {
 	data := make([]resources.PlaceClassData, len(page.Data))
 	for i, mod := range page.Data {
 		data[i] = PlaceClass(mod).Data
 	}
 
-	links := pagi.BuildPageLinks(r, page.Page, page.Size, page.Total)
+	links := pagi.BuildPageLinks(req, page.Page, page.Size, page.Total)
 
 	return resources.PlaceClassesCollection{
 		Data: data,
@@ -54,30 +53,29 @@ func PlaceClasses(r *http.Request, page pagi.Page[[]models.PlaceClass]) resource
 	}
 }
 
-func OpenUpdatePlaceClassSession(
-	class models.PlaceClass,
-	uploadLinks models.UpdatePlaceClassMedia,
-) resources.OpenUpdatePlaceClassMediaLinks {
-	return resources.OpenUpdatePlaceClassMediaLinks{
-		Data: resources.OpenUpdatePlaceClassMediaLinksData{
-			Id:   uploadLinks.UploadSessionID,
-			Type: "update_placeClass_session",
-			Attributes: resources.OpenUpdatePlaceClassMediaLinksDataAttributes{
-				UploadToken:   uploadLinks.UploadToken,
-				IconGetUrl:    uploadLinks.Links.IconGetURL,
-				IconUploadUrl: uploadLinks.Links.IconUploadURL,
-			},
-			Relationships: resources.OpenUpdatePlaceClassMediaLinksDataRelationships{
-				PlaceClass: &resources.OpenUpdatePlaceClassMediaLinksDataRelationshipsPlaceClass{
-					Data: resources.OpenUpdatePlaceClassMediaLinksDataRelationshipsPlaceClassData{
-						Id:   class.ID,
-						Type: "placeClass",
-					},
-				},
-			},
-		},
-		Included: []resources.PlaceClassData{
-			PlaceClass(class).Data,
+func placeClassData(model models.PlaceClass) resources.PlaceClassData {
+	res := resources.PlaceClassData{
+		Id:   model.ID,
+		Type: "place_class",
+		Attributes: resources.PlaceClassDataAttributes{
+			Name:         model.Name,
+			Description:  model.Description,
+			IconKey:      model.IconKey,
+			Version:      model.Version,
+			CreatedAt:    model.CreatedAt,
+			UpdatedAt:    model.UpdatedAt,
+			DeprecatedAt: model.DeprecatedAt,
 		},
 	}
+
+	if model.ParentID != nil {
+		res.Relationships = &resources.PlaceClassDataRelationships{
+			Parent: &resources.PlaceClassDataRelationshipsParent{
+				Id:   *model.ParentID,
+				Type: "place_class",
+			},
+		}
+	}
+
+	return res
 }

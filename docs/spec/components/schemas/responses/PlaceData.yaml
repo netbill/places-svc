@@ -20,6 +20,7 @@ properties:
       - point
       - address
       - name
+      - version
       - created_at
       - updated_at
     properties:
@@ -40,11 +41,11 @@ properties:
       description:
         type: string
         description: "A brief description of the place"
-      icon:
+      icon_key:
         type: string
         format: uri
         description: "A URL to an icon representing the place"
-      banner:
+      banner_key:
         type: string
         format: uri
         description: "A URL to a banner image for the place"
@@ -55,6 +56,9 @@ properties:
       phone:
         type: string
         description: "The contact phone number of the place"
+      version:
+        type: integer
+        description: "The version number of the place data, used for concurrency control"
       created_at:
         type: string
         format: date-time
@@ -66,7 +70,8 @@ properties:
   relationships:
     type: object
     required:
-      - class
+      - organization
+      - place_class
     properties:
       organization:
         type: object
@@ -81,7 +86,7 @@ properties:
           type:
             type: string
             enum: [ organization ]
-      class:
+      place_class:
         type: object
         required:
           - id

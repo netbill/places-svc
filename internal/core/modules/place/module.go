@@ -42,7 +42,7 @@ type repo interface {
 
 	DeletePlaceByID(ctx context.Context, id uuid.UUID) error
 
-	CheckPlaceClassExists(ctx context.Context, classID uuid.UUID) (bool, error)
+	GetPlaceClass(ctx context.Context, classID uuid.UUID) (models.PlaceClass, error)
 
 	GetOrganization(ctx context.Context, id uuid.UUID) (models.Organization, error)
 	GetOrgMemberByAccountID(ctx context.Context, organizationID, accountID uuid.UUID) (models.OrgMember, error)
@@ -52,12 +52,7 @@ type repo interface {
 
 type messenger interface {
 	PublishCreatePlace(ctx context.Context, place models.Place) error
-
 	PublishUpdatePlace(ctx context.Context, place models.Place) error
-	PublishUpdatePlaceStatus(ctx context.Context, place models.Place) error
-	PublishUpdatePlaceVerified(ctx context.Context, place models.Place) error
-	PublishUpdatePlaceClassID(ctx context.Context, place models.Place) error
-
 	PublishDeletePlace(ctx context.Context, placeID uuid.UUID) error
 }
 

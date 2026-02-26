@@ -4,3 +4,11 @@ required:
 properties:
   data:
     $ref: './PlaceData.yaml'
+
+  included:
+    type: array
+    description: "Included related resources (e.g., organization)"
+    items:
+      oneOf:
+        - $ref: './OrganizationData.yaml'
+        - $ref: './PlaceClassData.yaml'

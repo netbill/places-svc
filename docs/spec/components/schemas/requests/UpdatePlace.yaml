@@ -1,0 +1,50 @@
+type: object
+required:
+  - data
+properties:
+  data:
+    type: object
+    required:
+      - id
+      - type
+      - attributes
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: "The unique identifier of the place"
+      type:
+        type: string
+        enum: [ place]
+      attributes:
+        type: object
+        required:
+          - class_id
+          - name
+          - address
+        properties:
+          class_id:
+            type: string
+            format: uuid
+            description: "The class ID of the place (e.g., restaurant, park)"
+          name:
+            type: string
+            description: "The name of the place"
+          address:
+            type: string
+            description: "The address of the place"
+          description:
+            type: string
+            description: "A brief description of the place"
+          icon_key:
+            type: string
+            description: "The S3 key for the place's icon image"
+          banner_key:
+            type: string
+            description: "The S3 key for the place's banner image"
+          website:
+            type: string
+            description: "The website URL of the place"
+          phone:
+            type: string
+            description: "The contact phone number of the place"

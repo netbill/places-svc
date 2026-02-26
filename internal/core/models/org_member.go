@@ -14,7 +14,7 @@ type OrgMember struct {
 	Label          *string   `json:"label,omitempty"`
 	Position       *string   `json:"position,omitempty"`
 
-	Version   *string   `json:"version,omitempty"`
+	Version   int32     `json:"version"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
