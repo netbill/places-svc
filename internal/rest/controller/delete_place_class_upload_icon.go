@@ -18,7 +18,7 @@ func (c *Controller) DeletePlaceClassUploadIcon(w http.ResponseWriter, r *http.R
 
 	req, err := requests.DeleteUploadPlaceClassIcon(r)
 	if err != nil {
-		log.WithError(err).Info("invalid delete upload place class icon requests")
+		log.WithError(err).Info("invalid delete upload Place class icon requests")
 		c.responser.RenderErr(w, problems.BadRequest(err)...)
 
 		return
@@ -26,22 +26,22 @@ func (c *Controller) DeletePlaceClassUploadIcon(w http.ResponseWriter, r *http.R
 
 	log = log.WithField("place_class_id", req.Data.Id)
 
-	err = c.modules.pclass.DeleteUploadPlaceClassIcon(
+	err = c.modules.Class.DeleteUploadPlaceClassIcon(
 		r.Context(),
 		req.Data.Id,
 		req.Data.Attributes.IconKey,
 	)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
-		log.Info("place class does not exist")
-		c.responser.RenderErr(w, problems.NotFound("place class does not exist"))
+		log.Info("Place class does not exist")
+		c.responser.RenderErr(w, problems.NotFound("Place class does not exist"))
 	case errors.Is(err, errx.ErrorPlaceClassIconKeyIsInvalid):
-		log.WithError(err).Info("place class icon key is invalid")
+		log.WithError(err).Info("Place class icon key is invalid")
 		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case err != nil:
-		log.WithError(err).Error("failed to delete place class icon in upload session")
+		log.WithError(err).Error("failed to delete Place class icon in upload session")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
 		w.WriteHeader(http.StatusNoContent)

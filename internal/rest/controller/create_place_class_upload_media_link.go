@@ -20,7 +20,7 @@ func (c *Controller) CreatePlaceClassUploadMediaLink(w http.ResponseWriter, r *h
 
 	classID, err := uuid.Parse(chi.URLParam(r, "place_class_id"))
 	if err != nil {
-		log.WithError(err).Info("invalid place class id")
+		log.WithError(err).Info("invalid Place class id")
 		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
 			"place_class_id": err,
 		})...)
@@ -28,13 +28,13 @@ func (c *Controller) CreatePlaceClassUploadMediaLink(w http.ResponseWriter, r *h
 		return
 	}
 
-	class, media, err := c.modules.pclass.CreateUploadMediaLinks(r.Context(), classID)
+	class, media, err := c.modules.Class.CreateUploadMediaLinks(r.Context(), classID)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
-		log.Info("place class does not exist")
-		c.responser.RenderErr(w, problems.NotFound("place class does not exist"))
+		log.Info("Place class does not exist")
+		c.responser.RenderErr(w, problems.NotFound("Place class does not exist"))
 	case err != nil:
-		log.WithError(err).Error("failed to create place class upload media link")
+		log.WithError(err).Error("failed to create Place class upload media link")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
 		c.responser.Render(w, http.StatusOK, responses.UploadPlaceClassMediaLink(class, media))

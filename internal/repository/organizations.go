@@ -12,12 +12,13 @@ import (
 )
 
 type OrganizationRow struct {
-	ID     uuid.UUID `db:"id"`
-	Status string    `db:"status"`
-	Name   string    `db:"name"`
-	Icon   *string   `db:"icon"`
-	Banner *string   `db:"banner,omitempty"`
+	ID        uuid.UUID `db:"id"`
+	Status    string    `db:"status"`
+	Name      string    `db:"name"`
+	IconKey   *string   `db:"icon_key,omitempty"`
+	BannerKey *string   `db:"banner_key,omitempty"`
 
+	Version          int32     `db:"version"`
 	SourceCreatedAt  time.Time `db:"source_created_at"`
 	SourceUpdatedAt  time.Time `db:"source_updated_at"`
 	ReplicaCreatedAt time.Time `db:"replica_created_at"`
@@ -33,8 +34,9 @@ func (r OrganizationRow) ToModel() models.Organization {
 		ID:        r.ID,
 		Status:    r.Status,
 		Name:      r.Name,
-		Icon:      r.Icon,
-		Banner:    r.Banner,
+		IconKey:   r.IconKey,
+		BannerKey: r.BannerKey,
+		Version:   r.Version,
 		CreatedAt: r.SourceCreatedAt,
 		UpdatedAt: r.SourceUpdatedAt,
 	}
@@ -42,13 +44,12 @@ func (r OrganizationRow) ToModel() models.Organization {
 
 type OrganizationsQ interface {
 	New() OrganizationsQ
-	Insert(ctx context.Context, input OrganizationRow) (OrganizationRow, error)
+	Insert(ctx context.Context, input OrganizationRow) error
 
 	Get(ctx context.Context) (OrganizationRow, error)
 	Select(ctx context.Context) ([]OrganizationRow, error)
 
-	UpdateMany(ctx context.Context) (int64, error)
-	UpdateOne(ctx context.Context) (OrganizationRow, error)
+	UpdateOne(ctx context.Context) error
 
 	UpdateStatus(status string) OrganizationsQ
 	UpdateName(name string) OrganizationsQ
@@ -65,75 +66,47 @@ type OrganizationsQ interface {
 
 func (r *Repository) CreateOrganization(
 	ctx context.Context,
-	input models.Organization,
-) (models.Organization, error) {
-	res, err := r.OrganizationsQ.New().Insert(ctx, OrganizationRow{
+	input organization.CreateParams,
+) error {
+	return r.OrganizationsQ.New().Insert(ctx, OrganizationRow{
 		ID:              input.ID,
 		Status:          input.Status,
 		Name:            input.Name,
-		Icon:            input.Icon,
-		Banner:          input.Banner,
+		IconKey:         input.IconKey,
+		BannerKey:       input.BannerKey,
 		SourceCreatedAt: input.CreatedAt,
-		SourceUpdatedAt: input.UpdatedAt,
 	})
+}
+
+func (r *Repository) GetOrganization(
+	ctx context.Context,
+	orgID uuid.UUID,
+) (models.Organization, error) {
+	row, err := r.OrganizationsQ.New().FilterByID(orgID).Get(ctx)
 	if err != nil {
-		return models.Organization{}, fmt.Errorf(
-			"failed to creating organization, cause: %w", err,
+		return models.Organization{}, nil
+	}
+	if row.IsNil() {
+		return models.Organization{}, errx.ErrorOrganizationNotExists.Raise(
+			fmt.Errorf("organization with id %s does not exist", orgID),
 		)
 	}
 
-	return res.ToModel(), err
+	return row.ToModel(), nil
 }
 
 func (r *Repository) UpdateOrganization(
 	ctx context.Context,
 	orgID uuid.UUID,
 	params organization.UpdateParams,
-) (models.Organization, error) {
-	res, err := r.OrganizationsQ.New().
+) error {
+	return r.OrganizationsQ.New().
 		FilterByID(orgID).
 		UpdateName(params.Name).
 		UpdateIcon(params.IconKey).
 		UpdateBanner(params.BannerKey).
 		UpdateSourceUpdatedAt(params.UpdatedAt).
 		UpdateOne(ctx)
-	if err != nil {
-		return models.Organization{}, fmt.Errorf(
-			"failed to update organization, cause: %s", err,
-		)
-	}
-
-	if res.IsNil() {
-		return models.Organization{}, errx.ErrorOrganizationNotExists.Raise(
-			fmt.Errorf("organization with ID %s not found", orgID),
-		)
-	}
-
-	return res.ToModel(), err
-}
-
-func (r *Repository) UpdateOrgStatus(
-	ctx context.Context,
-	orgID uuid.UUID,
-	status string,
-	updatedAt time.Time,
-) (models.Organization, error) {
-	res, err := r.OrganizationsQ.New().
-		FilterByID(orgID).
-		UpdateStatus(status).
-		UpdateSourceUpdatedAt(updatedAt).
-		UpdateOne(ctx)
-	if err != nil {
-		return models.Organization{}, err
-	}
-
-	if res.IsNil() {
-		return models.Organization{}, errx.ErrorOrganizationNotExists.Raise(
-			fmt.Errorf("organization with ID %s not found", orgID),
-		)
-	}
-
-	return res.ToModel(), err
 }
 
 func (r *Repository) DeleteOrganization(ctx context.Context, ID uuid.UUID) error {

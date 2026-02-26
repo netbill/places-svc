@@ -13,7 +13,7 @@ type CreateParams struct {
 	ParentID    *uuid.UUID `json:"parent_id,omitempty"`
 	Name        string     `json:"name"`
 	Description string     `json:"description"`
-	Icon        *string    `json:"icon,omitempty"`
+	IconKey     *string    `json:"icon_key,omitempty"`
 }
 
 func (m *Module) Create(

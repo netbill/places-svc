@@ -14,7 +14,7 @@ type Module struct {
 	messenger messenger
 }
 
-func New(repo repo, messenger messenger, bucket bucket) *Module {
+func New(repo repo, bucket bucket, messenger messenger) *Module {
 	return &Module{
 		repo:      repo,
 		bucket:    bucket,
@@ -27,7 +27,7 @@ type repo interface {
 	GetPlaceClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error)
 	GetPlaceClasses(ctx context.Context, params FilterParams, limit, offset uint) (pagi.Page[[]models.PlaceClass], error)
 	UpdatePlaceClass(ctx context.Context, classID uuid.UUID, params UpdateParams) (models.PlaceClass, error)
-	DeprecatedPlaceClass(ctx context.Context, classID uuid.UUID) (models.PlaceClass, error)
+	DeprecatedPlaceClass(ctx context.Context, classID uuid.UUID, value bool) (models.PlaceClass, error)
 
 	PlaceClassExists(ctx context.Context, classID uuid.UUID) (bool, error)
 

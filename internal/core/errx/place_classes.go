@@ -7,9 +7,6 @@ var (
 	ErrorPlaceClassIsDeprecated = ape.DeclareError("CLASS_IS_DEPRECATED")
 	ErrorPlaceClassParentCycle  = ape.DeclareError("CLASS_PARENT_CYCLE")
 
-	ErrorPlaceClassHaveChildren   = ape.DeclareError("CLASS_HAVE_CHILDREN")
-	ErrorPlacesExitsWithThisClass = ape.DeclareError("CLASS_EXIT_WITH_THIS_CLASS")
-
 	ErrorNoContentUploaded = ape.DeclareError("NO_CONTENT_UPLOADED")
 
 	ErrorPlaceClassIconKeyIsInvalid        = ape.DeclareError("PLACE_CLASS_AVATAR_KEY_IS_INVALID")

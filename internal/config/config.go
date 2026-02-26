@@ -60,7 +60,7 @@ type S3Config struct {
 		} `mapstructure:"link"`
 
 		Resources struct {
-			Organization struct {
+			Place struct {
 				Icon struct {
 					AllowedFormats []string `mapstructure:"allowed_formats" required:"true"`
 					MaxWidth       int      `mapstructure:"max_width" required:"true"`
@@ -78,7 +78,17 @@ type S3Config struct {
 					MinHeight      int      `mapstructure:"min_height" required:"true"`
 					ContentSizeMax int64    `mapstructure:"content_size_max" required:"true"`
 				} `mapstructure:"banner"`
-			} `mapstructure:"organization"`
+			} `mapstructure:"place"`
+			PlaceClass struct {
+				Icon struct {
+					AllowedFormats []string `mapstructure:"allowed_formats" required:"true"`
+					MaxWidth       int      `mapstructure:"max_width" required:"true"`
+					MinWidth       int      `mapstructure:"min_width" required:"true"`
+					MaxHeight      int      `mapstructure:"max_height" required:"true"`
+					MinHeight      int      `mapstructure:"min_height" required:"true"`
+					ContentSizeMax int64    `mapstructure:"content_size_max" required:"true"`
+				} `mapstructure:"icon"`
+			}
 		} `mapstructure:"resources"`
 	} `mapstructure:"media"`
 }

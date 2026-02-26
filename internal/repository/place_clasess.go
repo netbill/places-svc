@@ -11,14 +11,17 @@ import (
 )
 
 type PlaceClassRow struct {
-	ID          uuid.UUID  `json:"id"`
-	ParentID    *uuid.UUID `json:"parent_id"`
-	Code        string     `json:"code"`
-	Name        string     `json:"name"`
-	Description string     `json:"description"`
-	Icon        *string    `json:"icon"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	ID       uuid.UUID  `json:"id"`
+	ParentID *uuid.UUID `json:"parent_id,omitempty"`
+
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	IconKey     *string `json:"icon_key,omitempty"`
+
+	Version      int32      `json:"version"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+	DeprecatedAt *time.Time `json:"deprecated_at,omitempty"`
 }
 
 func (r PlaceClassRow) IsNil() bool {
@@ -27,14 +30,15 @@ func (r PlaceClassRow) IsNil() bool {
 
 func (r PlaceClassRow) ToModel() models.PlaceClass {
 	return models.PlaceClass{
-		ID:          r.ID,
-		ParentID:    r.ParentID,
-		Code:        r.Code,
-		Name:        r.Name,
-		Description: r.Description,
-		Icon:        r.Icon,
-		CreatedAt:   r.CreatedAt,
-		UpdatedAt:   r.UpdatedAt,
+		ID:           r.ID,
+		ParentID:     r.ParentID,
+		Name:         r.Name,
+		Description:  r.Description,
+		IconKey:      r.IconKey,
+		Version:      r.Version,
+		CreatedAt:    r.CreatedAt,
+		UpdatedAt:    r.UpdatedAt,
+		DeprecatedAt: r.DeprecatedAt,
 	}
 }
 
@@ -53,21 +57,20 @@ type PlaceClassesQ interface {
 	UpdateOne(ctx context.Context) (PlaceClassRow, error)
 
 	UpdateParent(parentID *uuid.UUID) PlaceClassesQ
-	UpdateCode(code string) PlaceClassesQ
 	UpdateName(name string) PlaceClassesQ
 	UpdateDescription(description string) PlaceClassesQ
-	UpdateIcon(icon *string) PlaceClassesQ
+	UpdateIconKey(key *string) PlaceClassesQ
+	UpdateDeprecatedAt(time *time.Time) PlaceClassesQ
+
+	FilterRoots() PlaceClassesQ
 
 	FilterByID(id ...uuid.UUID) PlaceClassesQ
 	FilterByParentID(parentID ...uuid.UUID) PlaceClassesQ
-	FilterRoots() PlaceClassesQ
-	FilterByCode(code string) PlaceClassesQ
-	FilterNameLike(name string) PlaceClassesQ
-	FilterDescriptionLike(description string) PlaceClassesQ
-	FilterByText(text string) PlaceClassesQ
+	FilterBestMatch(text string) PlaceClassesQ
 	FilterByClassID(classID uuid.UUID, includeChild, includeParent bool) PlaceClassesQ
 
 	OrderName(asc bool) PlaceClassesQ
+	OrderRoot(asc bool) PlaceClassesQ
 
 	Delete(ctx context.Context) error
 }
@@ -75,20 +78,10 @@ type PlaceClassesQ interface {
 func (r *Repository) CreatePlaceClass(ctx context.Context, params pclass.CreateParams) (models.PlaceClass, error) {
 	row, err := r.PlaceClassesQ.New().Insert(ctx, PlaceClassRow{
 		ParentID:    params.ParentID,
-		Code:        params.Code,
 		Name:        params.Name,
 		Description: params.Description,
-		Icon:        params.Icon,
+		IconKey:     params.IconKey,
 	})
-	if err != nil {
-		return models.PlaceClass{}, err
-	}
-
-	return row.ToModel(), nil
-}
-
-func (r *Repository) GetPlaceClassByCode(ctx context.Context, code string) (models.PlaceClass, error) {
-	row, err := r.PlaceClassesQ.New().FilterByCode(code).Get(ctx)
 	if err != nil {
 		return models.PlaceClass{}, err
 	}
@@ -104,14 +97,6 @@ func (r *Repository) PlaceClassExists(ctx context.Context, id uuid.UUID) (bool, 
 	return res, nil
 }
 
-func (r *Repository) PlaceClassExistsByCode(ctx context.Context, code string) (bool, error) {
-	res, err := r.PlaceClassesQ.New().FilterByCode(code).Exists(ctx)
-	if err != nil {
-		return false, err
-	}
-	return res, nil
-}
-
 func (r *Repository) GetPlaceClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error) {
 	row, err := r.PlaceClassesQ.New().FilterByID(id).Get(ctx)
 	if err != nil {
@@ -121,17 +106,15 @@ func (r *Repository) GetPlaceClass(ctx context.Context, id uuid.UUID) (models.Pl
 	return row.ToModel(), nil
 }
 
-func (r *Repository) GetPlaceClasses(ctx context.Context, params pclass.FilterParams, limit, offset uint) (pagi.Page[[]models.PlaceClass], error) {
+func (r *Repository) GetPlaceClasses(
+	ctx context.Context,
+	params pclass.FilterParams,
+	limit, offset uint,
+) (pagi.Page[[]models.PlaceClass], error) {
 	q := r.PlaceClassesQ.New()
 
-	if params.Name != nil {
-		q = q.FilterNameLike(*params.Name)
-	}
-	if params.Description != nil {
-		q = q.FilterDescriptionLike(*params.Description)
-	}
 	if params.BestMatch != nil {
-		q = q.FilterByText(*params.BestMatch)
+		q = q.FilterBestMatch(*params.BestMatch)
 	}
 	if params.Parent != nil {
 		q = q.FilterByClassID(params.Parent.ID, params.Parent.IncludedChildren, params.Parent.IncludedParents)
@@ -164,10 +147,9 @@ func (r *Repository) UpdatePlaceClass(ctx context.Context, classID uuid.UUID, pa
 	row, err := r.PlaceClassesQ.New().
 		FilterByID(classID).
 		UpdateParent(params.ParentID).
-		UpdateCode(params.Code).
 		UpdateName(params.Name).
 		UpdateDescription(params.Description).
-		UpdateIcon(params.GetUpdatedIcon()).
+		UpdateIconKey(params.IconKey).
 		UpdateOne(ctx)
 	if err != nil {
 		return models.PlaceClass{}, err
@@ -206,4 +188,27 @@ func (r *Repository) CheckPlaceExistForClass(ctx context.Context, classID uuid.U
 
 func (r *Repository) DeletePlaceClass(ctx context.Context, classID uuid.UUID) error {
 	return r.PlaceClassesQ.New().FilterByID(classID).Delete(ctx)
+}
+
+func (r *Repository) DeprecatedPlaceClass(
+	ctx context.Context,
+	classID uuid.UUID,
+	deprecate bool,
+) (models.PlaceClass, error) {
+	var deprecateAt *time.Time
+
+	if deprecate {
+		now := time.Now().UTC()
+		deprecateAt = &now
+	}
+
+	row, err := r.PlaceClassesQ.New().
+		FilterByID(classID).
+		UpdateDeprecatedAt(deprecateAt).
+		UpdateOne(ctx)
+	if err != nil {
+		return models.PlaceClass{}, err
+	}
+
+	return row.ToModel(), nil
 }

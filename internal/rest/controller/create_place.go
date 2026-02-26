@@ -20,7 +20,7 @@ func (c *Controller) CreatePlace(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.CreatePlace(r)
 	if err != nil {
-		log.WithError(err).Info("invalid create place request")
+		log.WithError(err).Info("invalid create Place request")
 		c.responser.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
@@ -28,7 +28,7 @@ func (c *Controller) CreatePlace(w http.ResponseWriter, r *http.Request) {
 	log = log.WithField("organization_id", req.Data.Attributes.OrganizationId).
 		WithField("class_id", req.Data.Attributes.ClassId)
 
-	res, err := c.modules.place.Create(r.Context(), scope.AccountActor(r), place.CreateParams{
+	res, err := c.modules.Place.Create(r.Context(), scope.AccountActor(r), place.CreateParams{
 		OrganizationID: req.Data.Attributes.OrganizationId,
 		ClassID:        req.Data.Attributes.ClassId,
 		Address:        req.Data.Attributes.Address,
@@ -43,25 +43,25 @@ func (c *Controller) CreatePlace(w http.ResponseWriter, r *http.Request) {
 	})
 	switch {
 	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.Info("not enough rights to create place")
-		c.responser.RenderErr(w, problems.Forbidden("not enough rights to create place"))
+		log.Info("not enough rights to create Place")
+		c.responser.RenderErr(w, problems.Forbidden("not enough rights to create Place"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.Info("organization is suspended")
 		c.responser.RenderErr(w, problems.Forbidden("organization is suspended"))
 	case errors.Is(err, errx.ErrorPlaceOutOfTerritory):
-		log.Info("place is out of organization's territory")
-		c.responser.RenderErr(w, problems.Forbidden("place is out of organization's territory"))
+		log.Info("Place is out of organization's territory")
+		c.responser.RenderErr(w, problems.Forbidden("Place is out of organization's territory"))
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
-		log.Info("place class not found")
-		c.responser.RenderErr(w, problems.NotFound("place class not found"))
+		log.Info("Place class not found")
+		c.responser.RenderErr(w, problems.NotFound("Place class not found"))
 	case errors.Is(err, errx.ErrorPlaceClassIsDeprecated):
-		log.Info("place class is deprecated")
-		c.responser.RenderErr(w, problems.Conflict("place class is deprecated"))
+		log.Info("Place class is deprecated")
+		c.responser.RenderErr(w, problems.Conflict("Place class is deprecated"))
 	case err != nil:
-		log.WithError(err).Error("failed to create place")
+		log.WithError(err).Error("failed to create Place")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
-		log.WithField("place_id", res.ID).Info("place created")
+		log.WithField("place_id", res.ID).Info("Place created")
 		c.responser.Render(w, http.StatusCreated, responses.Place(res))
 	}
 }

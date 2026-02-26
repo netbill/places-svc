@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/core/modules/organization"
 )
 
@@ -13,7 +12,7 @@ type Handler struct {
 }
 
 type Modules struct {
-	organization organizationSvc
+	Org organizationSvc
 }
 
 func New(modules Modules) *Handler {
@@ -25,7 +24,7 @@ func New(modules Modules) *Handler {
 type organizationSvc interface {
 	Create(
 		ctx context.Context,
-		organization models.Organization,
+		params organization.CreateParams,
 	) error
 	Update(
 		ctx context.Context,
@@ -37,7 +36,7 @@ type organizationSvc interface {
 		organizationID uuid.UUID,
 	) error
 
-	CreateOrgMember(ctx context.Context, member models.OrgMember) error
+	CreateOrgMember(ctx context.Context, member organization.CreateMemberParams) error
 	UpdateOrgMember(ctx context.Context, memberID uuid.UUID, params organization.UpdateMemberParams) error
 	DeleteOrgMember(ctx context.Context, ID uuid.UUID) error
 }

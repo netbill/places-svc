@@ -2,7 +2,6 @@ package organization
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/netbill/places-svc/internal/core/models"
@@ -19,40 +18,31 @@ func New(repo repo) *Module {
 }
 
 type repo interface {
-	Create(
+	CreateOrganization(
 		ctx context.Context,
-		params models.Organization,
+		params CreateParams,
 	) error
 	GetOrganization(
 		ctx context.Context,
 		orgID uuid.UUID,
 	) (models.Organization, error)
-	Update(
+	UpdateOrganization(
 		ctx context.Context,
 		orgID uuid.UUID,
 		params UpdateParams,
 	) error
-	UpdateOrgStatus(
-		ctx context.Context,
-		orgID uuid.UUID,
-		status string,
-		version int32,
-		updatedAt time.Time,
-	) error
-	Delete(ctx context.Context, ID uuid.UUID) error
+	DeleteOrganization(ctx context.Context, ID uuid.UUID) error
 
 	CreateOrgMember(
 		ctx context.Context,
-		member models.OrgMember,
+		member CreateMemberParams,
 	) error
-	UpdateOrgMember(ctx context.Context, memberID uuid.UUID, params UpdateMemberParams) error
-	DeleteOrgMember(ctx context.Context, memberID uuid.UUID) error
-
-	UpdatePlaceStatusForOrg(
+	UpdateOrgMember(
 		ctx context.Context,
-		organizationID uuid.UUID,
-		status string,
+		memberID uuid.UUID,
+		params UpdateMemberParams,
 	) error
+	DeleteOrgMember(ctx context.Context, memberID uuid.UUID) error
 
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
 }

@@ -20,14 +20,14 @@ func (c *Controller) UpdatePlace(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.UpdatePlace(r)
 	if err != nil {
-		log.WithError(err).Info("invalid update place  request")
+		log.WithError(err).Info("invalid update Place  request")
 		c.responser.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 
 	log = log.WithField("place_id", req.Data.Id)
 
-	res, err := c.modules.place.Update(
+	res, err := c.modules.Place.Update(
 		r.Context(),
 		scope.AccountActor(r),
 		req.Data.Id,
@@ -44,17 +44,17 @@ func (c *Controller) UpdatePlace(w http.ResponseWriter, r *http.Request) {
 	)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceNotExists):
-		log.WithError(err).Info("place  not found")
-		c.responser.RenderErr(w, problems.NotFound("place  not found"))
+		log.WithError(err).Info("Place  not found")
+		c.responser.RenderErr(w, problems.NotFound("Place  not found"))
 	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.WithError(err).Info("not enough rights to update place ")
-		c.responser.RenderErr(w, problems.Forbidden("not enough rights to update place "))
+		log.WithError(err).Info("not enough rights to update Place ")
+		c.responser.RenderErr(w, problems.Forbidden("not enough rights to update Place "))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.WithError(err).Info("organization is suspended")
 		c.responser.RenderErr(w, problems.Conflict("organization is suspended"))
 	case errors.Is(err, errx.ErrorPlaceClassIsDeprecated):
-		log.WithError(err).Info("place class is deprecated")
-		c.responser.RenderErr(w, problems.Conflict("place class is deprecated"))
+		log.WithError(err).Info("Place class is deprecated")
+		c.responser.RenderErr(w, problems.Conflict("Place class is deprecated"))
 	case errors.Is(err, errx.ErrorPlaceIconKeyIsInvalid):
 		log.WithError(err).Info("icon key is invalid")
 		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
@@ -96,10 +96,10 @@ func (c *Controller) UpdatePlace(w http.ResponseWriter, r *http.Request) {
 			"banner": err,
 		})...)
 	case err != nil:
-		log.WithError(err).Error("failed to update place ")
+		log.WithError(err).Error("failed to update Place ")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
-		log.Info("place  updated")
+		log.Info("Place  updated")
 		c.responser.Render(w, http.StatusOK, responses.Place(res))
 	}
 }

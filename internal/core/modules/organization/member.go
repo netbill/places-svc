@@ -8,11 +8,22 @@ import (
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
+type CreateMemberParams struct {
+	ID             uuid.UUID `json:"id"`
+	AccountID      uuid.UUID `json:"account_id"`
+	OrganizationID uuid.UUID `json:"organization_id"`
+	Head           bool      `json:"head"`
+	Label          *string   `json:"label,omitempty"`
+	Position       *string   `json:"position,omitempty"`
+
+	CreatedAt time.Time `json:"created_at"`
+}
+
 func (m *Module) CreateOrgMember(
 	ctx context.Context,
-	member models.OrgMember,
+	params CreateMemberParams,
 ) error {
-	return m.repo.CreateOrgMember(ctx, member)
+	return m.repo.CreateOrgMember(ctx, params)
 }
 
 type UpdateMemberParams struct {

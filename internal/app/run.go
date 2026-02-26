@@ -3,16 +3,14 @@ package app
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/netbill/awsx"
+	"github.com/netbill/eventbox"
 
-	"github.com/netbill/logium"
+	awscfg "github.com/aws/aws-sdk-go-v2/config"
+	eventpg "github.com/netbill/eventbox/pg"
 	"github.com/netbill/pgdbx"
 	"github.com/netbill/places-svc/internal/bucket"
 	"github.com/netbill/places-svc/internal/core/modules/organization"
@@ -23,7 +21,6 @@ import (
 	"github.com/netbill/places-svc/internal/messenger/handler"
 	"github.com/netbill/places-svc/internal/messenger/publisher"
 	"github.com/netbill/places-svc/internal/repository"
-	"github.com/netbill/places-svc/internal/repository/pg"
 	"github.com/netbill/places-svc/internal/rest"
 	"github.com/netbill/places-svc/internal/rest/controller"
 	"github.com/netbill/places-svc/internal/rest/middlewares"
@@ -52,116 +49,154 @@ func (a *App) Run(ctx context.Context) error {
 
 	db := pgdbx.NewDB(pool)
 
-	repo := &repository.Repository{}
+	repo := &repository.Repository{
+		Transactioner:  nil,
+		PlacesQ:        nil,
+		PlaceClassesQ:  nil,
+		OrganizationsQ: nil,
+		OrgMembersQ:    nil,
+	}
 
-	s3Client := s3.NewFromConfig(awsCfg)
-	presignClient := s3.NewPresignClient(s3Client)
-
-	awsS3 := awsx.New(
-		cfg.S3.AWS.BucketName,
-		s3Client,
-		presignClient,
+	cfg, err := awscfg.LoadDefaultConfig(
+		context.Background(),
+		awscfg.WithRegion(a.config.S3.Aws.Region),
+		awscfg.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(
+				a.config.S3.Aws.AccessKeyID,
+				a.config.S3.Aws.SecretAccessKey,
+				a.config.S3.Aws.SessionToken,
+			),
+		),
 	)
-
-	placeIconValidator := &awsx.ImgObjectValidator{
-		AllowedContentTypes: cfg.S3.Upload.Place.Icon.AllowedContentTypes,
-		AllowedFormats:      cfg.S3.Upload.Place.Icon.AllowedFormats,
-		MaxWidth:            cfg.S3.Upload.Place.Icon.MaxWidth,
-		MaxHeight:           cfg.S3.Upload.Place.Icon.MaxHeight,
-		ContentLengthMax:    cfg.S3.Upload.Place.Icon.ContentLengthMax,
+	if err != nil {
+		return fmt.Errorf("load aws config: %w", err)
 	}
 
-	placeBannerValidator := &awsx.ImgObjectValidator{
-		AllowedContentTypes: cfg.S3.Upload.Place.Banner.AllowedContentTypes,
-		AllowedFormats:      cfg.S3.Upload.Place.Banner.AllowedFormats,
-		MaxWidth:            cfg.S3.Upload.Place.Banner.MaxWidth,
-		MaxHeight:           cfg.S3.Upload.Place.Banner.MaxHeight,
-		ContentLengthMax:    cfg.S3.Upload.Place.Banner.ContentLengthMax,
-	}
-
-	placeCLassIconValidator := &awsx.ImgObjectValidator{
-		AllowedContentTypes: cfg.S3.Upload.PlaceClass.Icon.AllowedContentTypes,
-		AllowedFormats:      cfg.S3.Upload.PlaceClass.Icon.AllowedFormats,
-		MaxWidth:            cfg.S3.Upload.PlaceClass.Icon.MaxWidth,
-		MaxHeight:           cfg.S3.Upload.PlaceClass.Icon.MaxHeight,
-		ContentLengthMax:    cfg.S3.Upload.PlaceClass.Icon.ContentLengthMax,
-	}
-
-	s3Bucket := bucket.New(bucket.Config{
-		S3:                      awsS3,
-		PlaceIconValidator:      placeIconValidator,
-		PlaceBannerValidator:    placeBannerValidator,
-		PlaceClassIconValidator: placeCLassIconValidator,
-		UploadTokensTTL: bucket.UploadTokensTTL{
-			Place:      cfg.S3.Upload.Token.TTL.Place,
-			PlaceClass: cfg.S3.Upload.Token.TTL.PlaceClass,
-		},
+	s3 := bucket.NewStorage(awsx.New(a.config.S3.Aws.BucketName, cfg), bucket.Config{
+		LinkTTL:        a.config.S3.Media.Link.TTL,
+		PlaceClassIcon: a.config.S3.Media.Resources.PlaceClass.Icon,
+		PlaceIcon:      a.config.S3.Media.Resources.Place.Icon,
+		PlaceBanner:    a.config.S3.Media.Resources.Place.Banner,
 	})
 
-	tokenManager := tokenmanager.New(
-		cfg.S3.Upload.Token.SecretKey,
-		cfg.S3.Upload.Token.TTL.Place,
-		cfg.S3.Upload.Token.TTL.PlaceClass,
-	)
+	outbox := eventpg.NewOutbox(db)
+	inbox := eventpg.NewInbox(db)
 
-	outBox := outbox.New(db)
+	producer := messenger.NewProducer(a.log, messenger.ProducerConfig{
+		Producer: a.config.Kafka.Identity,
+		Brokers:  a.config.Kafka.Brokers,
+		PlacesV1: messenger.ProduceKafkaConfig{
+			RequiredAcks: a.config.Kafka.Produce.Topics.PlacesV1.RequiredAcks,
+			Compression:  a.config.Kafka.Produce.Topics.PlacesV1.Compression,
+			Balancer:     a.config.Kafka.Produce.Topics.PlacesV1.Balancer,
+			BatchSize:    a.config.Kafka.Produce.Topics.PlacesV1.BatchSize,
+			BatchTimeout: a.config.Kafka.Produce.Topics.PlacesV1.BatchTimeout,
+		},
+		PlaceClassesV1: messenger.ProduceKafkaConfig{
+			RequiredAcks: a.config.Kafka.Produce.Topics.PlaceClassesV1.RequiredAcks,
+			Compression:  a.config.Kafka.Produce.Topics.PlaceClassesV1.Compression,
+			Balancer:     a.config.Kafka.Produce.Topics.PlaceClassesV1.Balancer,
+			BatchSize:    a.config.Kafka.Produce.Topics.PlaceClassesV1.BatchSize,
+			BatchTimeout: a.config.Kafka.Produce.Topics.PlaceClassesV1.BatchTimeout,
+		},
+	})
+	defer producer.Close()
 
-	kafkaOutbound := publisher.New(log, outBox)
+	outbound := publisher.New(a.config.Kafka.Identity, outbox, producer)
 
-	orgMemberRolesSql := pg.NewOrgMemberRolesQ(db)
-	orgMembersSql := pg.NewOrgMembersQ(db)
-	organizationsSql := pg.NewOrganizationsQ(db)
-	orgRolePermLinksSql := pg.NewOrgRolePermissionLinksQ(db)
-	orgRolesSql := pg.NewOrgRolesQ(db)
-	placesSql := pg.NewPlacesQ(db)
-	placeClassesSql := pg.NewPlaceClassesQ(db)
-	transactioner := pg.NewTransaction(db)
-
-	repo := &repository.Repository{
-		OrganizationsQ:          organizationsSql,
-		OrgMembersQ:             orgMembersSql,
-		OrgMemberRolesQ:         orgMemberRolesSql,
-		OrgRolePermissionLinksQ: orgRolePermLinksSql,
-		OrgRolesQ:               orgRolesSql,
-		PlacesQ:                 placesSql,
-		PlaceClassesQ:           placeClassesSql,
-		Transactioner:           transactioner,
-	}
-
-	geogusser, err := geogueser.New()
+	geo, err := geogueser.New()
 	if err != nil {
-		log.Fatal("failed to initialize geogueser", "error", err)
+		return fmt.Errorf("create geography: %w", err)
 	}
 
-	orgSvc := organization.New(repo)
-	pclasessSvc := pclass.New(repo, kafkaOutbound, s3Bucket, tokenManager)
-	placesSvc := place.New(repo, s3Bucket, kafkaOutbound, geogusser, tokenManager)
+	orgCore := organization.New(repo)
+	placeCore := place.New(repo, s3, outbound, geo)
+	classCore := pclass.New(repo, s3, outbound)
 
-	kafkaInbound := handler.New(log, orgSvc)
+	tokenManager := tokenmanager.New(tokenmanager.Config{
+		Issuer:   a.config.Auth.Tokens.Issuer,
+		AccessSK: a.config.Auth.Tokens.AccountAccess.SecretKey,
+	})
 
 	responser := restkit.NewResponser()
-	ctrl := controller.New(log, responser, placesSvc, pclasessSvc)
-	mdll := middlewares.New(log, middlewares.Config{
-		AccountAccessSK: cfg.Auth.Account.Token.Access.SecretKey,
-		UploadFilesSK:   cfg.S3.Upload.Token.SecretKey,
+	ctrl := controller.New(&controller.Modules{
+		Place: placeCore,
+		Org:   orgCore,
+		Class: classCore,
 	}, responser)
-	router := rest.New(log, mdll, ctrl)
-
-	msgx := messenger.New(log, db, cfg.Kafka.Brokers...)
-
-	log.Infof("starting kafka brokers %s", cfg.Kafka.Brokers)
+	mdll := middlewares.New(responser, tokenManager)
+	router := rest.New(mdll, ctrl)
 
 	run(func() {
-		router.Run(ctx, rest.Config{
-			Port:              cfg.Rest.Port,
-			TimeoutRead:       cfg.Rest.Timeouts.Read,
-			TimeoutReadHeader: cfg.Rest.Timeouts.ReadHeader,
-			TimeoutWrite:      cfg.Rest.Timeouts.Write,
-			TimeoutIdle:       cfg.Rest.Timeouts.Idle,
+		router.Run(ctx, a.log, rest.Config{
+			Port:              a.config.Rest.Port,
+			ReadTimeout:       a.config.Rest.Timeouts.Read,
+			ReadHeaderTimeout: a.config.Rest.Timeouts.ReadHeader,
+			WriteTimeout:      a.config.Rest.Timeouts.Write,
+			IdleTimeout:       a.config.Rest.Timeouts.Idle,
 		})
 	})
 
-	run(func() { msgx.RunConsumer(ctx, kafkaInbound) })
+	outboxWorker := messenger.NewOutboxWorker(a.log, outbox, producer, eventbox.OutboxWorkerConfig{
+		Routines:       a.config.Kafka.Outbox.Routines,
+		Slots:          a.config.Kafka.Outbox.Slots,
+		BatchSize:      a.config.Kafka.Outbox.BatchSize,
+		Sleep:          a.config.Kafka.Outbox.Sleep,
+		MinNextAttempt: a.config.Kafka.Outbox.MinNextAttempt,
+		MaxNextAttempt: a.config.Kafka.Outbox.MaxNextAttempt,
+		MaxAttempts:    a.config.Kafka.Outbox.MaxAttempts,
+	})
+	defer outboxWorker.Clean()
 
-	run(func() { msgx.RunProducer(ctx) })
+	run(func() {
+		outboxWorker.Run(ctx)
+	})
+
+	inbound := handler.New(handler.Modules{
+		Org: orgCore,
+	})
+
+	inboxWorker := messenger.NewInboxWorker(a.log, inbox, eventbox.InboxWorkerConfig{
+		Routines:       a.config.Kafka.Inbox.Routines,
+		Slots:          a.config.Kafka.Inbox.Slots,
+		BatchSize:      a.config.Kafka.Inbox.BatchSize,
+		Sleep:          a.config.Kafka.Inbox.Sleep,
+		MinNextAttempt: a.config.Kafka.Inbox.MinNextAttempt,
+		MaxNextAttempt: a.config.Kafka.Inbox.MaxNextAttempt,
+		MaxAttempts:    a.config.Kafka.Inbox.MaxAttempts,
+	}, inbound)
+	defer inboxWorker.Clean()
+
+	run(func() {
+		inboxWorker.Run(ctx)
+	})
+
+	consumer := messenger.NewConsumer(a.log, inbox, messenger.ConsumerConfig{
+		GroupID:    a.config.Kafka.Identity,
+		Brokers:    a.config.Kafka.Brokers,
+		MinBackoff: a.config.Kafka.Consume.Backoff.Min,
+		MaxBackoff: a.config.Kafka.Consume.Backoff.Max,
+		OrganizationsV1: messenger.ConsumeKafkaConfig{
+			Instances:     a.config.Kafka.Consume.Topics.OrganizationsV1.Instances,
+			MinBytes:      a.config.Kafka.Consume.Topics.OrganizationsV1.MinBytes,
+			MaxBytes:      a.config.Kafka.Consume.Topics.OrganizationsV1.MaxBytes,
+			MaxWait:       a.config.Kafka.Consume.Topics.OrganizationsV1.MaxWait,
+			QueueCapacity: a.config.Kafka.Consume.Topics.OrganizationsV1.QueueCapacity,
+		},
+		OrgMembersV1: messenger.ConsumeKafkaConfig{
+			Instances:     a.config.Kafka.Consume.Topics.OrganizationMembersV1.Instances,
+			MinBytes:      a.config.Kafka.Consume.Topics.OrganizationMembersV1.MinBytes,
+			MaxBytes:      a.config.Kafka.Consume.Topics.OrganizationMembersV1.MaxBytes,
+			MaxWait:       a.config.Kafka.Consume.Topics.OrganizationMembersV1.MaxWait,
+			QueueCapacity: a.config.Kafka.Consume.Topics.OrganizationMembersV1.QueueCapacity,
+		},
+	})
+	defer consumer.Close()
+
+	run(func() {
+		consumer.Run(ctx)
+	})
+
+	wg.Wait()
+	return nil
 }

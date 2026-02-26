@@ -125,7 +125,7 @@ func (c *Controller) GetPlaces(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	res, err := c.modules.place.GetList(r.Context(), params, limit, offset)
+	res, err := c.modules.Place.GetList(r.Context(), params, limit, offset)
 	switch {
 	case err != nil:
 		log.WithError(err).Error("failed to get places")

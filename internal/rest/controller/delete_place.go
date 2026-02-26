@@ -19,7 +19,7 @@ func (c *Controller) DeletePlace(w http.ResponseWriter, r *http.Request) {
 
 	placeID, err := uuid.Parse(chi.URLParam(r, "place_id"))
 	if err != nil {
-		log.WithError(err).Info("invalid place id")
+		log.WithError(err).Info("invalid Place id")
 		c.responser.RenderErr(w, problems.BadRequest(
 			fmt.Errorf("invalid place_id: %s", chi.URLParam(r, "place_id")))...,
 		)
@@ -28,19 +28,19 @@ func (c *Controller) DeletePlace(w http.ResponseWriter, r *http.Request) {
 
 	log = log.WithField("place_id", placeID)
 
-	err = c.modules.place.Delete(r.Context(), scope.AccountActor(r), placeID)
+	err = c.modules.Place.Delete(r.Context(), scope.AccountActor(r), placeID)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceNotExists):
-		log.Info("place not found")
-		c.responser.RenderErr(w, problems.NotFound("place not found"))
+		log.Info("Place not found")
+		c.responser.RenderErr(w, problems.NotFound("Place not found"))
 	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.Info("not enough rights to delete place")
-		c.responser.RenderErr(w, problems.Forbidden("not enough rights to delete place"))
+		log.Info("not enough rights to delete Place")
+		c.responser.RenderErr(w, problems.Forbidden("not enough rights to delete Place"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.Info("organization is suspended")
 		c.responser.RenderErr(w, problems.Forbidden("organization is suspended"))
 	case err != nil:
-		log.WithError(err).Error("failed to delete place")
+		log.WithError(err).Error("failed to delete Place")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
 		c.responser.Render(w, http.StatusOK)

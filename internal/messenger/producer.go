@@ -12,8 +12,8 @@ type ProducerConfig struct {
 	Producer string   `json:"producer"`
 	Brokers  []string `json:"brokers"`
 
-	PlacesV1        ProduceKafkaConfig `json:"places_v1"`
-	PlacesClassesV1 ProduceKafkaConfig `json:"place_classes_v1"`
+	PlacesV1       ProduceKafkaConfig `json:"places_v1"`
+	PlaceClassesV1 ProduceKafkaConfig `json:"place_classes_v1"`
 }
 
 type ProduceKafkaConfig struct {
@@ -39,11 +39,11 @@ func NewProducer(log *log.Logger, cfg ProducerConfig) *eventbox.Producer {
 	}
 
 	err = producer.AddWriter(evtypes.PlaceClassesTopicV1, eventbox.WriterTopicConfig{
-		RequiredAcks: cfg.PlacesClassesV1.RequiredAcks,
-		Compression:  cfg.PlacesClassesV1.Compression,
-		Balancer:     cfg.PlacesClassesV1.Balancer,
-		BatchSize:    cfg.PlacesClassesV1.BatchSize,
-		BatchTimeout: cfg.PlacesClassesV1.BatchTimeout,
+		RequiredAcks: cfg.PlaceClassesV1.RequiredAcks,
+		Compression:  cfg.PlaceClassesV1.Compression,
+		Balancer:     cfg.PlaceClassesV1.Balancer,
+		BatchSize:    cfg.PlaceClassesV1.BatchSize,
+		BatchTimeout: cfg.PlaceClassesV1.BatchTimeout,
 	})
 	if err != nil {
 		panic(err)

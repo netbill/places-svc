@@ -28,10 +28,6 @@ type FilterParams struct {
 
 	BestMatch *string
 
-	Address     *string
-	Name        *string
-	Description *string
-
 	Website *string
 	Phone   *string
 }

@@ -21,21 +21,21 @@ func (c *Controller) GetPlace(w http.ResponseWriter, r *http.Request) {
 
 	placeID, err := uuid.Parse(chi.URLParam(r, "place_id"))
 	if err != nil {
-		log.WithError(err).Info("invalid place id")
-		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid place id"))...)
+		log.WithError(err).Info("invalid Place id")
+		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid Place id"))...)
 		return
 	}
 
 	log = log.WithField("place_id", placeID)
 
-	place, err := c.modules.place.Get(r.Context(), placeID)
+	place, err := c.modules.Place.Get(r.Context(), placeID)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceNotExists):
-		log.Info("place not found")
-		c.responser.RenderErr(w, problems.NotFound(fmt.Sprintf("place with id %s not found", placeID)))
+		log.Info("Place not found")
+		c.responser.RenderErr(w, problems.NotFound(fmt.Sprintf("Place with id %s not found", placeID)))
 		return
 	case err != nil:
-		log.WithError(err).Error("failed to get place")
+		log.WithError(err).Error("failed to get Place")
 		c.responser.RenderErr(w, problems.InternalError())
 		return
 	}
@@ -43,23 +43,24 @@ func (c *Controller) GetPlace(w http.ResponseWriter, r *http.Request) {
 	includes := r.URL.Query()["include"]
 	opts := make([]responses.PlaceOption, 0)
 
-	if slices.Contains(includes, "class") {
-		class, err := c.modules.pclass.Get(r.Context(), place.ClassID)
+	if slices.Contains(includes, "place_class") {
+		class, err := c.modules.Class.Get(r.Context(), place.ClassID)
 		switch {
 		case errors.Is(err, errx.ErrorPlaceClassNotExists):
-			log.WithField("place_class_id", place.ClassID).Info("place class not found")
-			c.responser.RenderErr(w, problems.NotFound(fmt.Sprintf("place class with id %s not found", place.ClassID)))
+			log.WithField("place_class_id", place.ClassID).Info("Place class not found")
+			c.responser.RenderErr(w, problems.NotFound(fmt.Sprintf("Place class with id %s not found", place.ClassID)))
 			return
 		case err != nil:
-			log.WithError(err).Error("failed to get place class")
+			log.WithError(err).Error("failed to get Place class")
 			c.responser.RenderErr(w, problems.InternalError())
 			return
+		default:
+			opts = append(opts, responses.WithClass(class))
 		}
-		opts = append(opts, responses.WithClass(class))
 	}
 
 	if slices.Contains(includes, "organization") {
-		org, err := c.modules.organization.Get(r.Context(), place.OrganizationID)
+		org, err := c.modules.Org.Get(r.Context(), place.OrganizationID)
 		switch {
 		case errors.Is(err, errx.ErrorOrganizationNotExists):
 			log.WithField("organization_id", place.OrganizationID).Info("organization not found")
@@ -69,8 +70,9 @@ func (c *Controller) GetPlace(w http.ResponseWriter, r *http.Request) {
 			log.WithError(err).Error("failed to get organization")
 			c.responser.RenderErr(w, problems.InternalError())
 			return
+		default:
+			opts = append(opts, responses.WithOrganization(org))
 		}
-		opts = append(opts, responses.WithOrganization(org))
 	}
 
 	c.responser.Render(w, http.StatusOK, responses.Place(place, opts...))

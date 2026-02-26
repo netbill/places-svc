@@ -8,11 +8,21 @@ import (
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
+type CreateParams struct {
+	ID        uuid.UUID `json:"id"`
+	Status    string    `json:"status"`
+	Name      string    `json:"name"`
+	IconKey   *string   `json:"icon_key,omitempty"`
+	BannerKey *string   `json:"banner_key,omitempty"`
+
+	CreatedAt time.Time `json:"created_at"`
+}
+
 func (m *Module) Create(
 	ctx context.Context,
-	org models.Organization,
+	org CreateParams,
 ) error {
-	return m.repo.Create(ctx, org)
+	return m.repo.CreateOrganization(ctx, org)
 }
 
 func (m *Module) Get(
@@ -28,7 +38,7 @@ type UpdateParams struct {
 	IconKey   *string   `json:"icon_key"`
 	BannerKey *string   `json:"banner_key"`
 	Version   int32     `json:"version"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (m *Module) Update(
@@ -45,12 +55,12 @@ func (m *Module) Update(
 		return nil // No update needed
 	}
 
-	return m.repo.Update(ctx, orgID, params)
+	return m.repo.UpdateOrganization(ctx, orgID, params)
 }
 
 func (m *Module) Delete(
 	ctx context.Context,
 	organizationID uuid.UUID,
 ) error {
-	return m.repo.Delete(ctx, organizationID)
+	return m.repo.DeleteOrganization(ctx, organizationID)
 }

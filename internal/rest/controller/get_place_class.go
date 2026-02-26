@@ -21,21 +21,21 @@ func (c *Controller) GetPlaceClass(w http.ResponseWriter, r *http.Request) {
 
 	classID, err := uuid.Parse(chi.URLParam(r, "place_class_id"))
 	if err != nil {
-		log.WithError(err).Info("invalid place class id")
-		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid place class id"))...)
+		log.WithError(err).Info("invalid Place class id")
+		c.responser.RenderErr(w, problems.BadRequest(fmt.Errorf("invalid Place class id"))...)
 		return
 	}
 
 	log = log.WithField("place_class_id", classID)
 
-	class, err := c.modules.pclass.Get(r.Context(), classID)
+	class, err := c.modules.Class.Get(r.Context(), classID)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
-		log.Info("place class not found")
-		c.responser.RenderErr(w, problems.NotFound("place class not found"))
+		log.Info("Place class not found")
+		c.responser.RenderErr(w, problems.NotFound("Place class not found"))
 		return
 	case err != nil:
-		log.WithError(err).Error("failed to get place class")
+		log.WithError(err).Error("failed to get Place class")
 		c.responser.RenderErr(w, problems.InternalError())
 		return
 	}
@@ -44,18 +44,19 @@ func (c *Controller) GetPlaceClass(w http.ResponseWriter, r *http.Request) {
 	opts := make([]responses.PlaceClassOption, 0)
 
 	if slices.Contains(includes, "parent") && class.ParentID != nil {
-		parent, err := c.modules.pclass.Get(r.Context(), *class.ParentID)
+		parent, err := c.modules.Class.Get(r.Context(), *class.ParentID)
 		switch {
 		case errors.Is(err, errx.ErrorPlaceClassNotExists):
-			log.WithField("parent_class_id", class.ParentID).Info("parent place class not found")
-			c.responser.RenderErr(w, problems.NotFound("parent place class not found"))
+			log.WithField("parent_class_id", class.ParentID).Info("parent Place class not found")
+			c.responser.RenderErr(w, problems.NotFound("parent Place class not found"))
 			return
 		case err != nil:
-			log.WithError(err).Error("failed to get parent place class")
+			log.WithError(err).Error("failed to get parent Place class")
 			c.responser.RenderErr(w, problems.InternalError())
 			return
+		default:
+			opts = append(opts, responses.WithParentClass(parent))
 		}
-		opts = append(opts, responses.WithParentClass(parent))
 	}
 
 	c.responser.Render(w, http.StatusOK, responses.PlaceClass(class, opts...))

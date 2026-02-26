@@ -18,20 +18,20 @@ func (c *Controller) UpdatePlaceVerify(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.UpdatePlaceVerify(r)
 	if err != nil {
-		log.WithError(err).Info("invalid update place verify request")
+		log.WithError(err).Info("invalid update Place verify request")
 		c.responser.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 
 	log = log.WithField("place_id", req.Data.Id)
 
-	res, err := c.modules.place.UpdateVerified(r.Context(), req.Data.Id, req.Data.Attributes.Verify)
+	res, err := c.modules.Place.UpdateVerified(r.Context(), req.Data.Id, req.Data.Attributes.Verify)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceNotExists):
-		log.Info("place not found")
-		c.responser.RenderErr(w, problems.NotFound("place not found"))
+		log.Info("Place not found")
+		c.responser.RenderErr(w, problems.NotFound("Place not found"))
 	case err != nil:
-		log.WithError(err).Error("failed to update place verify")
+		log.WithError(err).Error("failed to update Place verify")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
 		c.responser.Render(w, http.StatusOK, responses.Place(res))

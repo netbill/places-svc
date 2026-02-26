@@ -6,7 +6,6 @@ import (
 
 	"github.com/netbill/eventbox"
 	"github.com/netbill/evtypes"
-	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/core/modules/organization"
 )
 
@@ -19,15 +18,13 @@ func (h *Handler) OrganizationCreated(
 		return err
 	}
 
-	return h.modules.organization.Create(ctx, models.Organization{
+	return h.modules.Org.Create(ctx, organization.CreateParams{
 		ID:        payload.OrganizationID,
 		Status:    payload.Status,
 		Name:      payload.Name,
 		IconKey:   payload.IconKey,
 		BannerKey: payload.BannerKey,
-		Version:   payload.Version,
 		CreatedAt: payload.CreatedAt,
-		UpdatedAt: payload.CreatedAt,
 	})
 }
 
@@ -40,7 +37,7 @@ func (h *Handler) OrganizationUpdated(
 		return err
 	}
 
-	return h.modules.organization.Update(ctx, payload.OrganizationID, organization.UpdateParams{
+	return h.modules.Org.Update(ctx, payload.OrganizationID, organization.UpdateParams{
 		Name:      payload.Name,
 		Status:    payload.Status,
 		IconKey:   payload.IconKey,
@@ -59,5 +56,5 @@ func (h *Handler) OrganizationDeleted(
 		return err
 	}
 
-	return h.modules.organization.Delete(ctx, payload.OrganizationID)
+	return h.modules.Org.Delete(ctx, payload.OrganizationID)
 }

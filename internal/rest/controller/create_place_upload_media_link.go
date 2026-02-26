@@ -20,7 +20,7 @@ func (c *Controller) CreatePlaceUploadMediaLink(w http.ResponseWriter, r *http.R
 
 	ID, err := uuid.Parse(chi.URLParam(r, "place__id"))
 	if err != nil {
-		log.WithError(err).Info("invalid place  id")
+		log.WithError(err).Info("invalid Place  id")
 		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
 			"place__id": err,
 		})...)
@@ -28,19 +28,19 @@ func (c *Controller) CreatePlaceUploadMediaLink(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	place, media, err := c.modules.place.CreateUploadMediaLinks(r.Context(), ID)
+	place, media, err := c.modules.Place.CreateUploadMediaLinks(r.Context(), ID)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceNotExists):
-		log.Info("place does not exist")
-		c.responser.RenderErr(w, problems.NotFound("place does not exist"))
+		log.Info("Place does not exist")
+		c.responser.RenderErr(w, problems.NotFound("Place does not exist"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.Info("organization is suspended")
 		c.responser.RenderErr(w, problems.Forbidden("organization is suspended"))
 	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.Info("not enough rights to create place upload media link")
-		c.responser.RenderErr(w, problems.Forbidden("not enough rights to create place upload media link"))
+		log.Info("not enough rights to create Place upload media link")
+		c.responser.RenderErr(w, problems.Forbidden("not enough rights to create Place upload media link"))
 	case err != nil:
-		log.WithError(err).Error("failed to create place upload media link")
+		log.WithError(err).Error("failed to create Place upload media link")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
 		c.responser.Render(w, http.StatusOK, responses.UploadPlaceMediaLink(place, media))

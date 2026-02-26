@@ -112,14 +112,14 @@ type placeClassSvc interface {
 }
 
 type responser interface {
-	Render(w http.ResponseWriter, status int, res ...interface{})
+	Render(w http.ResponseWriter, status int, res interface{})
 	RenderErr(w http.ResponseWriter, errs ...error)
 }
 
 type Modules struct {
-	place        placeSvc
-	pclass       placeClassSvc
-	organization organizationSvc
+	Place placeSvc
+	Class placeClassSvc
+	Org   organizationSvc
 }
 
 type Controller struct {

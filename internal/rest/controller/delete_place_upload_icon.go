@@ -18,7 +18,7 @@ func (c *Controller) DeletePlaceUploadIcon(w http.ResponseWriter, r *http.Reques
 
 	req, err := requests.DeleteUploadPlaceIcon(r)
 	if err != nil {
-		log.WithError(err).Info("invalid delete upload place  icon requests")
+		log.WithError(err).Info("invalid delete upload Place  icon requests")
 		c.responser.RenderErr(w, problems.BadRequest(err)...)
 
 		return
@@ -26,7 +26,7 @@ func (c *Controller) DeletePlaceUploadIcon(w http.ResponseWriter, r *http.Reques
 
 	log = log.WithField("place_id", req.Data.Id)
 
-	err = c.modules.place.DeleteUploadPlaceIcon(
+	err = c.modules.Place.DeleteUploadPlaceIcon(
 		r.Context(),
 		scope.AccountActor(r),
 		req.Data.Id,
@@ -34,21 +34,21 @@ func (c *Controller) DeletePlaceUploadIcon(w http.ResponseWriter, r *http.Reques
 	)
 	switch {
 	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.Info("not enough rights to delete place icon in upload session")
-		c.responser.RenderErr(w, problems.Forbidden("not enough rights to delete place icon in upload session"))
+		log.Info("not enough rights to delete Place icon in upload session")
+		c.responser.RenderErr(w, problems.Forbidden("not enough rights to delete Place icon in upload session"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.Info("organization is suspended")
 		c.responser.RenderErr(w, problems.Forbidden("organization is suspended"))
 	case errors.Is(err, errx.ErrorPlaceIconKeyIsInvalid):
-		log.WithError(err).Info("place icon key is invalid")
+		log.WithError(err).Info("Place icon key is invalid")
 		c.responser.RenderErr(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceNotExists):
-		log.Info("place does not exist")
-		c.responser.RenderErr(w, problems.NotFound("place does not exist"))
+		log.Info("Place does not exist")
+		c.responser.RenderErr(w, problems.NotFound("Place does not exist"))
 	case err != nil:
-		log.WithError(err).Error("failed to delete place icon in upload session")
+		log.WithError(err).Error("failed to delete Place icon in upload session")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
 		w.WriteHeader(http.StatusNoContent)

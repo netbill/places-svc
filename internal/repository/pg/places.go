@@ -90,8 +90,8 @@ func (q placesQ) Insert(ctx context.Context, data repository.PlaceRow) (reposito
 		"address":     data.Address,
 		"name":        data.Name,
 		"description": data.Description,
-		"icon":        data.Icon,
-		"banner":      data.Banner,
+		"icon":        data.IconKey,
+		"banner":      data.BannerKey,
 		"website":     data.Website,
 		"phone":       data.Phone,
 	}

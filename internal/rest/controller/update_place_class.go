@@ -20,14 +20,14 @@ func (c *Controller) UpdatePlaceClass(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.UpdatePlaceClass(r)
 	if err != nil {
-		log.WithError(err).Info("invalid update place class request")
+		log.WithError(err).Info("invalid update Place class request")
 		c.responser.RenderErr(w, problems.BadRequest(err)...)
 		return
 	}
 
 	log = log.WithField("place_class_id", req.Data.Id)
 
-	res, err := c.modules.pclass.Update(
+	res, err := c.modules.Class.Update(
 		r.Context(),
 		req.Data.Id,
 		pclass.UpdateParams{
@@ -39,8 +39,8 @@ func (c *Controller) UpdatePlaceClass(w http.ResponseWriter, r *http.Request) {
 	)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
-		log.WithError(err).Info("place class not found")
-		c.responser.RenderErr(w, problems.NotFound("place class not found"))
+		log.WithError(err).Info("Place class not found")
+		c.responser.RenderErr(w, problems.NotFound("Place class not found"))
 	case errors.Is(err, errx.ErrorPlaceClassParentCycle):
 		log.WithError(err).Info("setting parent would create a cycle")
 		c.responser.RenderErr(w, problems.Conflict("setting parent would create a cycle"))
@@ -65,10 +65,10 @@ func (c *Controller) UpdatePlaceClass(w http.ResponseWriter, r *http.Request) {
 			"icon": err,
 		})...)
 	case err != nil:
-		log.WithError(err).Error("failed to update place class")
+		log.WithError(err).Error("failed to update Place class")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
-		log.Info("place class updated")
+		log.Info("Place class updated")
 		c.responser.Render(w, http.StatusOK, responses.PlaceClass(res))
 	}
 }

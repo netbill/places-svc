@@ -74,10 +74,10 @@ func (c *Controller) GetPlaceClasses(w http.ResponseWriter, r *http.Request) {
 		params.Deprecated = &with
 	}
 
-	res, err := c.modules.pclass.GetList(r.Context(), params, limit, offset)
+	res, err := c.modules.Class.GetList(r.Context(), params, limit, offset)
 	switch {
 	case err != nil:
-		log.WithError(err).Error("failed to get place classes")
+		log.WithError(err).Error("failed to get Place classes")
 		c.responser.RenderErr(w, problems.InternalError())
 	default:
 		c.responser.Render(w, http.StatusOK, responses.PlaceClasses(r, res))
