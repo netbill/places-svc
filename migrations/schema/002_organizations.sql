@@ -38,7 +38,7 @@ CREATE TABLE organization_members (
     head            BOOLEAN NOT NULL DEFAULT false,
     position        VARCHAR(255),
     label           VARCHAR(128),
-    version         INT NOT NULL CHECK (version > 0),
+    version         INT NOT NULL DEFAULT 1 CHECK (version > 0),,
 
     source_created_at  TIMESTAMPTZ NOT NULL,
     source_updated_at  TIMESTAMPTZ NOT NULL,

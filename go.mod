@@ -15,7 +15,7 @@ require (
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/netbill/ape v0.1.3
 	github.com/netbill/awsx v0.3.3
-	github.com/netbill/eventbox v0.1.8
+	github.com/netbill/eventbox v0.1.9
 	github.com/netbill/evtypes v0.1.1
 	github.com/netbill/logium v0.3.1
 	github.com/netbill/pgdbx v0.3.1
@@ -23,7 +23,6 @@ require (
 	github.com/paulmach/orb v0.12.0
 	github.com/pkg/errors v0.9.1
 	github.com/rubenv/sql-migrate v1.8.0
-	github.com/segmentio/kafka-go v0.4.50
 	github.com/spf13/viper v1.20.1
 	gopkg.in/validator.v2 v2.0.1
 )
@@ -64,6 +63,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
+	github.com/segmentio/kafka-go v0.4.50 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.12.0 // indirect
 	github.com/spf13/cast v1.7.1 // indirect
