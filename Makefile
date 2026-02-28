@@ -37,7 +37,7 @@ run-server:
 	KV_VIPER_FILE=$(CONFIG_FILE) go build -o ./cmd/places-svc/main ./cmd/places-svc/main.go
 	KV_VIPER_FILE=$(CONFIG_FILE) ./cmd/places-svc/main run service
 
-docker-uo:
+docker-up:
 	docker compose up -d
 
 docker-down:

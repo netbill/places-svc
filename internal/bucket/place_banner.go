@@ -54,7 +54,7 @@ func (s *Storage) ValidatePlaceBanner(
 
 	out, err := s.s3.GetObjectRange(ctx, key, 64*1024)
 	switch {
-	case err != nil && err.Error() == "object not found":
+	case errors.Is(err, awsx.ErrNotFound):
 		return errx.ErrorNoContentUploaded.Raise(
 			fmt.Errorf("place place banner not found for key: %s", key),
 		)

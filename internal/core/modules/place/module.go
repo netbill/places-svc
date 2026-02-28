@@ -60,18 +60,18 @@ type messenger interface {
 type bucket interface {
 	CreatePlaceIconUploadMediaLinks(
 		ctx context.Context,
-		classID uuid.UUID,
+		placeID uuid.UUID,
 	) (models.UploadMediaLink, error)
 
 	ValidatePlaceIcon(
 		ctx context.Context,
-		classID uuid.UUID,
+		placeID uuid.UUID,
 		key string,
 	) error
 
 	DeleteUploadPlaceIcon(
 		ctx context.Context,
-		classID uuid.UUID,
+		placeID uuid.UUID,
 		key string,
 	) error
 
@@ -83,36 +83,36 @@ type bucket interface {
 
 	UpdatePlaceIcon(
 		ctx context.Context,
-		classID uuid.UUID,
+		placeID uuid.UUID,
 		key string,
 	) (string, error)
 
 	CreatePlaceBannerUploadMediaLinks(
 		ctx context.Context,
-		classID uuid.UUID,
+		placeID uuid.UUID,
 	) (models.UploadMediaLink, error)
 
 	ValidatePlaceBanner(
 		ctx context.Context,
-		classID uuid.UUID,
+		placeID uuid.UUID,
 		key string,
 	) error
 
 	DeleteUploadPlaceBanner(
 		ctx context.Context,
-		classID uuid.UUID,
+		placeID uuid.UUID,
 		key string,
 	) error
 
 	DeletePlaceBanner(
 		ctx context.Context,
-		classID uuid.UUID,
+		placeID uuid.UUID,
 		key string,
 	) error
 
 	UpdatePlaceBanner(
 		ctx context.Context,
-		classID uuid.UUID,
+		placeID uuid.UUID,
 		key string,
 	) (string, error)
 }

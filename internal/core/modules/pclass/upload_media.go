@@ -46,8 +46,7 @@ func (m *Module) updatePlaceClassIcon(
 	params UpdateParams,
 ) (newKey *string, err error) {
 	if params.IconKey != nil {
-		err = m.bucket.ValidatePlaceClassIcon(ctx, class.ID, *params.IconKey)
-		if err != nil {
+		if err = m.bucket.ValidatePlaceClassIcon(ctx, class.ID, *params.IconKey); err != nil {
 			return nil, fmt.Errorf("failed to validate place class icon: %w", err)
 		}
 
@@ -56,12 +55,15 @@ func (m *Module) updatePlaceClassIcon(
 			return nil, fmt.Errorf("failed to update place class icon: %w", err)
 		}
 
+		if err = m.bucket.DeleteUploadPlaceClassIcon(ctx, class.ID, *params.IconKey); err != nil {
+			return nil, fmt.Errorf("failed to delete temp place class icon: %w", err)
+		}
+
 		newKey = &iconKey
 	}
 
-	if class.IconKey != nil && params.IconKey != nil || (params.IconKey == nil && class.IconKey != nil) {
-		err = m.bucket.DeletePlaceClassIcon(ctx, class.ID, *class.IconKey)
-		if err != nil {
+	if class.IconKey != nil {
+		if err = m.bucket.DeletePlaceClassIcon(ctx, class.ID, *class.IconKey); err != nil {
 			return nil, fmt.Errorf("failed to delete place class icon: %w", err)
 		}
 	}

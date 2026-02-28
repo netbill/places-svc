@@ -68,8 +68,7 @@ func (m *Module) updatePlaceIcon(
 	params UpdateParams,
 ) (newKey *string, err error) {
 	if params.IconKey != nil {
-		err = m.bucket.ValidatePlaceIcon(ctx, place.ID, *params.IconKey)
-		if err != nil {
+		if err = m.bucket.ValidatePlaceIcon(ctx, place.ID, *params.IconKey); err != nil {
 			return nil, fmt.Errorf("failed to validate place icon: %w", err)
 		}
 
@@ -78,12 +77,15 @@ func (m *Module) updatePlaceIcon(
 			return nil, fmt.Errorf("failed to update place icon: %w", err)
 		}
 
+		if err = m.bucket.DeletePlaceIcon(ctx, place.ID, iconKey); err != nil {
+			return nil, fmt.Errorf("failed to delete place icon: %w", err)
+		}
+
 		newKey = &iconKey
 	}
 
-	if place.IconKey != nil && params.IconKey != nil || (params.IconKey == nil && place.IconKey != nil) {
-		err = m.bucket.DeletePlaceIcon(ctx, place.ID, *place.IconKey)
-		if err != nil {
+	if place.IconKey != nil {
+		if err = m.bucket.DeletePlaceIcon(ctx, place.ID, *place.IconKey); err != nil {
 			return nil, fmt.Errorf("failed to delete place icon: %w", err)
 		}
 	}
@@ -131,22 +133,24 @@ func (m *Module) updatePlaceBanner(
 	params UpdateParams,
 ) (newKey *string, err error) {
 	if params.BannerKey != nil {
-		err = m.bucket.ValidatePlaceBanner(ctx, place.ID, *params.BannerKey)
-		if err != nil {
+		if err = m.bucket.ValidatePlaceBanner(ctx, place.ID, *params.BannerKey); err != nil {
 			return nil, fmt.Errorf("failed to validate place banner: %w", err)
 		}
 
-		BannerKey, err := m.bucket.UpdatePlaceBanner(ctx, place.ID, *params.BannerKey)
+		key, err := m.bucket.UpdatePlaceBanner(ctx, place.ID, *params.BannerKey)
 		if err != nil {
 			return nil, fmt.Errorf("failed to update place banner: %w", err)
 		}
 
-		newKey = &BannerKey
+		if err = m.bucket.DeletePlaceBanner(ctx, place.ID, key); err != nil {
+			return nil, fmt.Errorf("failed to delete place banner: %w", err)
+		}
+
+		newKey = &key
 	}
 
-	if place.BannerKey != nil && params.BannerKey != nil || (params.BannerKey == nil && place.BannerKey != nil) {
-		err = m.bucket.DeletePlaceBanner(ctx, place.ID, *place.BannerKey)
-		if err != nil {
+	if place.BannerKey != nil {
+		if err = m.bucket.DeletePlaceBanner(ctx, place.ID, *place.BannerKey); err != nil {
 			return nil, fmt.Errorf("failed to delete place banner: %w", err)
 		}
 	}

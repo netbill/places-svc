@@ -58,17 +58,34 @@ func (m *Module) Update(
 		return models.Place{}, err
 	}
 
-	icon, err := m.updatePlaceIcon(ctx, place, params)
-	if err != nil {
-		return models.Place{}, err
-	}
-	params.IconKey = icon
+	upd := params.ClassID != place.ClassID ||
+		params.Name != place.Name ||
+		params.Address != place.Address ||
+		!ptrStrEq(params.Description, place.Description) ||
+		!ptrStrEq(params.Website, place.Website) ||
+		!ptrStrEq(params.Phone, place.Phone)
 
-	banner, err := m.updatePlaceBanner(ctx, place, params)
-	if err != nil {
-		return models.Place{}, err
+	if !ptrStrEq(params.IconKey, place.IconKey) {
+		iconKey, err := m.updatePlaceIcon(ctx, place, params)
+		if err != nil {
+			return models.Place{}, fmt.Errorf("failed to validate place icon: %w", err)
+		}
+		params.IconKey = iconKey
+		upd = true
 	}
-	params.BannerKey = banner
+
+	if !ptrStrEq(params.BannerKey, place.BannerKey) {
+		bannerKey, err := m.updatePlaceBanner(ctx, place, params)
+		if err != nil {
+			return models.Place{}, fmt.Errorf("failed to validate place banner: %w", err)
+		}
+		params.BannerKey = bannerKey
+		upd = true
+	}
+
+	if !upd {
+		return place, nil
+	}
 
 	err = m.repo.Transaction(ctx, func(txCtx context.Context) error {
 		place, err = m.repo.UpdatePlaceByID(txCtx, placeID, params)
@@ -87,4 +104,8 @@ func (m *Module) Update(
 	}
 
 	return place, nil
+}
+
+func ptrStrEq(a, b *string) bool {
+	return (a == nil && b == nil) || (a != nil && b != nil && *a == *b)
 }
