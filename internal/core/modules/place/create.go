@@ -63,18 +63,13 @@ func (m *Module) Create(
 		)
 	}
 
-	err = m.repo.Transaction(ctx, func(txCtx context.Context) error {
+	err = m.repo.Transaction(ctx, func(ctx context.Context) error {
 		place, err = m.repo.CreatePlace(ctx, params)
 		if err != nil {
 			return err
 		}
 
-		err = m.messenger.PublishCreatePlace(txCtx, place)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return m.messenger.PublishCreatePlace(ctx, place)
 	})
 
 	return place, nil

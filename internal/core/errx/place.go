@@ -4,6 +4,8 @@ import "github.com/netbill/ape"
 
 var (
 	ErrorPlaceNotExists = ape.DeclareError("PLACE_NOT_FOUND")
+	ErrorPlaceDeleted   = ape.DeclareError("PLACE_DELETED")
+	ErrorPlaceIsDeleted = ape.DeclareError("PLACE_IS_DELETED")
 
 	ErrorCannotSetStatusSuspend = ape.DeclareError("PLACE_CANNOT_SET_SUSPEND")
 	ErrorPlaceStatusIsInvalid   = ape.DeclareError("PLACE_STATUS_IS_INVALID")

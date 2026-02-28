@@ -2,9 +2,12 @@ package organization
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
@@ -22,6 +25,26 @@ func (m *Module) Create(
 	ctx context.Context,
 	org CreateParams,
 ) error {
+	exists, err := m.repo.ExistsOrganization(ctx, org.ID)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return errx.ErrorOrganizationAlreadyExists.Raise(
+			fmt.Errorf("organization with id %s already exists", org.ID),
+		)
+	}
+
+	bury, err := m.repo.OrganizationIsBuried(ctx, org.ID)
+	if err != nil {
+		return err
+	}
+	if bury {
+		return errx.ErrorOrganizationDeleted.Raise(
+			fmt.Errorf("organization with id %s is already deleted", org.ID),
+		)
+	}
+
 	return m.repo.CreateOrganization(ctx, org)
 }
 
@@ -36,12 +59,7 @@ func (m *Module) GetByIDs(
 	ctx context.Context,
 	ids []uuid.UUID,
 ) ([]models.Organization, error) {
-	res, err := m.repo.GetOrgsByIDs(ctx, ids)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
+	return m.repo.GetOrgsByIDs(ctx, ids)
 }
 
 type UpdateParams struct {
@@ -59,6 +77,17 @@ func (m *Module) Update(
 	params UpdateParams,
 ) error {
 	org, err := m.repo.GetOrganization(ctx, orgID)
+	if errors.Is(err, errx.ErrorOrganizationNotExists) {
+		buried, err := m.repo.OrganizationIsBuried(ctx, orgID)
+		if err != nil {
+			return err
+		}
+		if buried {
+			return errx.ErrorOrganizationDeleted.Raise(
+				fmt.Errorf("organization with id %s is already deleted", orgID),
+			)
+		}
+	}
 	if err != nil {
 		return err
 	}
@@ -74,5 +103,15 @@ func (m *Module) Delete(
 	ctx context.Context,
 	organizationID uuid.UUID,
 ) error {
+	buried, err := m.repo.OrganizationIsBuried(ctx, organizationID)
+	if err != nil {
+		return err
+	}
+	if buried {
+		return errx.ErrorOrganizationDeleted.Raise(
+			fmt.Errorf("organization with id %s is already deleted", organizationID),
+		)
+	}
+
 	return m.repo.DeleteOrganization(ctx, organizationID)
 }

@@ -107,6 +107,20 @@ func (q *organizations) Get(ctx context.Context) (repository.OrganizationRow, er
 	return scanOrganization(q.db.QueryRow(ctx, query, args...))
 }
 
+func (q *organizations) Exists(ctx context.Context) (bool, error) {
+	subSQL, subArgs, err := q.selector.Limit(1).ToSql()
+	if err != nil {
+		return false, err
+	}
+	sql := "SELECT EXISTS (" + subSQL + ")"
+
+	var exists bool
+	if err = q.db.QueryRow(ctx, sql, subArgs...).Scan(&exists); err != nil {
+		return false, fmt.Errorf("sql=%s args=%v: %w", sql, subArgs, err)
+	}
+	return exists, nil
+}
+
 func (q *organizations) Select(ctx context.Context) ([]repository.OrganizationRow, error) {
 	query, args, err := q.selector.ToSql()
 	if err != nil {

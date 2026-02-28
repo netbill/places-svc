@@ -2,9 +2,11 @@ package organization
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/netbill/places-svc/internal/core/errx"
 )
 
 type CreateMemberParams struct {
@@ -22,6 +24,36 @@ func (m *Module) CreateOrgMember(
 	ctx context.Context,
 	params CreateMemberParams,
 ) error {
+	exists, err := m.repo.ExistsOrgMember(ctx, params.ID)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return errx.ErrorOrgMemberAlreadyExists.Raise(
+			fmt.Errorf("organization member with id %s already exists", params.ID),
+		)
+	}
+
+	bury, err := m.repo.OrgMemberIsBuried(ctx, params.ID)
+	if err != nil {
+		return err
+	}
+	if bury {
+		return errx.ErrorOrgMemberDeleted.Raise(
+			fmt.Errorf("organization member with id %s is already deleted", params.ID),
+		)
+	}
+
+	bury, err = m.repo.OrganizationIsBuried(ctx, params.ID)
+	if err != nil {
+		return err
+	}
+	if bury {
+		return errx.ErrorOrganizationDeleted.Raise(
+			fmt.Errorf("organization with id %s is already deleted", params.OrganizationID),
+		)
+	}
+
 	return m.repo.CreateOrgMember(ctx, params)
 }
 
@@ -38,6 +70,16 @@ func (m *Module) UpdateOrgMember(
 	memberID uuid.UUID,
 	params UpdateMemberParams,
 ) error {
+	bury, err := m.repo.OrgMemberIsBuried(ctx, memberID)
+	if err != nil {
+		return err
+	}
+	if bury {
+		return errx.ErrorOrgMemberDeleted.Raise(
+			fmt.Errorf("organization member with id %s is already deleted", memberID),
+		)
+	}
+
 	return m.repo.UpdateOrgMember(ctx, memberID, params)
 }
 
@@ -45,5 +87,15 @@ func (m *Module) DeleteOrgMember(
 	ctx context.Context,
 	memberID uuid.UUID,
 ) error {
+	bury, err := m.repo.OrgMemberIsBuried(ctx, memberID)
+	if err != nil {
+		return err
+	}
+	if bury {
+		return errx.ErrorOrgMemberDeleted.Raise(
+			fmt.Errorf("organization member with id %s is already deleted", memberID),
+		)
+	}
+
 	return m.repo.DeleteOrgMember(ctx, memberID)
 }

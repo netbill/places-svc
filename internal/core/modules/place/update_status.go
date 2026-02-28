@@ -38,7 +38,7 @@ func (m *Module) UpdateStatus(
 		)
 	case status == place.Status:
 		return place, nil
-	case status != models.PlaceStatusActive, status != models.PlaceStatusInactive:
+	case status != models.PlaceStatusActive && status != models.PlaceStatusInactive:
 		return models.Place{}, errx.ErrorPlaceStatusIsInvalid.Raise(
 			fmt.Errorf("cannot set status to %s, suspended", status),
 		)
@@ -54,17 +54,13 @@ func (m *Module) UpdateStatus(
 		)
 	}
 
-	err = m.repo.Transaction(ctx, func(txCtx context.Context) error {
-		place, err = m.repo.UpdatePlaceStatus(txCtx, placeID, status)
+	err = m.repo.Transaction(ctx, func(ctx context.Context) error {
+		place, err = m.repo.UpdatePlaceStatus(ctx, placeID, status)
 		if err != nil {
 			return err
 		}
 
-		if err = m.messenger.PublishUpdatePlace(txCtx, place); err != nil {
-			return err
-		}
-
-		return nil
+		return m.messenger.PublishUpdatePlace(ctx, place)
 	})
 	if err != nil {
 		return models.Place{}, err

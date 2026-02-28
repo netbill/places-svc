@@ -50,11 +50,7 @@ func (m *Module) Update(
 			return err
 		}
 
-		if err = m.messenger.PublishPlaceClassUpdated(ctx, class); err != nil {
-			return err
-		}
-
-		return nil
+		return m.messenger.PublishPlaceClassUpdated(ctx, class)
 	}); err != nil {
 		return models.PlaceClass{}, err
 	}

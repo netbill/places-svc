@@ -39,17 +39,25 @@ func (m *Module) Delete(
 		)
 	}
 
-	return m.repo.Transaction(ctx, func(txCtx context.Context) error {
-		err = m.repo.DeletePlaceByID(ctx, placeID)
-		if err != nil {
+	buried, err := m.repo.PlaceIsBuried(ctx, placeID)
+	if err != nil {
+		return err
+	}
+	if buried {
+		return errx.ErrorPlaceDeleted.Raise(
+			fmt.Errorf("place with id %s is already deleted", placeID),
+		)
+	}
+
+	return m.repo.Transaction(ctx, func(ctx context.Context) error {
+		if err = m.repo.BuryPlace(ctx, placeID); err != nil {
 			return err
 		}
 
-		err = m.messenger.PublishDeletePlace(ctx, placeID)
-		if err != nil {
+		if err = m.repo.DeletePlaceByID(ctx, placeID); err != nil {
 			return err
 		}
 
-		return nil
+		return m.messenger.PublishDeletePlace(ctx, placeID)
 	})
 }

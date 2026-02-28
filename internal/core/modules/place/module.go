@@ -48,6 +48,9 @@ type repo interface {
 	GetOrganization(ctx context.Context, id uuid.UUID) (models.Organization, error)
 	GetOrgMemberByAccountID(ctx context.Context, organizationID, accountID uuid.UUID) (models.OrgMember, error)
 
+	PlaceIsBuried(ctx context.Context, placeID uuid.UUID) (bool, error)
+	BuryPlace(ctx context.Context, placeID uuid.UUID) error
+
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
 }
 

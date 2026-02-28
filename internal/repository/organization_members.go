@@ -47,6 +47,7 @@ type OrgMembersQ interface {
 
 	Get(ctx context.Context) (OrgMemberRow, error)
 	Select(ctx context.Context) ([]OrgMemberRow, error)
+	Exists(ctx context.Context) (bool, error)
 
 	FilterByID(id ...uuid.UUID) OrgMembersQ
 	FilterByAccountID(accountID ...uuid.UUID) OrgMembersQ
@@ -112,4 +113,8 @@ func (r *Repository) GetOrgMemberByAccountID(
 	}
 
 	return row.ToModel(), nil
+}
+
+func (r *Repository) ExistsOrgMember(ctx context.Context, memberID uuid.UUID) (bool, error) {
+	return r.OrgMembersSql.New().FilterByID(memberID).Exists(ctx)
 }

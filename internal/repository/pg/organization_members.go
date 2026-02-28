@@ -136,6 +136,20 @@ func (q *organizationMembers) Select(ctx context.Context) ([]repository.OrgMembe
 	return out, nil
 }
 
+func (q *organizationMembers) Exists(ctx context.Context) (bool, error) {
+	subSQL, subArgs, err := q.selector.Limit(1).ToSql()
+	if err != nil {
+		return false, err
+	}
+	sql := "SELECT EXISTS (" + subSQL + ")"
+
+	var exists bool
+	if err = q.db.QueryRow(ctx, sql, subArgs...).Scan(&exists); err != nil {
+		return false, fmt.Errorf("sql=%s args=%v: %w", sql, subArgs, err)
+	}
+	return exists, nil
+}
+
 func (q *organizationMembers) UpdateOne(ctx context.Context) error {
 	q.updater = q.updater.Set("replica_updated_at", time.Now().UTC())
 

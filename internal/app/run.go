@@ -50,11 +50,12 @@ func (a *App) Run(ctx context.Context) error {
 	db := pgdbx.NewDB(pool)
 
 	repo := &repository.Repository{
-		TransactionSql:   pg.NewTransaction(db),
 		PlacesSql:        pg.NewPlacesQ(db),
 		PlaceClassesSql:  pg.NewPlaceClassesQ(db),
 		OrganizationsSql: pg.NewOrganizationsQ(db),
 		OrgMembersSql:    pg.NewOrgMembersQ(db),
+		TombstonesSql:    pg.NewTombstonesQ(db),
+		TransactionSql:   db,
 	}
 
 	cfg, err := awscfg.LoadDefaultConfig(
@@ -151,7 +152,7 @@ func (a *App) Run(ctx context.Context) error {
 		outboxWorker.Run(ctx)
 	})
 
-	inbound := handler.New(handler.Modules{
+	inbound := handler.New(a.log, handler.Modules{
 		Org: orgCore,
 	})
 

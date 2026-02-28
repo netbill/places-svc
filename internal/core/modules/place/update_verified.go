@@ -21,18 +21,13 @@ func (m *Module) UpdateVerified(
 		return place, nil
 	}
 
-	err = m.repo.Transaction(ctx, func(txCtx context.Context) error {
+	err = m.repo.Transaction(ctx, func(ctx context.Context) error {
 		place, err = m.repo.UpdatePlaceVerified(ctx, placeID, verified)
 		if err != nil {
 			return err
 		}
 
-		err = m.messenger.PublishUpdatePlace(ctx, place)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return m.messenger.PublishUpdatePlace(ctx, place)
 	})
 
 	return place, nil

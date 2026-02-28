@@ -39,12 +39,7 @@ func (m *Module) Create(
 			return err
 		}
 
-		err = m.messenger.PublishPlaceClassCreated(ctx, class)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return m.messenger.PublishPlaceClassCreated(ctx, class)
 	}); err != nil {
 		return models.PlaceClass{}, err
 	}

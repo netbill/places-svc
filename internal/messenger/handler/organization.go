@@ -3,9 +3,11 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"github.com/netbill/eventbox"
 	"github.com/netbill/evtypes"
+	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/modules/organization"
 )
 
@@ -18,7 +20,7 @@ func (h *Handler) OrganizationCreated(
 		return err
 	}
 
-	return h.modules.Org.Create(ctx, organization.CreateParams{
+	err := h.modules.Org.Create(ctx, organization.CreateParams{
 		ID:        payload.OrganizationID,
 		Status:    payload.Status,
 		Name:      payload.Name,
@@ -26,6 +28,19 @@ func (h *Handler) OrganizationCreated(
 		BannerKey: payload.BannerKey,
 		CreatedAt: payload.CreatedAt,
 	})
+	switch {
+	case errors.Is(err, errx.ErrorOrganizationDeleted):
+		h.log.WithInboxEvent(event).Debug("received organization created event for already deleted organization")
+		return nil
+	case errors.Is(err, errx.ErrorOrganizationAlreadyExists):
+		h.log.WithInboxEvent(event).Debug("received organization created event for already existing organization")
+		return nil
+	case err != nil:
+		return err
+	default:
+		h.log.WithInboxEvent(event).Debug("organization created successfully")
+		return nil
+	}
 }
 
 func (h *Handler) OrganizationUpdated(
@@ -37,7 +52,7 @@ func (h *Handler) OrganizationUpdated(
 		return err
 	}
 
-	return h.modules.Org.Update(ctx, payload.OrganizationID, organization.UpdateParams{
+	err := h.modules.Org.Update(ctx, payload.OrganizationID, organization.UpdateParams{
 		Name:      payload.Name,
 		Status:    payload.Status,
 		IconKey:   payload.IconKey,
@@ -45,6 +60,19 @@ func (h *Handler) OrganizationUpdated(
 		Version:   payload.Version,
 		UpdatedAt: payload.UpdatedAt,
 	})
+	switch {
+	case errors.Is(err, errx.ErrorOrganizationDeleted):
+		h.log.WithInboxEvent(event).Debug("received organization updated event for already deleted organization")
+		return nil
+	case errors.Is(err, errx.ErrorOrganizationAlreadyExists):
+		h.log.WithInboxEvent(event).Debug("received organization updated event for already existing organization")
+		return nil
+	case err != nil:
+		return err
+	default:
+		h.log.WithInboxEvent(event).Debug("organization updated successfully")
+		return nil
+	}
 }
 
 func (h *Handler) OrganizationDeleted(
@@ -56,5 +84,15 @@ func (h *Handler) OrganizationDeleted(
 		return err
 	}
 
-	return h.modules.Org.Delete(ctx, payload.OrganizationID)
+	err := h.modules.Org.Delete(ctx, payload.OrganizationID)
+	switch {
+	case errors.Is(err, errx.ErrorOrganizationDeleted):
+		h.log.WithInboxEvent(event).Debug("received organization deleted event for already deleted organization")
+		return nil
+	case err != nil:
+		return err
+	default:
+		h.log.WithInboxEvent(event).Debug("organization deleted successfully")
+		return nil
+	}
 }

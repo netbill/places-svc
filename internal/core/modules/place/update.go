@@ -87,17 +87,13 @@ func (m *Module) Update(
 		return place, nil
 	}
 
-	err = m.repo.Transaction(ctx, func(txCtx context.Context) error {
-		place, err = m.repo.UpdatePlaceByID(txCtx, placeID, params)
+	err = m.repo.Transaction(ctx, func(ctx context.Context) error {
+		place, err = m.repo.UpdatePlaceByID(ctx, placeID, params)
 		if err != nil {
 			return err
 		}
 
-		if err = m.messenger.PublishUpdatePlace(txCtx, place); err != nil {
-			return err
-		}
-
-		return nil
+		return m.messenger.PublishUpdatePlace(ctx, place)
 	})
 	if err != nil {
 		return models.Place{}, err

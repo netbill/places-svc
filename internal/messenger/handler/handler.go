@@ -5,9 +5,11 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/netbill/places-svc/internal/core/modules/organization"
+	"github.com/netbill/places-svc/pkg/log"
 )
 
 type Handler struct {
+	log     *log.Logger
 	modules Modules
 }
 
@@ -15,8 +17,9 @@ type Modules struct {
 	Org organizationSvc
 }
 
-func New(modules Modules) *Handler {
+func New(log *log.Logger, modules Modules) *Handler {
 	return &Handler{
+		log:     log,
 		modules: modules,
 	}
 }

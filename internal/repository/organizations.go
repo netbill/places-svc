@@ -48,6 +48,7 @@ type OrganizationsQ interface {
 
 	Get(ctx context.Context) (OrganizationRow, error)
 	Select(ctx context.Context) ([]OrganizationRow, error)
+	Exists(ctx context.Context) (bool, error)
 
 	UpdateOne(ctx context.Context) error
 
@@ -113,6 +114,10 @@ func (r *Repository) GetOrgsByIDs(
 	}
 
 	return res, nil
+}
+
+func (r *Repository) ExistsOrganization(ctx context.Context, orgID uuid.UUID) (bool, error) {
+	return r.OrganizationsSql.New().FilterByID(orgID).Exists(ctx)
 }
 
 func (r *Repository) UpdateOrganization(
