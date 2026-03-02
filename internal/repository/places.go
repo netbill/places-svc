@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/core/modules/place"
 	"github.com/netbill/restkit/pagi"
@@ -115,10 +117,15 @@ func (r *Repository) CreatePlace(ctx context.Context, params place.CreateParams)
 	return row.ToModel(), nil
 }
 
-func (r *Repository) GetPlaceByID(ctx context.Context, id uuid.UUID) (models.Place, error) {
-	row, err := r.PlacesSql.New().FilterByID(id).Get(ctx)
+func (r *Repository) GetPlaceByID(ctx context.Context, placeID uuid.UUID) (models.Place, error) {
+	row, err := r.PlacesSql.New().FilterByID(placeID).Get(ctx)
 	if err != nil {
 		return models.Place{}, err
+	}
+	if row.IsNil() {
+		return models.Place{}, errx.ErrorPlaceNotExists.Raise(
+			fmt.Errorf("place with id %s not found", placeID),
+		)
 	}
 
 	return row.ToModel(), nil
@@ -213,6 +220,11 @@ func (r *Repository) UpdatePlaceByID(
 	if err != nil {
 		return models.Place{}, err
 	}
+	if row.IsNil() {
+		return models.Place{}, errx.ErrorPlaceNotExists.Raise(
+			fmt.Errorf("place with id %s not found", placeID),
+		)
+	}
 
 	return row.ToModel(), nil
 }
@@ -225,6 +237,11 @@ func (r *Repository) UpdatePlaceStatus(
 	row, err := r.PlacesSql.New().FilterByID(placeID).UpdateStatus(status).UpdateOne(ctx)
 	if err != nil {
 		return models.Place{}, err
+	}
+	if row.IsNil() {
+		return models.Place{}, errx.ErrorPlaceNotExists.Raise(
+			fmt.Errorf("place with id %s not found", placeID),
+		)
 	}
 
 	return row.ToModel(), nil
@@ -239,6 +256,11 @@ func (r *Repository) UpdatePlaceVerified(
 	if err != nil {
 		return models.Place{}, err
 	}
+	if row.IsNil() {
+		return models.Place{}, errx.ErrorPlaceNotExists.Raise(
+			fmt.Errorf("place with id %s not found", placeID),
+		)
+	}
 
 	return row.ToModel(), nil
 }
@@ -251,6 +273,11 @@ func (r *Repository) UpdateClassForPlace(
 	row, err := r.PlacesSql.New().FilterByID(placeID).UpdateClassID(classID).UpdateOne(ctx)
 	if err != nil {
 		return models.Place{}, err
+	}
+	if row.IsNil() {
+		return models.Place{}, errx.ErrorPlaceNotExists.Raise(
+			fmt.Errorf("place with id %s not found", placeID),
+		)
 	}
 
 	return row.ToModel(), nil

@@ -80,6 +80,14 @@ func (m *Module) UpdateOrgMember(
 		)
 	}
 
+	member, err := m.repo.GetOrgMemberByID(ctx, memberID)
+	if err != nil {
+		return err
+	}
+	if params.Version <= member.Version {
+		return nil
+	}
+
 	return m.repo.UpdateOrgMember(ctx, memberID, params)
 }
 
@@ -97,5 +105,11 @@ func (m *Module) DeleteOrgMember(
 		)
 	}
 
-	return m.repo.DeleteOrgMember(ctx, memberID)
+	return m.repo.Transaction(ctx, func(ctx context.Context) error {
+		if err := m.repo.BuryOrgMember(ctx, memberID); err != nil {
+			return err
+		}
+
+		return m.repo.DeleteOrgMember(ctx, memberID)
+	})
 }

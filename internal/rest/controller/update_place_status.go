@@ -21,7 +21,7 @@ func (c *Controller) UpdatePlaceStatus(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.UpdatePlaceStatus(r)
 	if err != nil {
-		log.WithError(err).Info("invalid update Place status request")
+		log.WithError(err).Warn("invalid updateplacestatus request")
 		render.ResponseError(w, problems.BadRequest(err)...)
 		return
 	}
@@ -36,24 +36,24 @@ func (c *Controller) UpdatePlaceStatus(w http.ResponseWriter, r *http.Request) {
 	)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceNotExists):
-		log.Info("Place not found")
-		render.ResponseError(w, problems.NotFound("Place not found"))
+		log.WithError(err).Warn("place not found")
+		render.ResponseError(w, problems.NotFound("place not found"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
-		log.Info("organization is suspended")
+		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Forbidden("organization is suspended"))
 	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.Info("not enough rights to update Place status")
-		render.ResponseError(w, problems.Forbidden("not enough rights to update Place status"))
+		log.WithError(err).Warn("not enough rights to update place status")
+		render.ResponseError(w, problems.Forbidden("not enough rights to update place status"))
 	case errors.Is(err, errx.ErrorCannotSetStatusSuspend):
-		log.Info("cannot set status suspended")
+		log.WithError(err).Warn("cannot set status suspended")
 		render.ResponseError(w, problems.Forbidden("cannot set status suspended"))
 	case errors.Is(err, errx.ErrorPlaceStatusIsInvalid):
-		log.Info("place status is invalid")
+		log.WithError(err).Warn("place status is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"data/attributes/status": fmt.Errorf("place status is invalid"),
 		})...)
 	case err != nil:
-		log.WithError(err).Error("failed to update Place status")
+		log.WithError(err).Error("failed to update place status")
 		render.ResponseError(w, problems.InternalError())
 	default:
 		render.Response(w, http.StatusOK, responses.Place(res))

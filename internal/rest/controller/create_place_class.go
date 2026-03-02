@@ -20,7 +20,7 @@ func (c *Controller) CreatePlaceClass(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.CreatePlaceClass(r)
 	if err != nil {
-		log.WithError(err).Info("invalid create Place class request")
+		log.WithError(err).Warn("invalid create place class request")
 		render.ResponseError(w, problems.BadRequest(err)...)
 
 		return
@@ -34,21 +34,21 @@ func (c *Controller) CreatePlaceClass(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
 		log.WithField("place_class_id", req.Data.Attributes.ParentId).
-			Info("parent Place class not found")
-		render.ResponseError(w, problems.NotFound("parent Place class not found"))
+			Warn("place class not found")
+		render.ResponseError(w, problems.NotFound("place class not found"))
 	case errors.Is(err, errx.ErrorPlaceClassIsDeprecated):
 		log.WithField("place_class_id", req.Data.Attributes.ParentId).
-			Info("parent Place class is deprecated")
-		render.ResponseError(w, problems.Conflict("parent Place class is deprecated"))
+			Warn("place class is deprecated")
+		render.ResponseError(w, problems.Conflict("place class is deprecated"))
 	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.Info("not enough rights to create Place class")
-		render.ResponseError(w, problems.Forbidden("not enough rights to create Place class"))
+		log.WithError(err).Warn("not enough rights to create place class")
+		render.ResponseError(w, problems.Forbidden("not enough rights to create place class"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 	case err != nil:
-		log.WithError(err).Error("failed to create Place class")
+		log.WithError(err).Error("failed to create place class")
 		render.ResponseError(w, problems.InternalError())
 	default:
-		log.WithField("place_class_id", res.ID).Info("Place class created")
+		log.WithField("place_class_id", res.ID).Info("place class created")
 		render.Response(w, http.StatusCreated, responses.PlaceClass(res))
 	}
 }

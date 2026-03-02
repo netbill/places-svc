@@ -21,7 +21,7 @@ func (c *Controller) UpdatePlace(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.UpdatePlace(r)
 	if err != nil {
-		log.WithError(err).Info("invalid update Place  request")
+		log.WithError(err).Warn("invalid updateplace request")
 		render.ResponseError(w, problems.BadRequest(err)...)
 		return
 	}
@@ -45,62 +45,62 @@ func (c *Controller) UpdatePlace(w http.ResponseWriter, r *http.Request) {
 	)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceNotExists):
-		log.WithError(err).Info("Place  not found")
-		render.ResponseError(w, problems.NotFound("Place  not found"))
+		log.WithError(err).Warn("place  not found")
+		render.ResponseError(w, problems.NotFound("place  not found"))
 	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.WithError(err).Info("not enough rights to update Place ")
-		render.ResponseError(w, problems.Forbidden("not enough rights to update Place "))
+		log.WithError(err).Warn("not enough rights to update place")
+		render.ResponseError(w, problems.Forbidden("not enough rights to update place"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
-		log.WithError(err).Info("organization is suspended")
+		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Conflict("organization is suspended"))
 	case errors.Is(err, errx.ErrorPlaceClassIsDeprecated):
-		log.WithError(err).Info("Place class is deprecated")
-		render.ResponseError(w, problems.Conflict("Place class is deprecated"))
+		log.WithError(err).Warn("place class is deprecated")
+		render.ResponseError(w, problems.Conflict("place class is deprecated"))
 	case errors.Is(err, errx.ErrorPlaceIconKeyIsInvalid):
-		log.WithError(err).Info("icon key is invalid")
+		log.WithError(err).Warn("icon key is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceIconFormatIsNotAllowed):
-		log.WithError(err).Info("icon format is not allowed")
+		log.WithError(err).Warn("icon format is not allowed")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceIconContentIsExceedsMax):
-		log.WithError(err).Info("icon content is exceeds max")
+		log.WithError(err).Warn("icon content is exceeds max")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceIconResolutionIsInvalid):
-		log.WithError(err).Info("icon resolution is invalid")
+		log.WithError(err).Warn("icon resolution is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceBannerKeyIsInvalid):
-		log.WithError(err).Info("banner key is invalid")
+		log.WithError(err).Warn("banner key is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"banner": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceBannerFormatIsNotAllowed):
-		log.WithError(err).Info("banner format is not allowed")
+		log.WithError(err).Warn("banner format is not allowed")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"banner": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceBannerContentIsExceedsMax):
-		log.WithError(err).Info("banner content is exceeds max")
+		log.WithError(err).Warn("banner content is exceeds max")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"banner": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceBannerResolutionIsInvalid):
-		log.WithError(err).Info("banner resolution is invalid")
+		log.WithError(err).Warn("banner resolution is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"banner": err,
 		})...)
 	case err != nil:
-		log.WithError(err).Error("failed to update Place ")
+		log.WithError(err).Error("failed to update place")
 		render.ResponseError(w, problems.InternalError())
 	default:
-		log.Info("Place  updated")
+		log.Info("place  updated")
 		render.Response(w, http.StatusOK, responses.Place(res))
 	}
 }

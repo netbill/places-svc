@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/google/uuid"
 	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/rest/scope"
@@ -20,10 +21,10 @@ func (c *Controller) DeletePlace(w http.ResponseWriter, r *http.Request) {
 
 	placeID, err := uuid.Parse(chi.URLParam(r, "place_id"))
 	if err != nil {
-		log.WithError(err).Info("invalid Place id")
-		render.ResponseError(w, problems.BadRequest(
-			fmt.Errorf("invalid place_id: %s", chi.URLParam(r, "place_id")))...,
-		)
+		log.WithError(err).Info("invalidplaceid")
+		render.ResponseError(w, problems.BadRequest(validation.Errors{
+			"query": fmt.Errorf("invalidplaceid: %s", chi.URLParam(r, "place_id")),
+		})...)
 		return
 	}
 
@@ -31,14 +32,14 @@ func (c *Controller) DeletePlace(w http.ResponseWriter, r *http.Request) {
 
 	err = c.modules.Place.Delete(r.Context(), scope.AccountActor(r), placeID)
 	switch {
-	case errors.Is(err, errx.ErrorPlaceNotExists):
-		log.Info("Place not found")
-		render.ResponseError(w, problems.NotFound("Place not found"))
+	case errors.Is(err, errx.ErrorPlaceNotExists) || errors.Is(err, errx.ErrorPlaceDeleted):
+		log.WithError(err).Warn("place not found")
+		render.ResponseError(w, problems.NotFound("place not found"))
 	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.Info("not enough rights to delete Place")
+		log.WithError(err).Warn("not enough rights to delete Place")
 		render.ResponseError(w, problems.Forbidden("not enough rights to delete Place"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
-		log.Info("organization is suspended")
+		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Forbidden("organization is suspended"))
 	case err != nil:
 		log.WithError(err).Error("failed to delete Place")

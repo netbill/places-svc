@@ -19,7 +19,7 @@ func (c *Controller) DeletePlaceUploadBanner(w http.ResponseWriter, r *http.Requ
 
 	req, err := requests.DeleteUploadPlaceBanner(r)
 	if err != nil {
-		log.WithError(err).Info("invalid delete upload Place  banner requests")
+		log.WithError(err).Warn("invalid delete upload place banner requests")
 		render.ResponseError(w, problems.BadRequest(err)...)
 
 		return
@@ -35,23 +35,24 @@ func (c *Controller) DeletePlaceUploadBanner(w http.ResponseWriter, r *http.Requ
 	)
 	switch {
 	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.Info("not enough rights to delete Place banner in upload session")
-		render.ResponseError(w, problems.Forbidden("not enough rights to delete Place banner in upload session"))
+		log.WithError(err).Warn("not enough rights to delete place banner in upload session")
+		render.ResponseError(w, problems.Forbidden("not enough rights to delete place banner in upload session"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
-		log.Info("organization is suspended")
+		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Forbidden("organization is suspended"))
 	case errors.Is(err, errx.ErrorPlaceBannerKeyIsInvalid):
-		log.WithError(err).Info("Place banner key is invalid")
+		log.WithError(err).Warn("place banner key is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"banner": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceNotExists):
-		log.Info("Place does not exist")
-		render.ResponseError(w, problems.NotFound("Place does not exist"))
+		log.WithError(err).Warn("place does not exist")
+		render.ResponseError(w, problems.NotFound("place does not exist"))
 	case err != nil:
-		log.WithError(err).Error("failed to delete Place banner in upload session")
+		log.WithError(err).Error("failed to delete place banner in upload session")
 		render.ResponseError(w, problems.InternalError())
 	default:
+		log.Debug("place banner in upload session is deleted successfully")
 		w.WriteHeader(http.StatusNoContent)
 	}
 }

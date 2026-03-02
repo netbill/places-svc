@@ -21,7 +21,7 @@ func (c *Controller) UpdatePlaceClass(w http.ResponseWriter, r *http.Request) {
 
 	req, err := requests.UpdatePlaceClass(r)
 	if err != nil {
-		log.WithError(err).Info("invalid update Place class request")
+		log.WithError(err).Warn("invalid update place class request")
 		render.ResponseError(w, problems.BadRequest(err)...)
 		return
 	}
@@ -40,36 +40,36 @@ func (c *Controller) UpdatePlaceClass(w http.ResponseWriter, r *http.Request) {
 	)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
-		log.WithError(err).Info("Place class not found")
-		render.ResponseError(w, problems.NotFound("Place class not found"))
+		log.WithError(err).Warn("place class not found")
+		render.ResponseError(w, problems.NotFound("place class not found"))
 	case errors.Is(err, errx.ErrorPlaceClassParentCycle):
-		log.WithError(err).Info("setting parent would create a cycle")
+		log.WithError(err).Warn("setting parent would create a cycle")
 		render.ResponseError(w, problems.Conflict("setting parent would create a cycle"))
 	case errors.Is(err, errx.ErrorPlaceClassIconKeyIsInvalid):
-		log.WithError(err).Info("icon key is invalid")
+		log.WithError(err).Warn("icon key is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceClassIconFormatIsNotAllowed):
-		log.WithError(err).Info("icon format is not allowed")
+		log.WithError(err).Warn("icon format is not allowed")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceClassIconContentIsExceedsMax):
-		log.WithError(err).Info("icon content is exceeds max")
+		log.WithError(err).Warn("icon content is exceeds max")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceClassIconResolutionIsInvalid):
-		log.WithError(err).Info("icon resolution is invalid")
+		log.WithError(err).Warn("icon resolution is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case err != nil:
-		log.WithError(err).Error("failed to update Place class")
+		log.WithError(err).Error("failed to update place class")
 		render.ResponseError(w, problems.InternalError())
 	default:
-		log.Info("Place class updated")
+		log.Info("place class updated")
 		render.Response(w, http.StatusOK, responses.PlaceClass(res))
 	}
 }

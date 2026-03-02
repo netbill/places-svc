@@ -19,7 +19,7 @@ func (c *Controller) DeletePlaceUploadIcon(w http.ResponseWriter, r *http.Reques
 
 	req, err := requests.DeleteUploadPlaceIcon(r)
 	if err != nil {
-		log.WithError(err).Info("invalid delete upload Place  icon requests")
+		log.WithError(err).Warn("invalid delete uploadplace icon requests")
 		render.ResponseError(w, problems.BadRequest(err)...)
 
 		return
@@ -35,23 +35,24 @@ func (c *Controller) DeletePlaceUploadIcon(w http.ResponseWriter, r *http.Reques
 	)
 	switch {
 	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.Info("not enough rights to delete Place icon in upload session")
-		render.ResponseError(w, problems.Forbidden("not enough rights to delete Place icon in upload session"))
+		log.WithError(err).Warn("not enough rights to delete place icon in upload session")
+		render.ResponseError(w, problems.Forbidden("not enough rights to delete place icon in upload session"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
-		log.Info("organization is suspended")
+		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Forbidden("organization is suspended"))
 	case errors.Is(err, errx.ErrorPlaceIconKeyIsInvalid):
-		log.WithError(err).Info("Place icon key is invalid")
+		log.WithError(err).Warn("place icon key is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
 	case errors.Is(err, errx.ErrorPlaceNotExists):
-		log.Info("Place does not exist")
-		render.ResponseError(w, problems.NotFound("Place does not exist"))
+		log.WithError(err).Warn("place does not exist")
+		render.ResponseError(w, problems.NotFound("place does not exist"))
 	case err != nil:
-		log.WithError(err).Error("failed to delete Place icon in upload session")
+		log.WithError(err).Error("failed to delete place icon in upload session")
 		render.ResponseError(w, problems.InternalError())
 	default:
+		log.Debug("place icon in upload session is deleted successfully")
 		w.WriteHeader(http.StatusNoContent)
 	}
 }

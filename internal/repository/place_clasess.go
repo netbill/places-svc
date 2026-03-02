@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/core/modules/pclass"
 	"github.com/netbill/restkit/pagi"
@@ -94,10 +96,15 @@ func (r *Repository) PlaceClassExists(ctx context.Context, id uuid.UUID) (bool, 
 	return res, nil
 }
 
-func (r *Repository) GetPlaceClass(ctx context.Context, id uuid.UUID) (models.PlaceClass, error) {
-	row, err := r.PlaceClassesSql.New().FilterByID(id).Get(ctx)
+func (r *Repository) GetPlaceClass(ctx context.Context, classID uuid.UUID) (models.PlaceClass, error) {
+	row, err := r.PlaceClassesSql.New().FilterByID(classID).Get(ctx)
 	if err != nil {
 		return models.PlaceClass{}, err
+	}
+	if row.IsNil() {
+		return models.PlaceClass{}, errx.ErrorPlaceClassNotExists.Raise(
+			fmt.Errorf("place class with id %s not exists", classID),
+		)
 	}
 
 	return row.ToModel(), nil
@@ -171,6 +178,11 @@ func (r *Repository) UpdatePlaceClass(ctx context.Context, classID uuid.UUID, pa
 		UpdateOne(ctx)
 	if err != nil {
 		return models.PlaceClass{}, err
+	}
+	if row.IsNil() {
+		return models.PlaceClass{}, errx.ErrorPlaceClassNotExists.Raise(
+			fmt.Errorf("place class with id %s not exists", classID),
+		)
 	}
 
 	return row.ToModel(), nil

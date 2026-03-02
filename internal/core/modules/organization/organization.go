@@ -92,8 +92,8 @@ func (m *Module) Update(
 		return err
 	}
 
-	if org.Version >= params.Version {
-		return nil // No update needed
+	if params.Version <= org.Version {
+		return nil
 	}
 
 	return m.repo.UpdateOrganization(ctx, orgID, params)
@@ -113,5 +113,11 @@ func (m *Module) Delete(
 		)
 	}
 
-	return m.repo.DeleteOrganization(ctx, organizationID)
+	return m.repo.Transaction(ctx, func(ctx context.Context) error {
+		if err := m.repo.BuryOrganization(ctx, organizationID); err != nil {
+			return err
+		}
+
+		return m.repo.DeleteOrganization(ctx, organizationID)
+	})
 }

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -19,29 +20,31 @@ const operationCreatePlaceUploadMediaLink = "create_place__upload_media_link"
 func (c *Controller) CreatePlaceUploadMediaLink(w http.ResponseWriter, r *http.Request) {
 	log := scope.Log(r).WithOperation(operationCreatePlaceUploadMediaLink)
 
-	ID, err := uuid.Parse(chi.URLParam(r, "place__id"))
+	placeID, err := uuid.Parse(chi.URLParam(r, "place_id"))
 	if err != nil {
-		log.WithError(err).Info("invalid Place  id")
+		log.WithError(err).Info("invalid place id")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
-			"place__id": err,
+			"query": fmt.Errorf("invalid place id: %s", chi.URLParam(r, "place_id")),
 		})...)
 
 		return
 	}
 
-	place, media, err := c.modules.Place.CreateUploadMediaLinks(r.Context(), ID)
+	log = log.WithField("place_id", placeID)
+
+	place, media, err := c.modules.Place.CreateUploadMediaLinks(r.Context(), placeID)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceNotExists):
-		log.Info("Place does not exist")
-		render.ResponseError(w, problems.NotFound("Place does not exist"))
+		log.WithError(err).Warn("place does not exist")
+		render.ResponseError(w, problems.NotFound("place does not exist"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
-		log.Info("organization is suspended")
+		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Forbidden("organization is suspended"))
 	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.Info("not enough rights to create Place upload media link")
-		render.ResponseError(w, problems.Forbidden("not enough rights to create Place upload media link"))
+		log.WithError(err).Warn("not enough rights to createplaceupload media link")
+		render.ResponseError(w, problems.Forbidden("not enough rights to createplaceupload media link"))
 	case err != nil:
-		log.WithError(err).Error("failed to create Place upload media link")
+		log.WithError(err).Error("failed to createplaceupload media link")
 		render.ResponseError(w, problems.InternalError())
 	default:
 		render.Response(w, http.StatusOK, responses.UploadPlaceMediaLink(place, media))

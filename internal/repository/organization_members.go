@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/core/modules/organization"
 )
@@ -102,7 +104,7 @@ func (r *Repository) DeleteOrgMember(ctx context.Context, memberID uuid.UUID) er
 
 func (r *Repository) GetOrgMemberByAccountID(
 	ctx context.Context,
-	organizationID, accountID uuid.UUID,
+	accountID, organizationID uuid.UUID,
 ) (models.OrgMember, error) {
 	row, err := r.OrgMembersSql.New().
 		FilterByOrganizationID(organizationID).
@@ -110,6 +112,20 @@ func (r *Repository) GetOrgMemberByAccountID(
 		Get(ctx)
 	if err != nil {
 		return models.OrgMember{}, err
+	}
+
+	return row.ToModel(), nil
+}
+
+func (r *Repository) GetOrgMemberByID(ctx context.Context, memberID uuid.UUID) (models.OrgMember, error) {
+	row, err := r.OrgMembersSql.New().FilterByID(memberID).Get(ctx)
+	if err != nil {
+		return models.OrgMember{}, err
+	}
+	if row.IsNil() {
+		return models.OrgMember{}, errx.ErrorOrgMemberNotExists.Raise(
+			fmt.Errorf("organization member with id %s not found", memberID),
+		)
 	}
 
 	return row.ToModel(), nil

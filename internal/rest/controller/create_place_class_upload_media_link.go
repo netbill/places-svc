@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -21,21 +22,23 @@ func (c *Controller) CreatePlaceClassUploadMediaLink(w http.ResponseWriter, r *h
 
 	classID, err := uuid.Parse(chi.URLParam(r, "place_class_id"))
 	if err != nil {
-		log.WithError(err).Info("invalid Place class id")
+		log.WithError(err).Warn("invalid place class id")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
-			"place_class_id": err,
+			"query": fmt.Errorf("invalid place class id: %s", chi.URLParam(r, "place_class_id")),
 		})...)
 
 		return
 	}
 
+	log = log.WithField("place_class_id", classID)
+
 	class, media, err := c.modules.Class.CreateUploadMediaLinks(r.Context(), classID)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
-		log.Info("Place class does not exist")
-		render.ResponseError(w, problems.NotFound("Place class does not exist"))
+		log.WithError(err).Warn("place class does not exist")
+		render.ResponseError(w, problems.NotFound("place class does not exist"))
 	case err != nil:
-		log.WithError(err).Error("failed to create Place class upload media link")
+		log.WithError(err).Error("failed to create place class upload media link")
 		render.ResponseError(w, problems.InternalError())
 	default:
 		render.Response(w, http.StatusOK, responses.UploadPlaceClassMediaLink(class, media))

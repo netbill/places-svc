@@ -19,8 +19,9 @@ func (c *Controller) DeprecatePlaceClass(w http.ResponseWriter, r *http.Request)
 
 	req, err := requests.DeprecatedPlaceClass(r)
 	if err != nil {
-		log.WithError(err).Info("invalid request body")
+		log.WithError(err).Warn("invalid request body")
 		render.ResponseError(w, problems.BadRequest(err)...)
+
 		return
 	}
 
@@ -29,13 +30,13 @@ func (c *Controller) DeprecatePlaceClass(w http.ResponseWriter, r *http.Request)
 	class, err := c.modules.Class.Deprecate(r.Context(), req.Data.Id, req.Data.Attributes.Deprecated)
 	switch {
 	case errors.Is(err, errx.ErrorPlaceClassNotExists):
-		log.Info("Place class not found")
-		render.ResponseError(w, problems.NotFound("Place class not found"))
+		log.WithError(err).Warn("place class not found")
+		render.ResponseError(w, problems.NotFound("place class not found"))
 	case err != nil:
-		log.WithError(err).Error("failed to deprecate Place class")
+		log.WithError(err).Error("failed to deprecate place class")
 		render.ResponseError(w, problems.InternalError())
 	default:
-		log.Info("Place class deprecated successfully")
+		log.Info("place class deprecated successfully")
 		render.Response(w, http.StatusOK, responses.PlaceClass(class))
 	}
 }

@@ -45,6 +45,10 @@ type repo interface {
 		ctx context.Context,
 		member CreateMemberParams,
 	) error
+	GetOrgMemberByID(
+		ctx context.Context,
+		memberID uuid.UUID,
+	) (models.OrgMember, error)
 	ExistsOrgMember(
 		ctx context.Context,
 		memberID uuid.UUID,
@@ -57,7 +61,10 @@ type repo interface {
 	DeleteOrgMember(ctx context.Context, memberID uuid.UUID) error
 
 	OrgMemberIsBuried(ctx context.Context, memberID uuid.UUID) (bool, error)
+	BuryOrgMember(ctx context.Context, memberID uuid.UUID) error
+
 	OrganizationIsBuried(ctx context.Context, orgID uuid.UUID) (bool, error)
+	BuryOrganization(ctx context.Context, orgID uuid.UUID) error
 
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
 }

@@ -37,13 +37,13 @@ func (m *Module) Create(
 		)
 	}
 
-	org, err := m.repo.GetOrganization(ctx, place.OrganizationID)
+	org, err := m.repo.GetOrganization(ctx, params.OrganizationID)
 	if err != nil {
 		return models.Place{}, err
 	}
 	if org.Status == models.OrganizationStatusSuspended {
 		return models.Place{}, errx.ErrorOrganizationIsSuspended.Raise(
-			fmt.Errorf("organization %s is suspended", place.OrganizationID),
+			fmt.Errorf("organization %s is suspended", params.OrganizationID),
 		)
 	}
 
@@ -71,6 +71,9 @@ func (m *Module) Create(
 
 		return m.messenger.PublishCreatePlace(ctx, place)
 	})
+	if err != nil {
+		return models.Place{}, err
+	}
 
 	return place, nil
 }

@@ -2,6 +2,7 @@ package pg
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/netbill/pgdbx"
 	"github.com/netbill/places-svc/internal/repository"
 	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/encoding/ewkb"
 )
 
 const placesTable = "places"
@@ -25,6 +27,7 @@ func scanPlaceRow(row sq.RowScanner) (r repository.PlaceRow, err error) {
 	var bannerKey pgtype.Text
 	var website pgtype.Text
 	var phone pgtype.Text
+	var pointHex string
 
 	err = row.Scan(
 		&r.ID,
@@ -32,7 +35,7 @@ func scanPlaceRow(row sq.RowScanner) (r repository.PlaceRow, err error) {
 		&r.OrganizationID,
 		&r.Status,
 		&r.Verified,
-		&r.Point,
+		&pointHex,
 		&r.Address,
 		&r.Name,
 		&description,
@@ -50,6 +53,20 @@ func scanPlaceRow(row sq.RowScanner) (r repository.PlaceRow, err error) {
 	case err != nil:
 		return repository.PlaceRow{}, fmt.Errorf("scanning place row: %w", err)
 	}
+
+	pointWKB, err := hex.DecodeString(pointHex)
+	if err != nil {
+		return repository.PlaceRow{}, fmt.Errorf("decoding point hex: %w", err)
+	}
+	geom, _, err := ewkb.Unmarshal(pointWKB)
+	if err != nil {
+		return repository.PlaceRow{}, fmt.Errorf("parsing point: %w", err)
+	}
+	pt, ok := geom.(orb.Point)
+	if !ok {
+		return repository.PlaceRow{}, fmt.Errorf("unexpected geometry type: %T", geom)
+	}
+	r.Point = pt
 
 	if description.Valid {
 		r.Description = &description.String
@@ -102,7 +119,7 @@ func (q *placesQ) Insert(ctx context.Context, data repository.PlaceRow) (reposit
 		"organization_id": data.OrganizationID,
 		"status":          data.Status,
 		"verified":        data.Verified,
-		"point":           data.Point,
+		"point":           sq.Expr("ST_SetSRID(ST_MakePoint(?, ?), 4326)", data.Point[0], data.Point[1]),
 		"address":         data.Address,
 		"name":            data.Name,
 		"description":     data.Description,
