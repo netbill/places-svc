@@ -1,0 +1,156 @@
+get:
+  tags:
+    - place-classes
+  summary: Get place classes list
+  description: >
+    Returns a paginated list of place classes with optional filters.
+
+    **400 Bad Request** is returned when any query parameter has an invalid format.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  parameters:
+    - in: query
+      name: size
+      schema:
+        type: integer
+        maximum: 100
+      description: Pagination limit. Cannot be greater than 100.
+    - in: query
+      name: page
+      schema:
+        type: integer
+      description: Pagination offset.
+    - in: query
+      name: text
+      schema:
+        type: string
+      description: Full-text search query. Returns best-matching place classes.
+    - in: query
+      name: parent_id
+      schema:
+        type: string
+        format: uuid
+      description: Filter place classes by parent class ID.
+    - in: query
+      name: with_parents
+      schema:
+        type: boolean
+      description: >
+        When filtering by parent_id, also include ancestor classes up the hierarchy.
+        Requires `parent_id` to be set.
+    - in: query
+      name: with_child
+      schema:
+        type: boolean
+      description: >
+        When filtering by parent_id, also include descendant classes down the hierarchy.
+        Requires `parent_id` to be set.
+    - in: query
+      name: deprecated
+      schema:
+        type: boolean
+      description: Filter place classes by deprecated flag.
+    - in: query
+      name: include
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - parents
+      style: form
+      explode: true
+      description: >
+        List of related resources to include in the response.
+        Supported values: `parents`.
+  responses:
+    '200':
+      description: Place classes list successfully retrieved
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/PlaceClassesCollection.yaml'
+    '400':
+      description: >
+        Bad Request. One or more query parameters have an invalid format.
+        Check the `errors` array for details.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+
+post:
+  tags:
+    - place-classes
+  summary: Create place class
+  description: >
+    Creates a new place class. Accessible by system administrators only.
+
+    **400 Bad Request** is returned when the request body is invalid.
+    **401 Unauthorized** is returned when the authorization token is missing or invalid.
+    **403 Forbidden** is returned when the initiator does not have enough rights.
+    **404 Not Found** is returned when the parent place class does not exist.
+    **409 Conflict** is returned when the parent place class is deprecated.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  security:
+    - BearerAuth: [ ]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/requests/CreatePlaceClass.yaml'
+  responses:
+    '201':
+      description: Place class successfully created
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/PlaceClass.yaml'
+    '400':
+      description: >
+        Bad Request. Request body is invalid.
+        Check the `errors` array for details.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '401':
+      description: >
+        Unauthorized. Missing or invalid authorization token.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '403':
+      description: >
+        Forbidden. Initiator does not have enough rights to create a place class.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '404':
+      description: >
+        Not Found. Parent place class does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '409':
+      description: >
+        Conflict. Parent place class is deprecated and cannot be used.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'

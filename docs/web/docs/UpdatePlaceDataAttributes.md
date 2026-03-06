@@ -4,9 +4,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**ClassId** | [**uuid.UUID**](uuid.UUID.md) | The class ID of the place (e.g., restaurant, park) | 
-**Name** | **string** | The name of the place | 
-**Address** | **string** | The address of the place | 
+**ClassId** | Pointer to [**uuid.UUID**](uuid.UUID.md) | The class ID of the place (e.g., restaurant, park) | [optional] 
+**Name** | Pointer to **string** | The name of the place | [optional] 
+**Address** | Pointer to **string** | The address of the place | [optional] 
 **Description** | Pointer to **string** | A brief description of the place | [optional] 
 **IconKey** | Pointer to **string** | The S3 key for the place&#39;s icon image | [optional] 
 **BannerKey** | Pointer to **string** | The S3 key for the place&#39;s banner image | [optional] 
@@ -17,7 +17,7 @@ Name | Type | Description | Notes
 
 ### NewUpdatePlaceDataAttributes
 
-`func NewUpdatePlaceDataAttributes(classId uuid.UUID, name string, address string, ) *UpdatePlaceDataAttributes`
+`func NewUpdatePlaceDataAttributes() *UpdatePlaceDataAttributes`
 
 NewUpdatePlaceDataAttributes instantiates a new UpdatePlaceDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -51,6 +51,11 @@ and a boolean to check if the value has been set.
 
 SetClassId sets ClassId field to given value.
 
+### HasClassId
+
+`func (o *UpdatePlaceDataAttributes) HasClassId() bool`
+
+HasClassId returns a boolean if a field has been set.
 
 ### GetName
 
@@ -71,6 +76,11 @@ and a boolean to check if the value has been set.
 
 SetName sets Name field to given value.
 
+### HasName
+
+`func (o *UpdatePlaceDataAttributes) HasName() bool`
+
+HasName returns a boolean if a field has been set.
 
 ### GetAddress
 
@@ -91,6 +101,11 @@ and a boolean to check if the value has been set.
 
 SetAddress sets Address field to given value.
 
+### HasAddress
+
+`func (o *UpdatePlaceDataAttributes) HasAddress() bool`
+
+HasAddress returns a boolean if a field has been set.
 
 ### GetDescription
 

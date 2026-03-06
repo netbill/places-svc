@@ -1,0 +1,125 @@
+parameters:
+  - in: path
+    name: place_class_id
+    required: true
+    schema:
+      type: string
+      format: uuid
+    description: Place class ID
+
+post:
+  tags:
+    - place-classes
+  summary: Create place class upload media link
+  description: >
+    Generates an upload media link (icon) for a place class. Accessible by system administrators only.
+
+    **400 Bad Request** is returned when the place class ID is not a valid UUID.
+    **401 Unauthorized** is returned when the authorization token is missing or invalid.
+    **403 Forbidden** is returned when the initiator is not a system administrator.
+    **404 Not Found** is returned when the place class does not exist.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  security:
+    - BearerAuth: [ ]
+  responses:
+    '200':
+      description: Upload media link successfully created
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/UploadPlaceClassMediaLinks.yaml'
+    '400':
+      description: >
+        Bad Request. Provided place class ID is not a valid UUID.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '401':
+      description: >
+        Unauthorized. Missing or invalid authorization token.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '403':
+      description: >
+        Forbidden. Initiator is not a system administrator.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '404':
+      description: >
+        Not Found. Place class does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+
+delete:
+  tags:
+    - place-classes
+  summary: Delete place class uploaded media
+  description: >
+    Deletes uploaded media (icon) from an active upload session for a place class.
+    Accessible by system administrators only.
+
+    **400 Bad Request** is returned when the request body is invalid
+    or the provided icon key is invalid.
+    **401 Unauthorized** is returned when the authorization token is missing or invalid.
+    **403 Forbidden** is returned when the initiator is not a system administrator.
+    **404 Not Found** is returned when the place class does not exist.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  security:
+    - BearerAuth: [ ]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/requests/DeleteUploadPlaceClassMedia.yaml'
+  responses:
+    '204':
+      description: Uploaded media successfully deleted
+    '400':
+      description: >
+        Bad Request. Request body is invalid or provided icon key is invalid.
+        Check the `errors` array for details.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '401':
+      description: >
+        Unauthorized. Missing or invalid authorization token.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '403':
+      description: >
+        Forbidden. Initiator is not a system administrator.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '404':
+      description: >
+        Not Found. Place class does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'

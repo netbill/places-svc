@@ -18,10 +18,6 @@ properties:
         enum: [ place]
       attributes:
         type: object
-        required:
-          - class_id
-          - name
-          - address
         properties:
           class_id:
             type: string

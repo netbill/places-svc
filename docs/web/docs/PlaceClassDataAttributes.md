@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Name** | **string** | The name of the class | 
 **Description** | **string** | A brief description of the class | 
-**IconKey** | Pointer to **string** | A URL to an icon representing the class | [optional] 
+**IconUrl** | Pointer to **string** | A URL to an icon representing the class | [optional] 
 **Version** | **int32** | The version number of the class data, used for concurrency control | 
 **CreatedAt** | **time.Time** | The date and time when the class was created | 
 **UpdatedAt** | **time.Time** | The date and time when the class was last updated | 
@@ -71,30 +71,30 @@ and a boolean to check if the value has been set.
 SetDescription sets Description field to given value.
 
 
-### GetIconKey
+### GetIconUrl
 
-`func (o *PlaceClassDataAttributes) GetIconKey() string`
+`func (o *PlaceClassDataAttributes) GetIconUrl() string`
 
-GetIconKey returns the IconKey field if non-nil, zero value otherwise.
+GetIconUrl returns the IconUrl field if non-nil, zero value otherwise.
 
-### GetIconKeyOk
+### GetIconUrlOk
 
-`func (o *PlaceClassDataAttributes) GetIconKeyOk() (*string, bool)`
+`func (o *PlaceClassDataAttributes) GetIconUrlOk() (*string, bool)`
 
-GetIconKeyOk returns a tuple with the IconKey field if it's non-nil, zero value otherwise
+GetIconUrlOk returns a tuple with the IconUrl field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetIconKey
+### SetIconUrl
 
-`func (o *PlaceClassDataAttributes) SetIconKey(v string)`
+`func (o *PlaceClassDataAttributes) SetIconUrl(v string)`
 
-SetIconKey sets IconKey field to given value.
+SetIconUrl sets IconUrl field to given value.
 
-### HasIconKey
+### HasIconUrl
 
-`func (o *PlaceClassDataAttributes) HasIconKey() bool`
+`func (o *PlaceClassDataAttributes) HasIconUrl() bool`
 
-HasIconKey returns a boolean if a field has been set.
+HasIconUrl returns a boolean if a field has been set.
 
 ### GetVersion
 

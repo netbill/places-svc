@@ -4,14 +4,1220 @@ info:
   description: API for managing places and their classes.
   version: 0.0.1
 paths:
-  /test:
+  /places-svc/v1/places/:
+    get:
+      tags:
+        - places
+      summary: Get places list
+      description: |
+        Returns a paginated list of places with optional filters.
+        **400 Bad Request** is returned when any query parameter has an invalid format. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+        - in: query
+          name: size
+          schema:
+            type: integer
+            maximum: 1000
+          description: Pagination limit. Cannot be greater than 1000.
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: Pagination offset.
+        - in: query
+          name: organization_id
+          schema:
+            type: string
+            format: uuid
+          description: Filter places by organization ID.
+        - in: query
+          name: statuses
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - active
+                - inactive
+          style: form
+          explode: true
+          description: Filter places by place status.
+        - in: query
+          name: org_status
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+          description: Filter places by organization status.
+        - in: query
+          name: verified
+          schema:
+            type: boolean
+          description: Filter places by verified flag.
+        - in: query
+          name: text
+          schema:
+            type: string
+          description: Full-text search query. Returns best-matching places.
+        - in: query
+          name: class_ids
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+          style: form
+          explode: true
+          description: Filter places by place class IDs.
+        - in: query
+          name: include_parent
+          schema:
+            type: boolean
+          description: |
+            When filtering by class_ids, also include places whose class is a parent of one of the specified classes.
+        - in: query
+          name: include_children
+          schema:
+            type: boolean
+          description: |
+            When filtering by class_ids, also include places whose class is a child of one of the specified classes.
+        - in: query
+          name: lon
+          schema:
+            type: number
+            format: double
+          description: |
+            Longitude for geo-proximity filter. Must be provided together with `lat` and `radius`.
+        - in: query
+          name: lat
+          schema:
+            type: number
+            format: double
+          description: |
+            Latitude for geo-proximity filter. Must be provided together with `lon` and `radius`.
+        - in: query
+          name: radius
+          schema:
+            type: integer
+            format: uint64
+          description: |
+            Radius in meters for geo-proximity filter. Must be provided together with `lon` and `lat`.
+        - in: query
+          name: include
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - place_classes
+                - organizations
+          style: form
+          explode: true
+          description: |
+            Comma-separated list of related resources to include in the response. Supported values: `place_classes`, `organizations`.
+      responses:
+        '200':
+          description: Places list successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlacesCollection'
+        '400':
+          description: |
+            Bad Request. One or more query parameters have an invalid format. Check the `errors` array for details.
+          content:
+            application/json:
+              schema:
+                description: 'Standard JSON:API error'
+                type: object
+                required:
+                  - errors
+                properties:
+                  errors:
+                    type: array
+                    description: Non empty array of errors occurred during request processing
+                    items:
+                      type: object
+                      required:
+                        - title
+                        - status
+                      properties:
+                        title:
+                          type: string
+                          description: 'Title is a short, human-readable summary of the problem'
+                          example: Bad Request
+                        detail:
+                          type: string
+                          description: Detail is a human-readable explanation specific to this occurrence of the problem
+                          example: Request body was expected
+                        status:
+                          type: integer
+                          description: Status is the HTTP status code applicable to this problem
+                          example: 400
+                          enum:
+                            - 400
+                            - 401
+                            - 403
+                            - 404
+                            - 409
+                            - 500
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
     post:
       tags:
-        - Test
-      description: Test
+        - places
+      summary: Create place
+      description: |
+        Creates a new place for an organization.
+        **400 Bad Request** is returned when the request body is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights, the organization is suspended, or the place point is outside the organization's territory. **404 Not Found** is returned when the organization or place class does not exist. **409 Conflict** is returned when the place class is deprecated. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlace'
       responses:
         '201':
-          description: successfully
+          description: Place successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Place'
+        '400':
+          description: |
+            Bad Request. Request body is invalid. Check the `errors` array for details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator does not have enough rights to create a place, organization is suspended, or place point is outside the organization's territory.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Organization or place class does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '409':
+          description: |
+            Conflict. Place class is deprecated and cannot be used.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+  '/places-svc/v1/places/{place_id}':
+    parameters:
+      - in: path
+        name: place_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Place ID
+    get:
+      tags:
+        - places
+      summary: Get place
+      description: |
+        Returns a place by ID.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **404 Not Found** is returned when the place, related place class, or related organization does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+        - in: query
+          name: include
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - place_class
+                - organization
+          style: form
+          explode: true
+          description: |
+            List of related resources to include in the response. Supported values: `place_class`, `organization`.
+      responses:
+        '200':
+          description: Place successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Place'
+        '400':
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place, related place class, or related organization does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+    patch:
+      tags:
+        - places
+      summary: Update place
+      description: |
+        Updates a place by ID.
+        **400 Bad Request** is returned when the place ID is not a valid UUID, the request body is invalid, or the uploaded icon/banner is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights. **404 Not Found** is returned when the place does not exist. **409 Conflict** is returned when the organization is suspended or the place class is deprecated. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlace'
+      responses:
+        '200':
+          description: Place successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Place'
+        '400':
+          description: |
+            Bad Request. Request body is invalid, or uploaded icon/banner is invalid. Check the `errors` array for details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator does not have enough rights to update the place.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '409':
+          description: |
+            Conflict. Organization is suspended or place class is deprecated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+    delete:
+      tags:
+        - places
+      summary: Delete place
+      description: |
+        Deletes a place by ID.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist or has already been deleted. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Place successfully deleted
+        '400':
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator does not have enough rights to delete the place, or the organization is suspended.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place does not exist or has already been deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+  '/places-svc/v1/places/{place_id}/activate':
+    parameters:
+      - in: path
+        name: place_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Place ID
+    patch:
+      tags:
+        - places
+      summary: Activate place
+      description: |
+        Activates a place by ID, setting its status to `active`.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Place successfully activated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Place'
+        '400':
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator does not have enough rights to activate the place, or the organization is suspended.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+  '/places-svc/v1/places/{place_id}/deactivate':
+    parameters:
+      - in: path
+        name: place_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Place ID
+    patch:
+      tags:
+        - places
+      summary: Deactivate place
+      description: |
+        Deactivates a place by ID, setting its status to `inactive`.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Place successfully deactivated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Place'
+        '400':
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator does not have enough rights to deactivate the place, or the organization is suspended.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+  '/places-svc/v1/places/{place_id}/verify':
+    parameters:
+      - in: path
+        name: place_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Place ID
+    patch:
+      tags:
+        - places
+      summary: Verify place
+      description: |
+        Marks a place as verified. Accessible by system moderators only.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Place successfully verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Place'
+        '400':
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator is not a system moderator.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+    delete:
+      tags:
+        - places
+      summary: Unverify place
+      description: |
+        Removes verification from a place. Accessible by system moderators only.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Place verification successfully removed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Place'
+        '400':
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator is not a system moderator.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+  '/places-svc/v1/places/{place_id}/media':
+    parameters:
+      - in: path
+        name: place_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Place ID
+    post:
+      tags:
+        - places
+      summary: Create place upload media link
+      description: |
+        Generates upload media links (icon and banner) for a place.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Upload media links successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadPlaceMediaLinks'
+        '400':
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator does not have enough rights to create upload media links, or the organization is suspended.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+    delete:
+      tags:
+        - places
+      summary: Delete place uploaded media
+      description: |
+        Deletes uploaded media (icon and/or banner) from an active upload session for a place.
+        **400 Bad Request** is returned when the request body is invalid, or the provided icon/banner key is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteUploadPlaceMedia'
+      responses:
+        '200':
+          description: Uploaded media successfully deleted
+        '400':
+          description: |
+            Bad Request. Request body is invalid, or provided icon/banner key is invalid. Check the `errors` array for details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator does not have enough rights to delete uploaded media, or the organization is suspended.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+  /places-svc/v1/places/classes/:
+    get:
+      tags:
+        - place-classes
+      summary: Get place classes list
+      description: |
+        Returns a paginated list of place classes with optional filters.
+        **400 Bad Request** is returned when any query parameter has an invalid format. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+        - in: query
+          name: size
+          schema:
+            type: integer
+            maximum: 100
+          description: Pagination limit. Cannot be greater than 100.
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: Pagination offset.
+        - in: query
+          name: text
+          schema:
+            type: string
+          description: Full-text search query. Returns best-matching place classes.
+        - in: query
+          name: parent_id
+          schema:
+            type: string
+            format: uuid
+          description: Filter place classes by parent class ID.
+        - in: query
+          name: with_parents
+          schema:
+            type: boolean
+          description: |
+            When filtering by parent_id, also include ancestor classes up the hierarchy. Requires `parent_id` to be set.
+        - in: query
+          name: with_child
+          schema:
+            type: boolean
+          description: |
+            When filtering by parent_id, also include descendant classes down the hierarchy. Requires `parent_id` to be set.
+        - in: query
+          name: deprecated
+          schema:
+            type: boolean
+          description: Filter place classes by deprecated flag.
+        - in: query
+          name: include
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - parents
+          style: form
+          explode: true
+          description: |
+            List of related resources to include in the response. Supported values: `parents`.
+      responses:
+        '200':
+          description: Place classes list successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceClassesCollection'
+        '400':
+          description: |
+            Bad Request. One or more query parameters have an invalid format. Check the `errors` array for details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+    post:
+      tags:
+        - place-classes
+      summary: Create place class
+      description: |
+        Creates a new place class. Accessible by system administrators only.
+        **400 Bad Request** is returned when the request body is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights. **404 Not Found** is returned when the parent place class does not exist. **409 Conflict** is returned when the parent place class is deprecated. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlaceClass'
+      responses:
+        '201':
+          description: Place class successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceClass'
+        '400':
+          description: |
+            Bad Request. Request body is invalid. Check the `errors` array for details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator does not have enough rights to create a place class.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Parent place class does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '409':
+          description: |
+            Conflict. Parent place class is deprecated and cannot be used.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+  '/places-svc/v1/places/classes/{place_class_id}':
+    parameters:
+      - in: path
+        name: place_class_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Place class ID
+    get:
+      tags:
+        - place-classes
+      summary: Get place class
+      description: |
+        Returns a place class by ID.
+        **400 Bad Request** is returned when the place class ID is not a valid UUID. **404 Not Found** is returned when the place class or its parent does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+        - in: query
+          name: include
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - parent
+          style: form
+          explode: true
+          description: |
+            List of related resources to include in the response. Supported values: `parent`.
+      responses:
+        '200':
+          description: Place class successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceClass'
+        '400':
+          description: |
+            Bad Request. Provided place class ID is not a valid UUID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place class or its parent does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+    patch:
+      tags:
+        - place-classes
+      summary: Update place class
+      description: |
+        Updates a place class by ID. Accessible by system moderators only.
+        **400 Bad Request** is returned when the place class ID is not a valid UUID, the request body is invalid, or the uploaded icon is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place class does not exist. **409 Conflict** is returned when setting the parent would create a cycle in the hierarchy. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlaceClass'
+      responses:
+        '200':
+          description: Place class successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceClass'
+        '400':
+          description: |
+            Bad Request. Request body is invalid or uploaded icon is invalid. Check the `errors` array for details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator is not a system moderator.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place class does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '409':
+          description: |
+            Conflict. Setting the specified parent would create a cycle in the class hierarchy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+  '/places-svc/v1/places/classes/{place_class_id}/deprecated':
+    parameters:
+      - in: path
+        name: place_class_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Place class ID
+    patch:
+      tags:
+        - place-classes
+      summary: Deprecate place class
+      description: |
+        Marks a place class as deprecated. Accessible by system moderators only. Deprecated place classes cannot be assigned to new places.
+        **400 Bad Request** is returned when the place class ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place class does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Place class successfully deprecated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceClass'
+        '400':
+          description: |
+            Bad Request. Provided place class ID is not a valid UUID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator is not a system moderator.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place class does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+    delete:
+      tags:
+        - place-classes
+      summary: Undeprecate place class
+      description: |
+        Removes the deprecated mark from a place class. Accessible by system moderators only.
+        **400 Bad Request** is returned when the place class ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place class does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Place class successfully undeprecated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceClass'
+        '400':
+          description: |
+            Bad Request. Provided place class ID is not a valid UUID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator is not a system moderator.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place class does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+  '/places-svc/v1/places/classes/{place_class_id}/media':
+    parameters:
+      - in: path
+        name: place_class_id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Place class ID
+    post:
+      tags:
+        - place-classes
+      summary: Create place class upload media link
+      description: |
+        Generates an upload media link (icon) for a place class. Accessible by system administrators only.
+        **400 Bad Request** is returned when the place class ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system administrator. **404 Not Found** is returned when the place class does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Upload media link successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadPlaceClassMediaLinks'
+        '400':
+          description: |
+            Bad Request. Provided place class ID is not a valid UUID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator is not a system administrator.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place class does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+    delete:
+      tags:
+        - place-classes
+      summary: Delete place class uploaded media
+      description: |
+        Deletes uploaded media (icon) from an active upload session for a place class. Accessible by system administrators only.
+        **400 Bad Request** is returned when the request body is invalid or the provided icon key is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system administrator. **404 Not Found** is returned when the place class does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteUploadPlaceClassMedia'
+      responses:
+        '204':
+          description: Uploaded media successfully deleted
+        '400':
+          description: |
+            Bad Request. Request body is invalid or provided icon key is invalid. Check the `errors` array for details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '401':
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '403':
+          description: |
+            Forbidden. Initiator is not a system administrator.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '404':
+          description: |
+            Not Found. Place class does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1places-svc~1v1~1places~1/get/responses/400/content/application~1json/schema'
 components:
   schemas:
     Point:
@@ -100,10 +1306,6 @@ components:
                 - place
             attributes:
               type: object
-              required:
-                - class_id
-                - name
-                - address
               properties:
                 class_id:
                   type: string
@@ -152,9 +1354,6 @@ components:
                 - place_class
             attributes:
               type: object
-              required:
-                - name
-                - description
               properties:
                 parent_id:
                   type: string
@@ -169,62 +1368,6 @@ components:
                 icon_key:
                   type: string
                   description: The S3 key for the class icon
-    UpdatePlaceStatus:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - id
-            - type
-            - attributes
-          properties:
-            id:
-              type: string
-              format: uuid
-              description: The unique identifier of the place
-            type:
-              type: string
-              enum:
-                - update_place
-            attributes:
-              type: object
-              required:
-                - status
-              properties:
-                status:
-                  type: string
-                  description: The new status of the place
-    UpdatePlaceVerify:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - id
-            - type
-            - attributes
-          properties:
-            id:
-              type: string
-              format: uuid
-              description: The unique identifier of the place
-            type:
-              type: string
-              enum:
-                - update_place
-            attributes:
-              type: object
-              required:
-                - verify
-              properties:
-                verify:
-                  type: boolean
-                  description: The new verify status of the place
     CreatePlaceClass:
       type: object
       required:
@@ -284,7 +1427,7 @@ components:
                 deprecated:
                   type: boolean
                   description: place class is deprecated?
-    DeleteUploadPlaceIcon:
+    DeleteUploadPlaceMedia:
       type: object
       required:
         - data
@@ -306,41 +1449,14 @@ components:
                 - place
             attributes:
               type: object
-              required:
-                - icon_key
               properties:
                 icon_key:
                   type: string
                   description: icon media key
-    DeleteUploadPlaceBanner:
-      type: object
-      required:
-        - data
-      properties:
-        data:
-          type: object
-          required:
-            - id
-            - type
-            - attributes
-          properties:
-            id:
-              type: string
-              format: uuid
-              description: place id
-            type:
-              type: string
-              enum:
-                - place
-            attributes:
-              type: object
-              required:
-                - banner_key
-              properties:
                 banner_key:
                   type: string
-                  description: icon media key
-    DeleteUploadPlaceClassIcon:
+                  description: banner media key
+    DeleteUploadPlaceClassMedia:
       type: object
       required:
         - data
@@ -362,8 +1478,6 @@ components:
                 - place_class
             attributes:
               type: object
-              required:
-                - icon_key
               properties:
                 icon_key:
                   type: string
@@ -447,11 +1561,11 @@ components:
             description:
               type: string
               description: A brief description of the place
-            icon_key:
+            icon_url:
               type: string
               format: uri
               description: A URL to an icon representing the place
-            banner_key:
+            banner_url:
               type: string
               format: uri
               description: A URL to a banner image for the place
@@ -569,7 +1683,7 @@ components:
             description:
               type: string
               description: A brief description of the class
-            icon_key:
+            icon_url:
               type: string
               format: uri
               description: A URL to an icon representing the class
@@ -662,10 +1776,10 @@ components:
             name:
               type: string
               description: The name of the organization
-            icon_key:
+            icon_url:
               type: string
               description: The media key for the organization's icon
-            banner_key:
+            banner_url:
               type: string
               description: The media key for the organization's banner
             version:

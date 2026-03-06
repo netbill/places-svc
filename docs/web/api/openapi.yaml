@@ -6,17 +6,1416 @@ info:
 servers:
 - url: /
 paths:
-  /test:
+  /places-svc/v1/places/:
+    get:
+      description: |
+        Returns a paginated list of places with optional filters.
+        **400 Bad Request** is returned when any query parameter has an invalid format. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Pagination limit. Cannot be greater than 1000.
+        explode: true
+        in: query
+        name: size
+        required: false
+        schema:
+          maximum: 1000
+          type: integer
+        style: form
+      - description: Pagination offset.
+        explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: Filter places by organization ID.
+        explode: true
+        in: query
+        name: organization_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      - description: Filter places by place status.
+        explode: true
+        in: query
+        name: statuses
+        required: false
+        schema:
+          items:
+            enum:
+            - active
+            - inactive
+            type: string
+          type: array
+        style: form
+      - description: Filter places by organization status.
+        explode: true
+        in: query
+        name: org_status
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+        style: form
+      - description: Filter places by verified flag.
+        explode: true
+        in: query
+        name: verified
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: Full-text search query. Returns best-matching places.
+        explode: true
+        in: query
+        name: text
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter places by place class IDs.
+        explode: true
+        in: query
+        name: class_ids
+        required: false
+        schema:
+          items:
+            format: uuid
+            type: string
+          type: array
+        style: form
+      - description: |
+          When filtering by class_ids, also include places whose class is a parent of one of the specified classes.
+        explode: true
+        in: query
+        name: include_parent
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: |
+          When filtering by class_ids, also include places whose class is a child of one of the specified classes.
+        explode: true
+        in: query
+        name: include_children
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: |
+          Longitude for geo-proximity filter. Must be provided together with `lat` and `radius`.
+        explode: true
+        in: query
+        name: lon
+        required: false
+        schema:
+          format: double
+          type: number
+        style: form
+      - description: |
+          Latitude for geo-proximity filter. Must be provided together with `lon` and `radius`.
+        explode: true
+        in: query
+        name: lat
+        required: false
+        schema:
+          format: double
+          type: number
+        style: form
+      - description: |
+          Radius in meters for geo-proximity filter. Must be provided together with `lon` and `lat`.
+        explode: true
+        in: query
+        name: radius
+        required: false
+        schema:
+          format: uint64
+          type: integer
+        style: form
+      - description: |
+          Comma-separated list of related resources to include in the response. Supported values: `place_classes`, `organizations`.
+        explode: true
+        in: query
+        name: include
+        required: false
+        schema:
+          items:
+            enum:
+            - place_classes
+            - organizations
+            type: string
+          type: array
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlacesCollection"
+          description: Places list successfully retrieved
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. One or more query parameters have an invalid format. Check the `errors` array for details.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      summary: Get places list
+      tags:
+      - places
     post:
-      description: Test
+      description: |
+        Creates a new place for an organization.
+        **400 Bad Request** is returned when the request body is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights, the organization is suspended, or the place point is outside the organization's territory. **404 Not Found** is returned when the organization or place class does not exist. **409 Conflict** is returned when the place class is deprecated. **500 Internal Server Error** is returned when an unexpected error occurs.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlace"
+        required: true
       responses:
         "201":
-          description: successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+          description: Place successfully created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Request body is invalid. Check the `errors` array for details.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator does not have enough rights to create a place, organization is suspended, or place point is outside the organization's territory.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Organization or place class does not exist.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Conflict. Place class is deprecated and cannot be used.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Create place
       tags:
-      - Test
+      - places
+  /places-svc/v1/places/{place_id}:
+    delete:
+      description: |
+        Deletes a place by ID.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist or has already been deleted. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Place ID
+        explode: false
+        in: path
+        name: place_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: Place successfully deleted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator does not have enough rights to delete the place, or the organization is suspended.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place does not exist or has already been deleted.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Delete place
+      tags:
+      - places
+    get:
+      description: |
+        Returns a place by ID.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **404 Not Found** is returned when the place, related place class, or related organization does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: |
+          List of related resources to include in the response. Supported values: `place_class`, `organization`.
+        explode: true
+        in: query
+        name: include
+        required: false
+        schema:
+          items:
+            enum:
+            - place_class
+            - organization
+            type: string
+          type: array
+        style: form
+      - description: Place ID
+        explode: false
+        in: path
+        name: place_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+          description: Place successfully retrieved
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place, related place class, or related organization does not exist.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      summary: Get place
+      tags:
+      - places
+    parameters:
+    - description: Place ID
+      explode: false
+      in: path
+      name: place_id
+      required: true
+      schema:
+        format: uuid
+        type: string
+      style: simple
+    patch:
+      description: |
+        Updates a place by ID.
+        **400 Bad Request** is returned when the place ID is not a valid UUID, the request body is invalid, or the uploaded icon/banner is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights. **404 Not Found** is returned when the place does not exist. **409 Conflict** is returned when the organization is suspended or the place class is deprecated. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Place ID
+        explode: false
+        in: path
+        name: place_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePlace"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+          description: Place successfully updated
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Request body is invalid, or uploaded icon/banner is invalid. Check the `errors` array for details.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator does not have enough rights to update the place.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place does not exist.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Conflict. Organization is suspended or place class is deprecated.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Update place
+      tags:
+      - places
+  /places-svc/v1/places/{place_id}/activate:
+    parameters:
+    - description: Place ID
+      explode: false
+      in: path
+      name: place_id
+      required: true
+      schema:
+        format: uuid
+        type: string
+      style: simple
+    patch:
+      description: |
+        Activates a place by ID, setting its status to `active`.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Place ID
+        explode: false
+        in: path
+        name: place_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+          description: Place successfully activated
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator does not have enough rights to activate the place, or the organization is suspended.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place does not exist.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Activate place
+      tags:
+      - places
+  /places-svc/v1/places/{place_id}/deactivate:
+    parameters:
+    - description: Place ID
+      explode: false
+      in: path
+      name: place_id
+      required: true
+      schema:
+        format: uuid
+        type: string
+      style: simple
+    patch:
+      description: |
+        Deactivates a place by ID, setting its status to `inactive`.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Place ID
+        explode: false
+        in: path
+        name: place_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+          description: Place successfully deactivated
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator does not have enough rights to deactivate the place, or the organization is suspended.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place does not exist.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Deactivate place
+      tags:
+      - places
+  /places-svc/v1/places/{place_id}/verify:
+    delete:
+      description: |
+        Removes verification from a place. Accessible by system moderators only.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Place ID
+        explode: false
+        in: path
+        name: place_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+          description: Place verification successfully removed
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator is not a system moderator.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place does not exist.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Unverify place
+      tags:
+      - places
+    parameters:
+    - description: Place ID
+      explode: false
+      in: path
+      name: place_id
+      required: true
+      schema:
+        format: uuid
+        type: string
+      style: simple
+    patch:
+      description: |
+        Marks a place as verified. Accessible by system moderators only.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Place ID
+        explode: false
+        in: path
+        name: place_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+          description: Place successfully verified
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator is not a system moderator.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place does not exist.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Verify place
+      tags:
+      - places
+  /places-svc/v1/places/{place_id}/media:
+    delete:
+      description: |
+        Deletes uploaded media (icon and/or banner) from an active upload session for a place.
+        **400 Bad Request** is returned when the request body is invalid, or the provided icon/banner key is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Place ID
+        explode: false
+        in: path
+        name: place_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteUploadPlaceMedia"
+        required: true
+      responses:
+        "200":
+          description: Uploaded media successfully deleted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Request body is invalid, or provided icon/banner key is invalid. Check the `errors` array for details.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator does not have enough rights to delete uploaded media, or the organization is suspended.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place does not exist.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Delete place uploaded media
+      tags:
+      - places
+    parameters:
+    - description: Place ID
+      explode: false
+      in: path
+      name: place_id
+      required: true
+      schema:
+        format: uuid
+        type: string
+      style: simple
+    post:
+      description: |
+        Generates upload media links (icon and banner) for a place.
+        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Place ID
+        explode: false
+        in: path
+        name: place_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadPlaceMediaLinks"
+          description: Upload media links successfully created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Provided place ID is not a valid UUID.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator does not have enough rights to create upload media links, or the organization is suspended.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place does not exist.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Create place upload media link
+      tags:
+      - places
+  /places-svc/v1/places/classes/:
+    get:
+      description: |
+        Returns a paginated list of place classes with optional filters.
+        **400 Bad Request** is returned when any query parameter has an invalid format. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Pagination limit. Cannot be greater than 100.
+        explode: true
+        in: query
+        name: size
+        required: false
+        schema:
+          maximum: 100
+          type: integer
+        style: form
+      - description: Pagination offset.
+        explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+        style: form
+      - description: Full-text search query. Returns best-matching place classes.
+        explode: true
+        in: query
+        name: text
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter place classes by parent class ID.
+        explode: true
+        in: query
+        name: parent_id
+        required: false
+        schema:
+          format: uuid
+          type: string
+        style: form
+      - description: |
+          When filtering by parent_id, also include ancestor classes up the hierarchy. Requires `parent_id` to be set.
+        explode: true
+        in: query
+        name: with_parents
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: |
+          When filtering by parent_id, also include descendant classes down the hierarchy. Requires `parent_id` to be set.
+        explode: true
+        in: query
+        name: with_child
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: Filter place classes by deprecated flag.
+        explode: true
+        in: query
+        name: deprecated
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - description: |
+          List of related resources to include in the response. Supported values: `parents`.
+        explode: true
+        in: query
+        name: include
+        required: false
+        schema:
+          items:
+            enum:
+            - parents
+            type: string
+          type: array
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceClassesCollection"
+          description: Place classes list successfully retrieved
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. One or more query parameters have an invalid format. Check the `errors` array for details.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      summary: Get place classes list
+      tags:
+      - place-classes
+    post:
+      description: |
+        Creates a new place class. Accessible by system administrators only.
+        **400 Bad Request** is returned when the request body is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights. **404 Not Found** is returned when the parent place class does not exist. **409 Conflict** is returned when the parent place class is deprecated. **500 Internal Server Error** is returned when an unexpected error occurs.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlaceClass"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceClass"
+          description: Place class successfully created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Request body is invalid. Check the `errors` array for details.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator does not have enough rights to create a place class.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Parent place class does not exist.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Conflict. Parent place class is deprecated and cannot be used.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Create place class
+      tags:
+      - place-classes
+  /places-svc/v1/places/classes/{place_class_id}:
+    get:
+      description: |
+        Returns a place class by ID.
+        **400 Bad Request** is returned when the place class ID is not a valid UUID. **404 Not Found** is returned when the place class or its parent does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: |
+          List of related resources to include in the response. Supported values: `parent`.
+        explode: true
+        in: query
+        name: include
+        required: false
+        schema:
+          items:
+            enum:
+            - parent
+            type: string
+          type: array
+        style: form
+      - description: Place class ID
+        explode: false
+        in: path
+        name: place_class_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceClass"
+          description: Place class successfully retrieved
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Provided place class ID is not a valid UUID.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place class or its parent does not exist.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      summary: Get place class
+      tags:
+      - place-classes
+    parameters:
+    - description: Place class ID
+      explode: false
+      in: path
+      name: place_class_id
+      required: true
+      schema:
+        format: uuid
+        type: string
+      style: simple
+    patch:
+      description: |
+        Updates a place class by ID. Accessible by system moderators only.
+        **400 Bad Request** is returned when the place class ID is not a valid UUID, the request body is invalid, or the uploaded icon is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place class does not exist. **409 Conflict** is returned when setting the parent would create a cycle in the hierarchy. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Place class ID
+        explode: false
+        in: path
+        name: place_class_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePlaceClass"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceClass"
+          description: Place class successfully updated
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Request body is invalid or uploaded icon is invalid. Check the `errors` array for details.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator is not a system moderator.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place class does not exist.
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Conflict. Setting the specified parent would create a cycle in the class hierarchy.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Update place class
+      tags:
+      - place-classes
+  /places-svc/v1/places/classes/{place_class_id}/deprecated:
+    delete:
+      description: |
+        Removes the deprecated mark from a place class. Accessible by system moderators only.
+        **400 Bad Request** is returned when the place class ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place class does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Place class ID
+        explode: false
+        in: path
+        name: place_class_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceClass"
+          description: Place class successfully undeprecated
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Provided place class ID is not a valid UUID.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator is not a system moderator.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place class does not exist.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Undeprecate place class
+      tags:
+      - place-classes
+    parameters:
+    - description: Place class ID
+      explode: false
+      in: path
+      name: place_class_id
+      required: true
+      schema:
+        format: uuid
+        type: string
+      style: simple
+    patch:
+      description: |
+        Marks a place class as deprecated. Accessible by system moderators only. Deprecated place classes cannot be assigned to new places.
+        **400 Bad Request** is returned when the place class ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place class does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Place class ID
+        explode: false
+        in: path
+        name: place_class_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceClass"
+          description: Place class successfully deprecated
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Provided place class ID is not a valid UUID.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator is not a system moderator.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place class does not exist.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Deprecate place class
+      tags:
+      - place-classes
+  /places-svc/v1/places/classes/{place_class_id}/media:
+    delete:
+      description: |
+        Deletes uploaded media (icon) from an active upload session for a place class. Accessible by system administrators only.
+        **400 Bad Request** is returned when the request body is invalid or the provided icon key is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system administrator. **404 Not Found** is returned when the place class does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Place class ID
+        explode: false
+        in: path
+        name: place_class_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteUploadPlaceClassMedia"
+        required: true
+      responses:
+        "204":
+          description: Uploaded media successfully deleted
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Request body is invalid or provided icon key is invalid. Check the `errors` array for details.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator is not a system administrator.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place class does not exist.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Delete place class uploaded media
+      tags:
+      - place-classes
+    parameters:
+    - description: Place class ID
+      explode: false
+      in: path
+      name: place_class_id
+      required: true
+      schema:
+        format: uuid
+        type: string
+      style: simple
+    post:
+      description: |
+        Generates an upload media link (icon) for a place class. Accessible by system administrators only.
+        **400 Bad Request** is returned when the place class ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system administrator. **404 Not Found** is returned when the place class does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
+      parameters:
+      - description: Place class ID
+        explode: false
+        in: path
+        name: place_class_id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadPlaceClassMediaLinks"
+          description: Upload media link successfully created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Bad Request. Provided place class ID is not a valid UUID.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Unauthorized. Missing or invalid authorization token.
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Forbidden. Initiator is not a system administrator.
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: |
+            Not Found. Place class does not exist.
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_places_svc_v1_places__get_400_response"
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Create place class upload media link
+      tags:
+      - place-classes
 components:
   schemas:
     Point:
+      example:
+        latitude: 0.8008281904610115
+        longitude: 6.027456183070403
       properties:
         latitude:
           description: The latitude coordinate of the place
@@ -30,36 +1429,67 @@ components:
       - latitude
       - longitude
     CreatePlace:
+      example:
+        data:
+          attributes:
+            website: https://openapi-generator.tech
+            address: address
+            phone: phone
+            class_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            organization_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            name: name
+            description: description
+            point:
+              latitude: 0.8008281904610115
+              longitude: 6.027456183070403
+          type: place
       properties:
         data:
           $ref: "#/components/schemas/CreatePlace_data"
       required:
       - data
     UpdatePlace:
+      example:
+        data:
+          attributes:
+            icon_key: icon_key
+            website: website
+            address: address
+            phone: phone
+            class_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            name: name
+            description: description
+            banner_key: banner_key
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place
       properties:
         data:
           $ref: "#/components/schemas/UpdatePlace_data"
       required:
       - data
     UpdatePlaceClass:
+      example:
+        data:
+          attributes:
+            icon_key: icon_key
+            parent_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            name: name
+            description: description
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
       properties:
         data:
           $ref: "#/components/schemas/UpdatePlaceClass_data"
       required:
       - data
-    UpdatePlaceStatus:
-      properties:
-        data:
-          $ref: "#/components/schemas/UpdatePlaceStatus_data"
-      required:
-      - data
-    UpdatePlaceVerify:
-      properties:
-        data:
-          $ref: "#/components/schemas/UpdatePlaceVerify_data"
-      required:
-      - data
     CreatePlaceClass:
+      example:
+        data:
+          attributes:
+            parent_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            name: name
+            description: description
+          type: place_class
       properties:
         data:
           $ref: "#/components/schemas/CreatePlaceClass_data"
@@ -71,25 +1501,38 @@ components:
           $ref: "#/components/schemas/DeprecatedPlaceClass_data"
       required:
       - data
-    DeleteUploadPlaceIcon:
+    DeleteUploadPlaceMedia:
+      example:
+        data:
+          attributes:
+            icon_key: icon_key
+            banner_key: banner_key
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place
       properties:
         data:
-          $ref: "#/components/schemas/DeleteUploadPlaceIcon_data"
+          $ref: "#/components/schemas/DeleteUploadPlaceMedia_data"
       required:
       - data
-    DeleteUploadPlaceBanner:
+    DeleteUploadPlaceClassMedia:
+      example:
+        data:
+          attributes:
+            icon_key: icon_key
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
       properties:
         data:
-          $ref: "#/components/schemas/DeleteUploadPlaceBanner_data"
-      required:
-      - data
-    DeleteUploadPlaceClassIcon:
-      properties:
-        data:
-          $ref: "#/components/schemas/DeleteUploadPlaceClassIcon_data"
+          $ref: "#/components/schemas/DeleteUploadPlaceClassMedia_data"
       required:
       - data
     PaginationData:
+      example:
+        next: https://openapi-generator.tech
+        last: https://openapi-generator.tech
+        prev: https://openapi-generator.tech
+        self: https://openapi-generator.tech
+        first: https://openapi-generator.tech
       properties:
         self:
           description: link to the current page
@@ -114,6 +1557,54 @@ components:
       required:
       - self
     Place:
+      example:
+        data:
+          relationships:
+            place_class:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+            organization:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: organization
+          attributes:
+            icon_url: https://openapi-generator.tech
+            website: https://openapi-generator.tech
+            address: address
+            verified: true
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 1
+            point:
+              latitude: 0.8008281904610115
+              longitude: 6.027456183070403
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            phone: phone
+            name: name
+            banner_url: https://openapi-generator.tech
+            status: status
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place
+        included:
+        - attributes:
+            icon_url: icon_url
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            name: name
+            created_at: 2000-01-23T04:56:07.000+00:00
+            banner_url: banner_url
+            version: 5
+            status: status
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: organization
+        - attributes:
+            icon_url: icon_url
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            name: name
+            created_at: 2000-01-23T04:56:07.000+00:00
+            banner_url: banner_url
+            version: 5
+            status: status
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: organization
       properties:
         data:
           $ref: "#/components/schemas/PlaceData"
@@ -125,6 +1616,32 @@ components:
       required:
       - data
     PlaceData:
+      example:
+        relationships:
+          place_class:
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            type: place_class
+          organization:
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            type: organization
+        attributes:
+          icon_url: https://openapi-generator.tech
+          website: https://openapi-generator.tech
+          address: address
+          verified: true
+          description: description
+          created_at: 2000-01-23T04:56:07.000+00:00
+          version: 1
+          point:
+            latitude: 0.8008281904610115
+            longitude: 6.027456183070403
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          phone: phone
+          name: name
+          banner_url: https://openapi-generator.tech
+          status: status
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: place
       properties:
         id:
           description: place ID
@@ -144,6 +1661,85 @@ components:
       - relationships
       - type
     PlacesCollection:
+      example:
+        data:
+        - relationships:
+            place_class:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+            organization:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: organization
+          attributes:
+            icon_url: https://openapi-generator.tech
+            website: https://openapi-generator.tech
+            address: address
+            verified: true
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 1
+            point:
+              latitude: 0.8008281904610115
+              longitude: 6.027456183070403
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            phone: phone
+            name: name
+            banner_url: https://openapi-generator.tech
+            status: status
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place
+        - relationships:
+            place_class:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+            organization:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: organization
+          attributes:
+            icon_url: https://openapi-generator.tech
+            website: https://openapi-generator.tech
+            address: address
+            verified: true
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 1
+            point:
+              latitude: 0.8008281904610115
+              longitude: 6.027456183070403
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            phone: phone
+            name: name
+            banner_url: https://openapi-generator.tech
+            status: status
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place
+        links:
+          next: https://openapi-generator.tech
+          last: https://openapi-generator.tech
+          prev: https://openapi-generator.tech
+          self: https://openapi-generator.tech
+          first: https://openapi-generator.tech
+        included:
+        - attributes:
+            icon_url: icon_url
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            name: name
+            created_at: 2000-01-23T04:56:07.000+00:00
+            banner_url: banner_url
+            version: 5
+            status: status
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: organization
+        - attributes:
+            icon_url: icon_url
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            name: name
+            created_at: 2000-01-23T04:56:07.000+00:00
+            banner_url: banner_url
+            version: 5
+            status: status
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: organization
       properties:
         data:
           items:
@@ -165,6 +1761,57 @@ components:
         $ref: "#/components/schemas/PlaceIncluded_inner"
       type: array
     PlaceClass:
+      example:
+        data:
+          relationships:
+            parent:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+          attributes:
+            icon_url: https://openapi-generator.tech
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            deprecated_at: 2000-01-23T04:56:07.000+00:00
+            name: name
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 0
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
+        links:
+          next: https://openapi-generator.tech
+          last: https://openapi-generator.tech
+          prev: https://openapi-generator.tech
+          self: https://openapi-generator.tech
+          first: https://openapi-generator.tech
+        included:
+        - relationships:
+            parent:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+          attributes:
+            icon_url: https://openapi-generator.tech
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            deprecated_at: 2000-01-23T04:56:07.000+00:00
+            name: name
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 0
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
+        - relationships:
+            parent:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+          attributes:
+            icon_url: https://openapi-generator.tech
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            deprecated_at: 2000-01-23T04:56:07.000+00:00
+            name: name
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 0
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
       properties:
         data:
           $ref: "#/components/schemas/PlaceClassData"
@@ -178,6 +1825,21 @@ components:
       required:
       - data
     PlaceClassData:
+      example:
+        relationships:
+          parent:
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            type: place_class
+        attributes:
+          icon_url: https://openapi-generator.tech
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          deprecated_at: 2000-01-23T04:56:07.000+00:00
+          name: name
+          description: description
+          created_at: 2000-01-23T04:56:07.000+00:00
+          version: 0
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: place_class
       properties:
         id:
           description: place ID
@@ -196,6 +1858,71 @@ components:
       - id
       - type
     PlaceClassesCollection:
+      example:
+        data:
+        - relationships:
+            parent:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+          attributes:
+            icon_url: https://openapi-generator.tech
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            deprecated_at: 2000-01-23T04:56:07.000+00:00
+            name: name
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 0
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
+        - relationships:
+            parent:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+          attributes:
+            icon_url: https://openapi-generator.tech
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            deprecated_at: 2000-01-23T04:56:07.000+00:00
+            name: name
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 0
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
+        links:
+          next: https://openapi-generator.tech
+          last: https://openapi-generator.tech
+          prev: https://openapi-generator.tech
+          self: https://openapi-generator.tech
+          first: https://openapi-generator.tech
+        included:
+        - relationships:
+            parent:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+          attributes:
+            icon_url: https://openapi-generator.tech
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            deprecated_at: 2000-01-23T04:56:07.000+00:00
+            name: name
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 0
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
+        - relationships:
+            parent:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+          attributes:
+            icon_url: https://openapi-generator.tech
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            deprecated_at: 2000-01-23T04:56:07.000+00:00
+            name: name
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 0
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
       properties:
         data:
           items:
@@ -223,6 +1950,17 @@ components:
       required:
       - data
     OrganizationData:
+      example:
+        attributes:
+          icon_url: icon_url
+          updated_at: 2000-01-23T04:56:07.000+00:00
+          name: name
+          created_at: 2000-01-23T04:56:07.000+00:00
+          banner_url: banner_url
+          version: 5
+          status: status
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: organization
       properties:
         id:
           description: organization ID
@@ -239,6 +1977,49 @@ components:
       - id
       - type
     UploadPlaceClassMediaLinks:
+      example:
+        data:
+          relationships:
+            place_class:
+              data:
+                id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+                type: place_class
+          attributes:
+            icon:
+              preload_url: https://openapi-generator.tech
+              upload_url: https://openapi-generator.tech
+              key: key
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class_upload_links
+        included:
+        - relationships:
+            parent:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+          attributes:
+            icon_url: https://openapi-generator.tech
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            deprecated_at: 2000-01-23T04:56:07.000+00:00
+            name: name
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 0
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
+        - relationships:
+            parent:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+          attributes:
+            icon_url: https://openapi-generator.tech
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            deprecated_at: 2000-01-23T04:56:07.000+00:00
+            name: name
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 0
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
       properties:
         data:
           $ref: "#/components/schemas/UploadPlaceClassMediaLinks_data"
@@ -250,6 +2031,75 @@ components:
       - data
       - included
     UploadPlaceMediaLinks:
+      example:
+        data:
+          relationships:
+            place:
+              data:
+                id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+                type: place
+          attributes:
+            icon:
+              preload_url: https://openapi-generator.tech
+              upload_url: https://openapi-generator.tech
+              key: key
+            banner:
+              preload_url: https://openapi-generator.tech
+              upload_url: https://openapi-generator.tech
+              key: key
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_upload_links
+        included:
+        - relationships:
+            place_class:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+            organization:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: organization
+          attributes:
+            icon_url: https://openapi-generator.tech
+            website: https://openapi-generator.tech
+            address: address
+            verified: true
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 1
+            point:
+              latitude: 0.8008281904610115
+              longitude: 6.027456183070403
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            phone: phone
+            name: name
+            banner_url: https://openapi-generator.tech
+            status: status
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place
+        - relationships:
+            place_class:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+            organization:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: organization
+          attributes:
+            icon_url: https://openapi-generator.tech
+            website: https://openapi-generator.tech
+            address: address
+            verified: true
+            description: description
+            created_at: 2000-01-23T04:56:07.000+00:00
+            version: 1
+            point:
+              latitude: 0.8008281904610115
+              longitude: 6.027456183070403
+            updated_at: 2000-01-23T04:56:07.000+00:00
+            phone: phone
+            name: name
+            banner_url: https://openapi-generator.tech
+            status: status
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place
       properties:
         data:
           $ref: "#/components/schemas/UploadPlaceMediaLinks_data"
@@ -261,6 +2111,10 @@ components:
       - data
       - included
     UploadResourcesLink:
+      example:
+        preload_url: https://openapi-generator.tech
+        upload_url: https://openapi-generator.tech
+        key: key
       properties:
         key:
           description: Key for the avatar in the storage service
@@ -277,7 +2131,65 @@ components:
       - key
       - preload_url
       - upload_url
+    _places_svc_v1_places__get_400_response_errors_inner:
+      example:
+        detail: Request body was expected
+        title: Bad Request
+        status: 400
+      properties:
+        title:
+          description: "Title is a short, human-readable summary of the problem"
+          example: Bad Request
+          type: string
+        detail:
+          description: Detail is a human-readable explanation specific to this occurrence
+            of the problem
+          example: Request body was expected
+          type: string
+        status:
+          description: Status is the HTTP status code applicable to this problem
+          enum:
+          - 400
+          - 401
+          - 403
+          - 404
+          - 409
+          - 500
+          example: 400
+          type: integer
+      required:
+      - status
+      - title
+    _places_svc_v1_places__get_400_response:
+      description: Standard JSON:API error
+      example:
+        errors:
+        - detail: Request body was expected
+          title: Bad Request
+          status: 400
+        - detail: Request body was expected
+          title: Bad Request
+          status: 400
+      properties:
+        errors:
+          description: Non empty array of errors occurred during request processing
+          items:
+            $ref: "#/components/schemas/_places_svc_v1_places__get_400_response_errors_inner"
+          type: array
+      required:
+      - errors
     CreatePlace_data_attributes:
+      example:
+        website: https://openapi-generator.tech
+        address: address
+        phone: phone
+        class_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        organization_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        name: name
+        description: description
+        point:
+          latitude: 0.8008281904610115
+          longitude: 6.027456183070403
       properties:
         class_id:
           description: The ID of the class this place belongs to
@@ -312,6 +2224,19 @@ components:
       - organization_id
       - point
     CreatePlace_data:
+      example:
+        attributes:
+          website: https://openapi-generator.tech
+          address: address
+          phone: phone
+          class_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          organization_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          name: name
+          description: description
+          point:
+            latitude: 0.8008281904610115
+            longitude: 6.027456183070403
+        type: place
       properties:
         type:
           enum:
@@ -323,6 +2248,15 @@ components:
       - attributes
       - type
     UpdatePlace_data_attributes:
+      example:
+        icon_key: icon_key
+        website: website
+        address: address
+        phone: phone
+        class_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        name: name
+        description: description
+        banner_key: banner_key
       properties:
         class_id:
           description: "The class ID of the place (e.g., restaurant, park)"
@@ -349,11 +2283,19 @@ components:
         phone:
           description: The contact phone number of the place
           type: string
-      required:
-      - address
-      - class_id
-      - name
     UpdatePlace_data:
+      example:
+        attributes:
+          icon_key: icon_key
+          website: website
+          address: address
+          phone: phone
+          class_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          name: name
+          description: description
+          banner_key: banner_key
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: place
       properties:
         id:
           description: The unique identifier of the place
@@ -370,6 +2312,11 @@ components:
       - id
       - type
     UpdatePlaceClass_data_attributes:
+      example:
+        icon_key: icon_key
+        parent_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        name: name
+        description: description
       properties:
         parent_id:
           description: "The ID of the parent class, if any"
@@ -384,10 +2331,15 @@ components:
         icon_key:
           description: The S3 key for the class icon
           type: string
-      required:
-      - description
-      - name
     UpdatePlaceClass_data:
+      example:
+        attributes:
+          icon_key: icon_key
+          parent_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          name: name
+          description: description
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: place_class
       properties:
         id:
           description: The unique identifier for the place class
@@ -403,53 +2355,11 @@ components:
       - attributes
       - id
       - type
-    UpdatePlaceStatus_data_attributes:
-      properties:
-        status:
-          description: The new status of the place
-          type: string
-      required:
-      - status
-    UpdatePlaceStatus_data:
-      properties:
-        id:
-          description: The unique identifier of the place
-          format: uuid
-          type: string
-        type:
-          enum:
-          - update_place
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdatePlaceStatus_data_attributes"
-      required:
-      - attributes
-      - id
-      - type
-    UpdatePlaceVerify_data_attributes:
-      properties:
-        verify:
-          description: The new verify status of the place
-          type: boolean
-      required:
-      - verify
-    UpdatePlaceVerify_data:
-      properties:
-        id:
-          description: The unique identifier of the place
-          format: uuid
-          type: string
-        type:
-          enum:
-          - update_place
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdatePlaceVerify_data_attributes"
-      required:
-      - attributes
-      - id
-      - type
     CreatePlaceClass_data_attributes:
+      example:
+        parent_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        name: name
+        description: description
       properties:
         parent_id:
           description: "The ID of the parent class, if any"
@@ -465,6 +2375,12 @@ components:
       - description
       - name
     CreatePlaceClass_data:
+      example:
+        attributes:
+          parent_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          name: name
+          description: description
+        type: place_class
       properties:
         type:
           enum:
@@ -498,14 +2414,24 @@ components:
       - attributes
       - id
       - type
-    DeleteUploadPlaceIcon_data_attributes:
+    DeleteUploadPlaceMedia_data_attributes:
+      example:
+        icon_key: icon_key
+        banner_key: banner_key
       properties:
         icon_key:
           description: icon media key
           type: string
-      required:
-      - icon_key
-    DeleteUploadPlaceIcon_data:
+        banner_key:
+          description: banner media key
+          type: string
+    DeleteUploadPlaceMedia_data:
+      example:
+        attributes:
+          icon_key: icon_key
+          banner_key: banner_key
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: place
       properties:
         id:
           description: place id
@@ -516,35 +2442,24 @@ components:
           - place
           type: string
         attributes:
-          $ref: "#/components/schemas/DeleteUploadPlaceIcon_data_attributes"
+          $ref: "#/components/schemas/DeleteUploadPlaceMedia_data_attributes"
       required:
       - attributes
       - id
       - type
-    DeleteUploadPlaceBanner_data_attributes:
+    DeleteUploadPlaceClassMedia_data_attributes:
+      example:
+        icon_key: icon_key
       properties:
-        banner_key:
+        icon_key:
           description: icon media key
           type: string
-      required:
-      - banner_key
-    DeleteUploadPlaceBanner_data:
-      properties:
-        id:
-          description: place id
-          format: uuid
-          type: string
-        type:
-          enum:
-          - place
-          type: string
+    DeleteUploadPlaceClassMedia_data:
+      example:
         attributes:
-          $ref: "#/components/schemas/DeleteUploadPlaceBanner_data_attributes"
-      required:
-      - attributes
-      - id
-      - type
-    DeleteUploadPlaceClassIcon_data:
+          icon_key: icon_key
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: place_class
       properties:
         id:
           description: place class id
@@ -555,12 +2470,28 @@ components:
           - place_class
           type: string
         attributes:
-          $ref: "#/components/schemas/DeleteUploadPlaceIcon_data_attributes"
+          $ref: "#/components/schemas/DeleteUploadPlaceClassMedia_data_attributes"
       required:
       - attributes
       - id
       - type
     PlaceData_attributes:
+      example:
+        icon_url: https://openapi-generator.tech
+        website: https://openapi-generator.tech
+        address: address
+        verified: true
+        description: description
+        created_at: 2000-01-23T04:56:07.000+00:00
+        version: 1
+        point:
+          latitude: 0.8008281904610115
+          longitude: 6.027456183070403
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        phone: phone
+        name: name
+        banner_url: https://openapi-generator.tech
+        status: status
       properties:
         status:
           description: "The status of the place (e.g., active, inactive)"
@@ -579,11 +2510,11 @@ components:
         description:
           description: A brief description of the place
           type: string
-        icon_key:
+        icon_url:
           description: A URL to an icon representing the place
           format: uri
           type: string
-        banner_key:
+        banner_url:
           description: A URL to a banner image for the place
           format: uri
           type: string
@@ -616,6 +2547,9 @@ components:
       - verified
       - version
     PlaceData_relationships_organization:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: organization
       properties:
         id:
           description: The ID of the organization associated with the place
@@ -629,6 +2563,9 @@ components:
       - id
       - type
     PlaceData_relationships_place_class:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: place_class
       properties:
         id:
           description: The ID of the class associated with the place
@@ -642,6 +2579,13 @@ components:
       - id
       - type
     PlaceData_relationships:
+      example:
+        place_class:
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
+        organization:
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: organization
       properties:
         organization:
           $ref: "#/components/schemas/PlaceData_relationships_organization"
@@ -655,6 +2599,14 @@ components:
       - $ref: "#/components/schemas/OrganizationData"
       - $ref: "#/components/schemas/PlaceClassData"
     PlaceClassData_attributes:
+      example:
+        icon_url: https://openapi-generator.tech
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        deprecated_at: 2000-01-23T04:56:07.000+00:00
+        name: name
+        description: description
+        created_at: 2000-01-23T04:56:07.000+00:00
+        version: 0
       properties:
         name:
           description: The name of the class
@@ -662,7 +2614,7 @@ components:
         description:
           description: A brief description of the class
           type: string
-        icon_key:
+        icon_url:
           description: A URL to an icon representing the class
           format: uri
           type: string
@@ -689,6 +2641,9 @@ components:
       - updated_at
       - version
     PlaceClassData_relationships_parent:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: place_class
       properties:
         id:
           description: The ID of the parent class
@@ -702,10 +2657,22 @@ components:
       - id
       - type
     PlaceClassData_relationships:
+      example:
+        parent:
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
       properties:
         parent:
           $ref: "#/components/schemas/PlaceClassData_relationships_parent"
     OrganizationData_attributes:
+      example:
+        icon_url: icon_url
+        updated_at: 2000-01-23T04:56:07.000+00:00
+        name: name
+        created_at: 2000-01-23T04:56:07.000+00:00
+        banner_url: banner_url
+        version: 5
+        status: status
       properties:
         status:
           description: The status of the organization
@@ -713,10 +2680,10 @@ components:
         name:
           description: The name of the organization
           type: string
-        icon_key:
+        icon_url:
           description: The media key for the organization's icon
           type: string
-        banner_key:
+        banner_url:
           description: The media key for the organization's banner
           type: string
         version:
@@ -738,13 +2705,20 @@ components:
       - updated_at
       - version
     UploadPlaceClassMediaLinks_data_attributes:
+      example:
+        icon:
+          preload_url: https://openapi-generator.tech
+          upload_url: https://openapi-generator.tech
+          key: key
       properties:
         icon:
           $ref: "#/components/schemas/UploadResourcesLink"
       required:
-      - banner
       - icon
     UploadPlaceClassMediaLinks_data_relationships_place_class_data:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: place_class
       properties:
         id:
           description: place id
@@ -758,16 +2732,38 @@ components:
       - id
       - type
     UploadPlaceClassMediaLinks_data_relationships_place_class:
+      example:
+        data:
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place_class
       properties:
         data:
           $ref: "#/components/schemas/UploadPlaceClassMediaLinks_data_relationships_place_class_data"
       required:
       - data
     UploadPlaceClassMediaLinks_data_relationships:
+      example:
+        place_class:
+          data:
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            type: place_class
       properties:
         place_class:
           $ref: "#/components/schemas/UploadPlaceClassMediaLinks_data_relationships_place_class"
     UploadPlaceClassMediaLinks_data:
+      example:
+        relationships:
+          place_class:
+            data:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place_class
+        attributes:
+          icon:
+            preload_url: https://openapi-generator.tech
+            upload_url: https://openapi-generator.tech
+            key: key
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: place_class_upload_links
       properties:
         id:
           description: place class id
@@ -787,6 +2783,15 @@ components:
       - relationships
       - type
     UploadPlaceMediaLinks_data_attributes:
+      example:
+        icon:
+          preload_url: https://openapi-generator.tech
+          upload_url: https://openapi-generator.tech
+          key: key
+        banner:
+          preload_url: https://openapi-generator.tech
+          upload_url: https://openapi-generator.tech
+          key: key
       properties:
         icon:
           $ref: "#/components/schemas/UploadResourcesLink"
@@ -796,6 +2801,9 @@ components:
       - banner
       - icon
     UploadPlaceMediaLinks_data_relationships_place_data:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: place
       properties:
         id:
           description: place id
@@ -809,16 +2817,42 @@ components:
       - id
       - type
     UploadPlaceMediaLinks_data_relationships_place:
+      example:
+        data:
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          type: place
       properties:
         data:
           $ref: "#/components/schemas/UploadPlaceMediaLinks_data_relationships_place_data"
       required:
       - data
     UploadPlaceMediaLinks_data_relationships:
+      example:
+        place:
+          data:
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            type: place
       properties:
         place:
           $ref: "#/components/schemas/UploadPlaceMediaLinks_data_relationships_place"
     UploadPlaceMediaLinks_data:
+      example:
+        relationships:
+          place:
+            data:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              type: place
+        attributes:
+          icon:
+            preload_url: https://openapi-generator.tech
+            upload_url: https://openapi-generator.tech
+            key: key
+          banner:
+            preload_url: https://openapi-generator.tech
+            upload_url: https://openapi-generator.tech
+            key: key
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        type: place_upload_links
       properties:
         id:
           description: place id

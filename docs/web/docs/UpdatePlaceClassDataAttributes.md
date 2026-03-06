@@ -5,15 +5,15 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **ParentId** | Pointer to [**uuid.UUID**](uuid.UUID.md) | The ID of the parent class, if any | [optional] 
-**Name** | **string** | The name of the class | 
-**Description** | **string** | A brief description of the class | 
+**Name** | Pointer to **string** | The name of the class | [optional] 
+**Description** | Pointer to **string** | A brief description of the class | [optional] 
 **IconKey** | Pointer to **string** | The S3 key for the class icon | [optional] 
 
 ## Methods
 
 ### NewUpdatePlaceClassDataAttributes
 
-`func NewUpdatePlaceClassDataAttributes(name string, description string, ) *UpdatePlaceClassDataAttributes`
+`func NewUpdatePlaceClassDataAttributes() *UpdatePlaceClassDataAttributes`
 
 NewUpdatePlaceClassDataAttributes instantiates a new UpdatePlaceClassDataAttributes object
 This constructor will assign default values to properties that have it defined,
@@ -72,6 +72,11 @@ and a boolean to check if the value has been set.
 
 SetName sets Name field to given value.
 
+### HasName
+
+`func (o *UpdatePlaceClassDataAttributes) HasName() bool`
+
+HasName returns a boolean if a field has been set.
 
 ### GetDescription
 
@@ -92,6 +97,11 @@ and a boolean to check if the value has been set.
 
 SetDescription sets Description field to given value.
 
+### HasDescription
+
+`func (o *UpdatePlaceClassDataAttributes) HasDescription() bool`
+
+HasDescription returns a boolean if a field has been set.
 
 ### GetIconKey
 

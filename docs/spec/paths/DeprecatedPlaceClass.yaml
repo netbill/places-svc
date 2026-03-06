@@ -1,0 +1,121 @@
+parameters:
+  - in: path
+    name: place_class_id
+    required: true
+    schema:
+      type: string
+      format: uuid
+    description: Place class ID
+
+patch:
+  tags:
+    - place-classes
+  summary: Deprecate place class
+  description: >
+    Marks a place class as deprecated. Accessible by system moderators only.
+    Deprecated place classes cannot be assigned to new places.
+
+    **400 Bad Request** is returned when the place class ID is not a valid UUID.
+    **401 Unauthorized** is returned when the authorization token is missing or invalid.
+    **403 Forbidden** is returned when the initiator is not a system moderator.
+    **404 Not Found** is returned when the place class does not exist.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  security:
+    - BearerAuth: [ ]
+  responses:
+    '200':
+      description: Place class successfully deprecated
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/PlaceClass.yaml'
+    '400':
+      description: >
+        Bad Request. Provided place class ID is not a valid UUID.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '401':
+      description: >
+        Unauthorized. Missing or invalid authorization token.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '403':
+      description: >
+        Forbidden. Initiator is not a system moderator.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '404':
+      description: >
+        Not Found. Place class does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+
+delete:
+  tags:
+    - place-classes
+  summary: Undeprecate place class
+  description: >
+    Removes the deprecated mark from a place class. Accessible by system moderators only.
+
+    **400 Bad Request** is returned when the place class ID is not a valid UUID.
+    **401 Unauthorized** is returned when the authorization token is missing or invalid.
+    **403 Forbidden** is returned when the initiator is not a system moderator.
+    **404 Not Found** is returned when the place class does not exist.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  security:
+    - BearerAuth: [ ]
+  responses:
+    '200':
+      description: Place class successfully undeprecated
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/PlaceClass.yaml'
+    '400':
+      description: >
+        Bad Request. Provided place class ID is not a valid UUID.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '401':
+      description: >
+        Unauthorized. Missing or invalid authorization token.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '403':
+      description: >
+        Forbidden. Initiator is not a system moderator.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '404':
+      description: >
+        Not Found. Place class does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'

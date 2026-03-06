@@ -1,0 +1,132 @@
+parameters:
+  - in: path
+    name: place_class_id
+    required: true
+    schema:
+      type: string
+      format: uuid
+    description: Place class ID
+
+get:
+  tags:
+    - place-classes
+  summary: Get place class
+  description: >
+    Returns a place class by ID.
+
+    **400 Bad Request** is returned when the place class ID is not a valid UUID.
+    **404 Not Found** is returned when the place class or its parent does not exist.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  parameters:
+    - in: query
+      name: include
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - parent
+      style: form
+      explode: true
+      description: >
+        List of related resources to include in the response.
+        Supported values: `parent`.
+  responses:
+    '200':
+      description: Place class successfully retrieved
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/PlaceClass.yaml'
+    '400':
+      description: >
+        Bad Request. Provided place class ID is not a valid UUID.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '404':
+      description: >
+        Not Found. Place class or its parent does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+
+patch:
+  tags:
+    - place-classes
+  summary: Update place class
+  description: >
+    Updates a place class by ID. Accessible by system moderators only.
+
+    **400 Bad Request** is returned when the place class ID is not a valid UUID,
+    the request body is invalid, or the uploaded icon is invalid.
+    **401 Unauthorized** is returned when the authorization token is missing or invalid.
+    **403 Forbidden** is returned when the initiator is not a system moderator.
+    **404 Not Found** is returned when the place class does not exist.
+    **409 Conflict** is returned when setting the parent would create a cycle in the hierarchy.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  security:
+    - BearerAuth: [ ]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/requests/UpdatePlaceClass.yaml'
+  responses:
+    '200':
+      description: Place class successfully updated
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/PlaceClass.yaml'
+    '400':
+      description: >
+        Bad Request. Request body is invalid or uploaded icon is invalid.
+        Check the `errors` array for details.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '401':
+      description: >
+        Unauthorized. Missing or invalid authorization token.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '403':
+      description: >
+        Forbidden. Initiator is not a system moderator.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '404':
+      description: >
+        Not Found. Place class does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '409':
+      description: >
+        Conflict. Setting the specified parent would create a cycle in the class hierarchy.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'

@@ -1,0 +1,187 @@
+parameters:
+  - in: path
+    name: place_id
+    required: true
+    schema:
+      type: string
+      format: uuid
+    description: Place ID
+
+get:
+  tags:
+    - places
+  summary: Get place
+  description: >
+    Returns a place by ID.
+
+    **400 Bad Request** is returned when the place ID is not a valid UUID.
+    **404 Not Found** is returned when the place, related place class, or related organization does not exist.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  parameters:
+    - in: query
+      name: include
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - place_class
+            - organization
+      style: form
+      explode: true
+      description: >
+        List of related resources to include in the response.
+        Supported values: `place_class`, `organization`.
+  responses:
+    '200':
+      description: Place successfully retrieved
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Place.yaml'
+    '400':
+      description: >
+        Bad Request. Provided place ID is not a valid UUID.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '404':
+      description: >
+        Not Found. Place, related place class, or related organization does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+
+patch:
+  tags:
+    - places
+  summary: Update place
+  description: >
+    Updates a place by ID.
+
+    **400 Bad Request** is returned when the place ID is not a valid UUID, the request body is invalid,
+    or the uploaded icon/banner is invalid.
+    **401 Unauthorized** is returned when the authorization token is missing or invalid.
+    **403 Forbidden** is returned when the initiator does not have enough rights.
+    **404 Not Found** is returned when the place does not exist.
+    **409 Conflict** is returned when the organization is suspended or the place class is deprecated.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  security:
+    - BearerAuth: [ ]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/requests/UpdatePlace.yaml'
+  responses:
+    '200':
+      description: Place successfully updated
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Place.yaml'
+    '400':
+      description: >
+        Bad Request. Request body is invalid, or uploaded icon/banner is invalid.
+        Check the `errors` array for details.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '401':
+      description: >
+        Unauthorized. Missing or invalid authorization token.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '403':
+      description: >
+        Forbidden. Initiator does not have enough rights to update the place.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '404':
+      description: >
+        Not Found. Place does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '409':
+      description: >
+        Conflict. Organization is suspended or place class is deprecated.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+
+delete:
+  tags:
+    - places
+  summary: Delete place
+  description: >
+    Deletes a place by ID.
+
+    **400 Bad Request** is returned when the place ID is not a valid UUID.
+    **401 Unauthorized** is returned when the authorization token is missing or invalid.
+    **403 Forbidden** is returned when the initiator does not have enough rights
+    or the organization is suspended.
+    **404 Not Found** is returned when the place does not exist or has already been deleted.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  security:
+    - BearerAuth: [ ]
+  responses:
+    '200':
+      description: Place successfully deleted
+    '400':
+      description: >
+        Bad Request. Provided place ID is not a valid UUID.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '401':
+      description: >
+        Unauthorized. Missing or invalid authorization token.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '403':
+      description: >
+        Forbidden. Initiator does not have enough rights to delete the place,
+        or the organization is suspended.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '404':
+      description: >
+        Not Found. Place does not exist or has already been deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'

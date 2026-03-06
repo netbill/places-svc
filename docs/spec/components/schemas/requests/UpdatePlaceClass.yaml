@@ -18,9 +18,6 @@ properties:
         enum: [ place_class ]
       attributes:
         type: object
-        required:
-          - name
-          - description
         properties:
           parent_id:
             type: string

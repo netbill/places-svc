@@ -26,7 +26,7 @@ properties:
       description:
         type: string
         description: "A brief description of the class"
-      icon_key:
+      icon_url:
         type: string
         format: uri
         description: "A URL to an icon representing the class"

@@ -1,0 +1,211 @@
+get:
+  tags:
+    - places
+  summary: Get places list
+  description: >
+    Returns a paginated list of places with optional filters.
+
+    **400 Bad Request** is returned when any query parameter has an invalid format.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  parameters:
+    - in: query
+      name: size
+      schema:
+        type: integer
+        maximum: 1000
+      description: Pagination limit. Cannot be greater than 1000.
+    - in: query
+      name: page
+      schema:
+        type: integer
+      description: Pagination offset.
+    - in: query
+      name: organization_id
+      schema:
+        type: string
+        format: uuid
+      description: Filter places by organization ID.
+    - in: query
+      name: statuses
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - active
+            - inactive
+      style: form
+      explode: true
+      description: Filter places by place status.
+    - in: query
+      name: org_status
+      schema:
+        type: array
+        items:
+          type: string
+      style: form
+      explode: true
+      description: Filter places by organization status.
+    - in: query
+      name: verified
+      schema:
+        type: boolean
+      description: Filter places by verified flag.
+    - in: query
+      name: text
+      schema:
+        type: string
+      description: Full-text search query. Returns best-matching places.
+    - in: query
+      name: class_ids
+      schema:
+        type: array
+        items:
+          type: string
+          format: uuid
+      style: form
+      explode: true
+      description: Filter places by place class IDs.
+    - in: query
+      name: include_parent
+      schema:
+        type: boolean
+      description: >
+        When filtering by class_ids, also include places whose class is a parent
+        of one of the specified classes.
+    - in: query
+      name: include_children
+      schema:
+        type: boolean
+      description: >
+        When filtering by class_ids, also include places whose class is a child
+        of one of the specified classes.
+    - in: query
+      name: lon
+      schema:
+        type: number
+        format: double
+      description: >
+        Longitude for geo-proximity filter. Must be provided together with `lat` and `radius`.
+    - in: query
+      name: lat
+      schema:
+        type: number
+        format: double
+      description: >
+        Latitude for geo-proximity filter. Must be provided together with `lon` and `radius`.
+    - in: query
+      name: radius
+      schema:
+        type: integer
+        format: uint64
+      description: >
+        Radius in meters for geo-proximity filter. Must be provided together with `lon` and `lat`.
+    - in: query
+      name: include
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - place_classes
+            - organizations
+      style: form
+      explode: true
+      description: >
+        Comma-separated list of related resources to include in the response.
+        Supported values: `place_classes`, `organizations`.
+  responses:
+    '200':
+      description: Places list successfully retrieved
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/PlacesCollection.yaml'
+    '400':
+      description: >
+        Bad Request. One or more query parameters have an invalid format.
+        Check the `errors` array for details.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+
+post:
+  tags:
+    - places
+  summary: Create place
+  description: >
+    Creates a new place for an organization.
+
+    **400 Bad Request** is returned when the request body is invalid.
+    **401 Unauthorized** is returned when the authorization token is missing or invalid.
+    **403 Forbidden** is returned when the initiator does not have enough rights,
+    the organization is suspended, or the place point is outside the organization's territory.
+    **404 Not Found** is returned when the organization or place class does not exist.
+    **409 Conflict** is returned when the place class is deprecated.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  security:
+    - BearerAuth: [ ]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/requests/CreatePlace.yaml'
+  responses:
+    '201':
+      description: Place successfully created
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Place.yaml'
+    '400':
+      description: >
+        Bad Request. Request body is invalid.
+        Check the `errors` array for details.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '401':
+      description: >
+        Unauthorized. Missing or invalid authorization token.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '403':
+      description: >
+        Forbidden. Initiator does not have enough rights to create a place,
+        organization is suspended, or place point is outside the organization's territory.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '404':
+      description: >
+        Not Found. Organization or place class does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '409':
+      description: >
+        Conflict. Place class is deprecated and cannot be used.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'

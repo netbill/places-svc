@@ -41,11 +41,11 @@ properties:
       description:
         type: string
         description: "A brief description of the place"
-      icon_key:
+      icon_url:
         type: string
         format: uri
         description: "A URL to an icon representing the place"
-      banner_key:
+      banner_url:
         type: string
         format: uri
         description: "A URL to a banner image for the place"

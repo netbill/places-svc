@@ -1,0 +1,120 @@
+parameters:
+  - in: path
+    name: place_id
+    required: true
+    schema:
+      type: string
+      format: uuid
+    description: Place ID
+
+patch:
+  tags:
+    - places
+  summary: Verify place
+  description: >
+    Marks a place as verified. Accessible by system moderators only.
+
+    **400 Bad Request** is returned when the place ID is not a valid UUID.
+    **401 Unauthorized** is returned when the authorization token is missing or invalid.
+    **403 Forbidden** is returned when the initiator is not a system moderator.
+    **404 Not Found** is returned when the place does not exist.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  security:
+    - BearerAuth: [ ]
+  responses:
+    '200':
+      description: Place successfully verified
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Place.yaml'
+    '400':
+      description: >
+        Bad Request. Provided place ID is not a valid UUID.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '401':
+      description: >
+        Unauthorized. Missing or invalid authorization token.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '403':
+      description: >
+        Forbidden. Initiator is not a system moderator.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '404':
+      description: >
+        Not Found. Place does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+
+delete:
+  tags:
+    - places
+  summary: Unverify place
+  description: >
+    Removes verification from a place. Accessible by system moderators only.
+
+    **400 Bad Request** is returned when the place ID is not a valid UUID.
+    **401 Unauthorized** is returned when the authorization token is missing or invalid.
+    **403 Forbidden** is returned when the initiator is not a system moderator.
+    **404 Not Found** is returned when the place does not exist.
+    **500 Internal Server Error** is returned when an unexpected error occurs.
+  security:
+    - BearerAuth: [ ]
+  responses:
+    '200':
+      description: Place verification successfully removed
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Place.yaml'
+    '400':
+      description: >
+        Bad Request. Provided place ID is not a valid UUID.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '401':
+      description: >
+        Unauthorized. Missing or invalid authorization token.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '403':
+      description: >
+        Forbidden. Initiator is not a system moderator.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '404':
+      description: >
+        Not Found. Place does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/responses/Errors.yaml'

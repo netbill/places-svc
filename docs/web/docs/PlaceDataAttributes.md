@@ -10,8 +10,8 @@ Name | Type | Description | Notes
 **Address** | **string** | The physical address of the place | 
 **Name** | **string** | The name of the place | 
 **Description** | Pointer to **string** | A brief description of the place | [optional] 
-**IconKey** | Pointer to **string** | A URL to an icon representing the place | [optional] 
-**BannerKey** | Pointer to **string** | A URL to a banner image for the place | [optional] 
+**IconUrl** | Pointer to **string** | A URL to an icon representing the place | [optional] 
+**BannerUrl** | Pointer to **string** | A URL to a banner image for the place | [optional] 
 **Website** | Pointer to **string** | The website URL of the place | [optional] 
 **Phone** | Pointer to **string** | The contact phone number of the place | [optional] 
 **Version** | **int32** | The version number of the place data, used for concurrency control | 
@@ -162,55 +162,55 @@ SetDescription sets Description field to given value.
 
 HasDescription returns a boolean if a field has been set.
 
-### GetIconKey
+### GetIconUrl
 
-`func (o *PlaceDataAttributes) GetIconKey() string`
+`func (o *PlaceDataAttributes) GetIconUrl() string`
 
-GetIconKey returns the IconKey field if non-nil, zero value otherwise.
+GetIconUrl returns the IconUrl field if non-nil, zero value otherwise.
 
-### GetIconKeyOk
+### GetIconUrlOk
 
-`func (o *PlaceDataAttributes) GetIconKeyOk() (*string, bool)`
+`func (o *PlaceDataAttributes) GetIconUrlOk() (*string, bool)`
 
-GetIconKeyOk returns a tuple with the IconKey field if it's non-nil, zero value otherwise
+GetIconUrlOk returns a tuple with the IconUrl field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetIconKey
+### SetIconUrl
 
-`func (o *PlaceDataAttributes) SetIconKey(v string)`
+`func (o *PlaceDataAttributes) SetIconUrl(v string)`
 
-SetIconKey sets IconKey field to given value.
+SetIconUrl sets IconUrl field to given value.
 
-### HasIconKey
+### HasIconUrl
 
-`func (o *PlaceDataAttributes) HasIconKey() bool`
+`func (o *PlaceDataAttributes) HasIconUrl() bool`
 
-HasIconKey returns a boolean if a field has been set.
+HasIconUrl returns a boolean if a field has been set.
 
-### GetBannerKey
+### GetBannerUrl
 
-`func (o *PlaceDataAttributes) GetBannerKey() string`
+`func (o *PlaceDataAttributes) GetBannerUrl() string`
 
-GetBannerKey returns the BannerKey field if non-nil, zero value otherwise.
+GetBannerUrl returns the BannerUrl field if non-nil, zero value otherwise.
 
-### GetBannerKeyOk
+### GetBannerUrlOk
 
-`func (o *PlaceDataAttributes) GetBannerKeyOk() (*string, bool)`
+`func (o *PlaceDataAttributes) GetBannerUrlOk() (*string, bool)`
 
-GetBannerKeyOk returns a tuple with the BannerKey field if it's non-nil, zero value otherwise
+GetBannerUrlOk returns a tuple with the BannerUrl field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
-### SetBannerKey
+### SetBannerUrl
 
-`func (o *PlaceDataAttributes) SetBannerKey(v string)`
+`func (o *PlaceDataAttributes) SetBannerUrl(v string)`
 
-SetBannerKey sets BannerKey field to given value.
+SetBannerUrl sets BannerUrl field to given value.
 
-### HasBannerKey
+### HasBannerUrl
 
-`func (o *PlaceDataAttributes) HasBannerKey() bool`
+`func (o *PlaceDataAttributes) HasBannerUrl() bool`
 
-HasBannerKey returns a boolean if a field has been set.
+HasBannerUrl returns a boolean if a field has been set.
 
 ### GetWebsite
 

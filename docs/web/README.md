@@ -78,7 +78,25 @@ All URIs are relative to *http://localhost*
 
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
-*TestAPI* | [**TestPost**](docs/TestAPI.md#testpost) | **Post** /test | 
+*PlaceClassesAPI* | [**PlacesSvcV1PlacesClassesGet**](docs/PlaceClassesAPI.md#placessvcv1placesclassesget) | **Get** /places-svc/v1/places/classes/ | Get place classes list
+*PlaceClassesAPI* | [**PlacesSvcV1PlacesClassesPlaceClassIdDeprecatedDelete**](docs/PlaceClassesAPI.md#placessvcv1placesclassesplaceclassiddeprecateddelete) | **Delete** /places-svc/v1/places/classes/{place_class_id}/deprecated | Undeprecate place class
+*PlaceClassesAPI* | [**PlacesSvcV1PlacesClassesPlaceClassIdDeprecatedPatch**](docs/PlaceClassesAPI.md#placessvcv1placesclassesplaceclassiddeprecatedpatch) | **Patch** /places-svc/v1/places/classes/{place_class_id}/deprecated | Deprecate place class
+*PlaceClassesAPI* | [**PlacesSvcV1PlacesClassesPlaceClassIdGet**](docs/PlaceClassesAPI.md#placessvcv1placesclassesplaceclassidget) | **Get** /places-svc/v1/places/classes/{place_class_id} | Get place class
+*PlaceClassesAPI* | [**PlacesSvcV1PlacesClassesPlaceClassIdMediaDelete**](docs/PlaceClassesAPI.md#placessvcv1placesclassesplaceclassidmediadelete) | **Delete** /places-svc/v1/places/classes/{place_class_id}/media | Delete place class uploaded media
+*PlaceClassesAPI* | [**PlacesSvcV1PlacesClassesPlaceClassIdMediaPost**](docs/PlaceClassesAPI.md#placessvcv1placesclassesplaceclassidmediapost) | **Post** /places-svc/v1/places/classes/{place_class_id}/media | Create place class upload media link
+*PlaceClassesAPI* | [**PlacesSvcV1PlacesClassesPlaceClassIdPatch**](docs/PlaceClassesAPI.md#placessvcv1placesclassesplaceclassidpatch) | **Patch** /places-svc/v1/places/classes/{place_class_id} | Update place class
+*PlaceClassesAPI* | [**PlacesSvcV1PlacesClassesPost**](docs/PlaceClassesAPI.md#placessvcv1placesclassespost) | **Post** /places-svc/v1/places/classes/ | Create place class
+*PlacesAPI* | [**PlacesSvcV1PlacesGet**](docs/PlacesAPI.md#placessvcv1placesget) | **Get** /places-svc/v1/places/ | Get places list
+*PlacesAPI* | [**PlacesSvcV1PlacesPlaceIdActivatePatch**](docs/PlacesAPI.md#placessvcv1placesplaceidactivatepatch) | **Patch** /places-svc/v1/places/{place_id}/activate | Activate place
+*PlacesAPI* | [**PlacesSvcV1PlacesPlaceIdDeactivatePatch**](docs/PlacesAPI.md#placessvcv1placesplaceiddeactivatepatch) | **Patch** /places-svc/v1/places/{place_id}/deactivate | Deactivate place
+*PlacesAPI* | [**PlacesSvcV1PlacesPlaceIdDelete**](docs/PlacesAPI.md#placessvcv1placesplaceiddelete) | **Delete** /places-svc/v1/places/{place_id} | Delete place
+*PlacesAPI* | [**PlacesSvcV1PlacesPlaceIdGet**](docs/PlacesAPI.md#placessvcv1placesplaceidget) | **Get** /places-svc/v1/places/{place_id} | Get place
+*PlacesAPI* | [**PlacesSvcV1PlacesPlaceIdMediaDelete**](docs/PlacesAPI.md#placessvcv1placesplaceidmediadelete) | **Delete** /places-svc/v1/places/{place_id}/media | Delete place uploaded media
+*PlacesAPI* | [**PlacesSvcV1PlacesPlaceIdMediaPost**](docs/PlacesAPI.md#placessvcv1placesplaceidmediapost) | **Post** /places-svc/v1/places/{place_id}/media | Create place upload media link
+*PlacesAPI* | [**PlacesSvcV1PlacesPlaceIdPatch**](docs/PlacesAPI.md#placessvcv1placesplaceidpatch) | **Patch** /places-svc/v1/places/{place_id} | Update place
+*PlacesAPI* | [**PlacesSvcV1PlacesPlaceIdVerifyDelete**](docs/PlacesAPI.md#placessvcv1placesplaceidverifydelete) | **Delete** /places-svc/v1/places/{place_id}/verify | Unverify place
+*PlacesAPI* | [**PlacesSvcV1PlacesPlaceIdVerifyPatch**](docs/PlacesAPI.md#placessvcv1placesplaceidverifypatch) | **Patch** /places-svc/v1/places/{place_id}/verify | Verify place
+*PlacesAPI* | [**PlacesSvcV1PlacesPost**](docs/PlacesAPI.md#placessvcv1placespost) | **Post** /places-svc/v1/places/ | Create place
 
 
 ## Documentation For Models
@@ -89,14 +107,12 @@ Class | Method | HTTP request | Description
  - [CreatePlaceClassDataAttributes](docs/CreatePlaceClassDataAttributes.md)
  - [CreatePlaceData](docs/CreatePlaceData.md)
  - [CreatePlaceDataAttributes](docs/CreatePlaceDataAttributes.md)
- - [DeleteUploadPlaceBanner](docs/DeleteUploadPlaceBanner.md)
- - [DeleteUploadPlaceBannerData](docs/DeleteUploadPlaceBannerData.md)
- - [DeleteUploadPlaceBannerDataAttributes](docs/DeleteUploadPlaceBannerDataAttributes.md)
- - [DeleteUploadPlaceClassIcon](docs/DeleteUploadPlaceClassIcon.md)
- - [DeleteUploadPlaceClassIconData](docs/DeleteUploadPlaceClassIconData.md)
- - [DeleteUploadPlaceIcon](docs/DeleteUploadPlaceIcon.md)
- - [DeleteUploadPlaceIconData](docs/DeleteUploadPlaceIconData.md)
- - [DeleteUploadPlaceIconDataAttributes](docs/DeleteUploadPlaceIconDataAttributes.md)
+ - [DeleteUploadPlaceClassMedia](docs/DeleteUploadPlaceClassMedia.md)
+ - [DeleteUploadPlaceClassMediaData](docs/DeleteUploadPlaceClassMediaData.md)
+ - [DeleteUploadPlaceClassMediaDataAttributes](docs/DeleteUploadPlaceClassMediaDataAttributes.md)
+ - [DeleteUploadPlaceMedia](docs/DeleteUploadPlaceMedia.md)
+ - [DeleteUploadPlaceMediaData](docs/DeleteUploadPlaceMediaData.md)
+ - [DeleteUploadPlaceMediaDataAttributes](docs/DeleteUploadPlaceMediaDataAttributes.md)
  - [DeprecatedPlaceClass](docs/DeprecatedPlaceClass.md)
  - [DeprecatedPlaceClassData](docs/DeprecatedPlaceClassData.md)
  - [DeprecatedPlaceClassDataAttributes](docs/DeprecatedPlaceClassDataAttributes.md)
@@ -118,6 +134,8 @@ Class | Method | HTTP request | Description
  - [PlaceDataRelationshipsPlaceClass](docs/PlaceDataRelationshipsPlaceClass.md)
  - [PlaceIncludedInner](docs/PlaceIncludedInner.md)
  - [PlacesCollection](docs/PlacesCollection.md)
+ - [PlacesSvcV1PlacesGet400Response](docs/PlacesSvcV1PlacesGet400Response.md)
+ - [PlacesSvcV1PlacesGet400ResponseErrorsInner](docs/PlacesSvcV1PlacesGet400ResponseErrorsInner.md)
  - [Point](docs/Point.md)
  - [UpdatePlace](docs/UpdatePlace.md)
  - [UpdatePlaceClass](docs/UpdatePlaceClass.md)
@@ -125,12 +143,6 @@ Class | Method | HTTP request | Description
  - [UpdatePlaceClassDataAttributes](docs/UpdatePlaceClassDataAttributes.md)
  - [UpdatePlaceData](docs/UpdatePlaceData.md)
  - [UpdatePlaceDataAttributes](docs/UpdatePlaceDataAttributes.md)
- - [UpdatePlaceStatus](docs/UpdatePlaceStatus.md)
- - [UpdatePlaceStatusData](docs/UpdatePlaceStatusData.md)
- - [UpdatePlaceStatusDataAttributes](docs/UpdatePlaceStatusDataAttributes.md)
- - [UpdatePlaceVerify](docs/UpdatePlaceVerify.md)
- - [UpdatePlaceVerifyData](docs/UpdatePlaceVerifyData.md)
- - [UpdatePlaceVerifyDataAttributes](docs/UpdatePlaceVerifyDataAttributes.md)
  - [UploadPlaceClassMediaLinks](docs/UploadPlaceClassMediaLinks.md)
  - [UploadPlaceClassMediaLinksData](docs/UploadPlaceClassMediaLinksData.md)
  - [UploadPlaceClassMediaLinksDataAttributes](docs/UploadPlaceClassMediaLinksDataAttributes.md)

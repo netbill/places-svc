@@ -1,88 +1,88 @@
-# ReplacePlaceClassData
+# DeleteUploadPlaceClassMediaData
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Id** | [**uuid.UUID**](uuid.UUID.md) | The unique identifier for the replace class operation | 
+**Id** | [**uuid.UUID**](uuid.UUID.md) | place class id | 
 **Type** | **string** |  | 
-**Attributes** | [**ReplacePlaceClassDataAttributes**](ReplacePlaceClassDataAttributes.md) |  | 
+**Attributes** | [**DeleteUploadPlaceClassMediaDataAttributes**](DeleteUploadPlaceClassMediaDataAttributes.md) |  | 
 
 ## Methods
 
-### NewReplacePlaceClassData
+### NewDeleteUploadPlaceClassMediaData
 
-`func NewReplacePlaceClassData(id uuid.UUID, type_ string, attributes ReplacePlaceClassDataAttributes, ) *ReplacePlaceClassData`
+`func NewDeleteUploadPlaceClassMediaData(id uuid.UUID, type_ string, attributes DeleteUploadPlaceClassMediaDataAttributes, ) *DeleteUploadPlaceClassMediaData`
 
-NewReplacePlaceClassData instantiates a new ReplacePlaceClassData object
+NewDeleteUploadPlaceClassMediaData instantiates a new DeleteUploadPlaceClassMediaData object
 This constructor will assign default values to properties that have it defined,
 and makes sure properties required by API are set, but the set of arguments
 will change when the set of required properties is changed
 
-### NewReplacePlaceClassDataWithDefaults
+### NewDeleteUploadPlaceClassMediaDataWithDefaults
 
-`func NewReplacePlaceClassDataWithDefaults() *ReplacePlaceClassData`
+`func NewDeleteUploadPlaceClassMediaDataWithDefaults() *DeleteUploadPlaceClassMediaData`
 
-NewReplacePlaceClassDataWithDefaults instantiates a new ReplacePlaceClassData object
+NewDeleteUploadPlaceClassMediaDataWithDefaults instantiates a new DeleteUploadPlaceClassMediaData object
 This constructor will only assign default values to properties that have it defined,
 but it doesn't guarantee that properties required by API are set
 
 ### GetId
 
-`func (o *ReplacePlaceClassData) GetId() uuid.UUID`
+`func (o *DeleteUploadPlaceClassMediaData) GetId() uuid.UUID`
 
 GetId returns the Id field if non-nil, zero value otherwise.
 
 ### GetIdOk
 
-`func (o *ReplacePlaceClassData) GetIdOk() (*uuid.UUID, bool)`
+`func (o *DeleteUploadPlaceClassMediaData) GetIdOk() (*uuid.UUID, bool)`
 
 GetIdOk returns a tuple with the Id field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetId
 
-`func (o *ReplacePlaceClassData) SetId(v uuid.UUID)`
+`func (o *DeleteUploadPlaceClassMediaData) SetId(v uuid.UUID)`
 
 SetId sets Id field to given value.
 
 
 ### GetType
 
-`func (o *ReplacePlaceClassData) GetType() string`
+`func (o *DeleteUploadPlaceClassMediaData) GetType() string`
 
 GetType returns the Type field if non-nil, zero value otherwise.
 
 ### GetTypeOk
 
-`func (o *ReplacePlaceClassData) GetTypeOk() (*string, bool)`
+`func (o *DeleteUploadPlaceClassMediaData) GetTypeOk() (*string, bool)`
 
 GetTypeOk returns a tuple with the Type field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetType
 
-`func (o *ReplacePlaceClassData) SetType(v string)`
+`func (o *DeleteUploadPlaceClassMediaData) SetType(v string)`
 
 SetType sets Type field to given value.
 
 
 ### GetAttributes
 
-`func (o *ReplacePlaceClassData) GetAttributes() ReplacePlaceClassDataAttributes`
+`func (o *DeleteUploadPlaceClassMediaData) GetAttributes() DeleteUploadPlaceClassMediaDataAttributes`
 
 GetAttributes returns the Attributes field if non-nil, zero value otherwise.
 
 ### GetAttributesOk
 
-`func (o *ReplacePlaceClassData) GetAttributesOk() (*ReplacePlaceClassDataAttributes, bool)`
+`func (o *DeleteUploadPlaceClassMediaData) GetAttributesOk() (*DeleteUploadPlaceClassMediaDataAttributes, bool)`
 
 GetAttributesOk returns a tuple with the Attributes field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetAttributes
 
-`func (o *ReplacePlaceClassData) SetAttributes(v ReplacePlaceClassDataAttributes)`
+`func (o *DeleteUploadPlaceClassMediaData) SetAttributes(v DeleteUploadPlaceClassMediaDataAttributes)`
 
 SetAttributes sets Attributes field to given value.
 

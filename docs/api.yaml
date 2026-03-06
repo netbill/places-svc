@@ -5,14 +5,27 @@ info:
   version: 0.0.1
 
 paths:
-  /test:
-    post:
-      tags:
-        - Test
-      description: Test
-      responses:
-        '201':
-          description: successfully
+  /places-svc/v1/places/:
+    $ref: './spec/paths/Places.yaml'
+  /places-svc/v1/places/{place_id}:
+    $ref: './spec/paths/Place.yaml'
+  /places-svc/v1/places/{place_id}/activate:
+    $ref: './spec/paths/ActivatePlace.yaml'
+  /places-svc/v1/places/{place_id}/deactivate:
+    $ref: './spec/paths/DeactivatePlace.yaml'
+  /places-svc/v1/places/{place_id}/verify:
+    $ref: './spec/paths/VerifyPlace.yaml'
+  /places-svc/v1/places/{place_id}/media:
+    $ref: './spec/paths/PlaceMedia.yaml'
+
+  /places-svc/v1/places/classes/:
+    $ref: './spec/paths/PlaceClasses.yaml'
+  /places-svc/v1/places/classes/{place_class_id}:
+    $ref: './spec/paths/PlaceClass.yaml'
+  /places-svc/v1/places/classes/{place_class_id}/deprecated:
+    $ref: './spec/paths/DeprecatedPlaceClass.yaml'
+  /places-svc/v1/places/classes/{place_class_id}/media:
+    $ref: './spec/paths/PlaceClassMedia.yaml'
 
 components:
   schemas:
@@ -26,22 +39,16 @@ components:
       $ref: './spec/components/schemas/requests/UpdatePlace.yaml'
     UpdatePlaceClass:
       $ref: './spec/components/schemas/requests/UpdatePlaceClass.yaml'
-    UpdatePlaceStatus:
-      $ref: './spec/components/schemas/requests/UpdatePlaceStatus.yaml'
-    UpdatePlaceVerify:
-      $ref: './spec/components/schemas/requests/UpdatePlaceVerify.yaml'
 
     CreatePlaceClass:
       $ref: './spec/components/schemas/requests/CreatePlaceClass.yaml'
     DeprecatedPlaceClass:
       $ref: './spec/components/schemas/requests/DeprecatedPlaceClass.yaml'
 
-    DeleteUploadPlaceIcon:
-      $ref: './spec/components/schemas/requests/DeleteUploadPlaceIcon.yaml'
-    DeleteUploadPlaceBanner:
-      $ref: './spec/components/schemas/requests/DeleteUploadPlaceBanner.yaml'
-    DeleteUploadPlaceClassIcon:
-      $ref: './spec/components/schemas/requests/DeleteUploadPlaceClassIcon.yaml'
+    DeleteUploadPlaceMedia:
+      $ref: './spec/components/schemas/requests/DeleteUploadPlaceMedia.yaml'
+    DeleteUploadPlaceClassMedia:
+      $ref: './spec/components/schemas/requests/DeleteUploadPlaceClassMedia.yaml'
 
     # responses:
     PaginationData:
