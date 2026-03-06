@@ -70,8 +70,7 @@ CREATE INDEX place_classes_parent_name_idx ON place_classes(parent_id, name);
 
 CREATE TYPE place_statuses AS ENUM (
     'active',
-    'inactive',
-    'suspended'
+    'inactive'
 );
 
 CREATE TABLE places (

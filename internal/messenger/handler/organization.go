@@ -7,8 +7,8 @@ import (
 
 	"github.com/netbill/eventbox"
 	"github.com/netbill/evtypes"
+	"github.com/netbill/places-svc/internal/core"
 	"github.com/netbill/places-svc/internal/core/errx"
-	"github.com/netbill/places-svc/internal/core/modules/organization"
 )
 
 const operationOrganizationCreated = "organization_created"
@@ -25,7 +25,7 @@ func (h *Handler) OrganizationCreated(
 	log := h.log.WithOperation(operationOrganizationCreated).
 		With("organization_id", payload.OrganizationID)
 
-	err := h.modules.Org.Create(ctx, organization.CreateParams{
+	err := h.modules.Org.Create(ctx, core.CreateOrgParams{
 		ID:        payload.OrganizationID,
 		Status:    payload.Status,
 		Name:      payload.Name,
@@ -63,7 +63,7 @@ func (h *Handler) OrganizationUpdated(
 	log := h.log.WithOperation(operationOrganizationUpdated).
 		With("organization_id", payload.OrganizationID)
 
-	err := h.modules.Org.Update(ctx, payload.OrganizationID, organization.UpdateParams{
+	err := h.modules.Org.Update(ctx, payload.OrganizationID, core.UpdateOrgParams{
 		Name:      payload.Name,
 		Status:    payload.Status,
 		IconKey:   payload.IconKey,

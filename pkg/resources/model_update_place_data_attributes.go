@@ -13,8 +13,6 @@ package resources
 import (
 	"encoding/json"
 	"github.com/google/uuid"
-	"bytes"
-	"fmt"
 )
 
 // checks if the UpdatePlaceDataAttributes type satisfies the MappedNullable interface at compile time
@@ -23,11 +21,11 @@ var _ MappedNullable = &UpdatePlaceDataAttributes{}
 // UpdatePlaceDataAttributes struct for UpdatePlaceDataAttributes
 type UpdatePlaceDataAttributes struct {
 	// The class ID of the place (e.g., restaurant, park)
-	ClassId uuid.UUID `json:"class_id"`
+	ClassId *uuid.UUID `json:"class_id,omitempty"`
 	// The name of the place
-	Name string `json:"name"`
+	Name *string `json:"name,omitempty"`
 	// The address of the place
-	Address string `json:"address"`
+	Address *string `json:"address,omitempty"`
 	// A brief description of the place
 	Description *string `json:"description,omitempty"`
 	// The S3 key for the place's icon image
@@ -40,17 +38,12 @@ type UpdatePlaceDataAttributes struct {
 	Phone *string `json:"phone,omitempty"`
 }
 
-type _UpdatePlaceDataAttributes UpdatePlaceDataAttributes
-
 // NewUpdatePlaceDataAttributes instantiates a new UpdatePlaceDataAttributes object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUpdatePlaceDataAttributes(classId uuid.UUID, name string, address string) *UpdatePlaceDataAttributes {
+func NewUpdatePlaceDataAttributes() *UpdatePlaceDataAttributes {
 	this := UpdatePlaceDataAttributes{}
-	this.ClassId = classId
-	this.Name = name
-	this.Address = address
 	return &this
 }
 
@@ -62,76 +55,100 @@ func NewUpdatePlaceDataAttributesWithDefaults() *UpdatePlaceDataAttributes {
 	return &this
 }
 
-// GetClassId returns the ClassId field value
+// GetClassId returns the ClassId field value if set, zero value otherwise.
 func (o *UpdatePlaceDataAttributes) GetClassId() uuid.UUID {
-	if o == nil {
+	if o == nil || IsNil(o.ClassId) {
 		var ret uuid.UUID
 		return ret
 	}
-
-	return o.ClassId
+	return *o.ClassId
 }
 
-// GetClassIdOk returns a tuple with the ClassId field value
+// GetClassIdOk returns a tuple with the ClassId field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *UpdatePlaceDataAttributes) GetClassIdOk() (*uuid.UUID, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.ClassId) {
 		return nil, false
 	}
-	return &o.ClassId, true
+	return o.ClassId, true
 }
 
-// SetClassId sets field value
+// HasClassId returns a boolean if a field has been set.
+func (o *UpdatePlaceDataAttributes) HasClassId() bool {
+	if o != nil && !IsNil(o.ClassId) {
+		return true
+	}
+
+	return false
+}
+
+// SetClassId gets a reference to the given uuid.UUID and assigns it to the ClassId field.
 func (o *UpdatePlaceDataAttributes) SetClassId(v uuid.UUID) {
-	o.ClassId = v
+	o.ClassId = &v
 }
 
-// GetName returns the Name field value
+// GetName returns the Name field value if set, zero value otherwise.
 func (o *UpdatePlaceDataAttributes) GetName() string {
-	if o == nil {
+	if o == nil || IsNil(o.Name) {
 		var ret string
 		return ret
 	}
-
-	return o.Name
+	return *o.Name
 }
 
-// GetNameOk returns a tuple with the Name field value
+// GetNameOk returns a tuple with the Name field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *UpdatePlaceDataAttributes) GetNameOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Name) {
 		return nil, false
 	}
-	return &o.Name, true
+	return o.Name, true
 }
 
-// SetName sets field value
+// HasName returns a boolean if a field has been set.
+func (o *UpdatePlaceDataAttributes) HasName() bool {
+	if o != nil && !IsNil(o.Name) {
+		return true
+	}
+
+	return false
+}
+
+// SetName gets a reference to the given string and assigns it to the Name field.
 func (o *UpdatePlaceDataAttributes) SetName(v string) {
-	o.Name = v
+	o.Name = &v
 }
 
-// GetAddress returns the Address field value
+// GetAddress returns the Address field value if set, zero value otherwise.
 func (o *UpdatePlaceDataAttributes) GetAddress() string {
-	if o == nil {
+	if o == nil || IsNil(o.Address) {
 		var ret string
 		return ret
 	}
-
-	return o.Address
+	return *o.Address
 }
 
-// GetAddressOk returns a tuple with the Address field value
+// GetAddressOk returns a tuple with the Address field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *UpdatePlaceDataAttributes) GetAddressOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Address) {
 		return nil, false
 	}
-	return &o.Address, true
+	return o.Address, true
 }
 
-// SetAddress sets field value
+// HasAddress returns a boolean if a field has been set.
+func (o *UpdatePlaceDataAttributes) HasAddress() bool {
+	if o != nil && !IsNil(o.Address) {
+		return true
+	}
+
+	return false
+}
+
+// SetAddress gets a reference to the given string and assigns it to the Address field.
 func (o *UpdatePlaceDataAttributes) SetAddress(v string) {
-	o.Address = v
+	o.Address = &v
 }
 
 // GetDescription returns the Description field value if set, zero value otherwise.
@@ -304,9 +321,15 @@ func (o UpdatePlaceDataAttributes) MarshalJSON() ([]byte, error) {
 
 func (o UpdatePlaceDataAttributes) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["class_id"] = o.ClassId
-	toSerialize["name"] = o.Name
-	toSerialize["address"] = o.Address
+	if !IsNil(o.ClassId) {
+		toSerialize["class_id"] = o.ClassId
+	}
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
+	}
+	if !IsNil(o.Address) {
+		toSerialize["address"] = o.Address
+	}
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
 	}
@@ -323,45 +346,6 @@ func (o UpdatePlaceDataAttributes) ToMap() (map[string]interface{}, error) {
 		toSerialize["phone"] = o.Phone
 	}
 	return toSerialize, nil
-}
-
-func (o *UpdatePlaceDataAttributes) UnmarshalJSON(data []byte) (err error) {
-	// This validates that all required properties are included in the JSON object
-	// by unmarshalling the object into a generic map with string keys and checking
-	// that every required field exists as a key in the generic map.
-	requiredProperties := []string{
-		"class_id",
-		"name",
-		"address",
-	}
-
-	allProperties := make(map[string]interface{})
-
-	err = json.Unmarshal(data, &allProperties)
-
-	if err != nil {
-		return err;
-	}
-
-	for _, requiredProperty := range(requiredProperties) {
-		if _, exists := allProperties[requiredProperty]; !exists {
-			return fmt.Errorf("no value given for required property %v", requiredProperty)
-		}
-	}
-
-	varUpdatePlaceDataAttributes := _UpdatePlaceDataAttributes{}
-
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varUpdatePlaceDataAttributes)
-
-	if err != nil {
-		return err
-	}
-
-	*o = UpdatePlaceDataAttributes(varUpdatePlaceDataAttributes)
-
-	return err
 }
 
 type NullableUpdatePlaceDataAttributes struct {

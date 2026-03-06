@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/netbill/places-svc/internal/core"
 	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
-	"github.com/netbill/places-svc/internal/core/modules/place"
 	"github.com/netbill/restkit/pagi"
 	"github.com/paulmach/orb"
 )
@@ -97,8 +97,18 @@ type PlacesQ interface {
 	Count(ctx context.Context) (uint, error)
 }
 
-func (r *Repository) CreatePlace(ctx context.Context, params place.CreateParams) (models.Place, error) {
-	row, err := r.PlacesSql.New().Insert(ctx, PlaceRow{
+type PlacesRepository struct {
+	query PlacesQ
+}
+
+func NewPlaces(query PlacesQ) *PlacesRepository {
+	return &PlacesRepository{
+		query: query,
+	}
+}
+
+func (r *PlacesRepository) Create(ctx context.Context, params core.CreatePlaceParams) (models.Place, error) {
+	row, err := r.query.New().Insert(ctx, PlaceRow{
 		ClassID:        params.ClassID,
 		OrganizationID: params.OrganizationID,
 		Status:         models.PlaceStatusInactive,
@@ -117,8 +127,8 @@ func (r *Repository) CreatePlace(ctx context.Context, params place.CreateParams)
 	return row.ToModel(), nil
 }
 
-func (r *Repository) GetPlaceByID(ctx context.Context, placeID uuid.UUID) (models.Place, error) {
-	row, err := r.PlacesSql.New().FilterByID(placeID).Get(ctx)
+func (r *PlacesRepository) Get(ctx context.Context, placeID uuid.UUID) (models.Place, error) {
+	row, err := r.query.New().FilterByID(placeID).Get(ctx)
 	if err != nil {
 		return models.Place{}, err
 	}
@@ -131,9 +141,9 @@ func (r *Repository) GetPlaceByID(ctx context.Context, placeID uuid.UUID) (model
 	return row.ToModel(), nil
 }
 
-func (r *Repository) GetPlaces(
+func (r *PlacesRepository) GetList(
 	ctx context.Context,
-	params place.FilterParams,
+	params core.FilterPlaceParams,
 	limit, offset uint,
 ) (pagi.Page[[]models.Place], error) {
 	if limit == 0 {
@@ -143,7 +153,7 @@ func (r *Repository) GetPlaces(
 		limit = 1000
 	}
 
-	q := r.PlacesSql.New()
+	q := r.query.New()
 
 	if params.OrganizationID != nil {
 		q = q.FilterByOrganizationID(params.OrganizationID)
@@ -187,8 +197,8 @@ func (r *Repository) GetPlaces(
 	}, nil
 }
 
-func (r *Repository) GetPlacesByIDs(ctx context.Context, ids []uuid.UUID) ([]models.Place, error) {
-	rows, err := r.PlacesSql.New().FilterByID(ids...).Select(ctx)
+func (r *PlacesRepository) GetListByIDs(ctx context.Context, ids []uuid.UUID) ([]models.Place, error) {
+	rows, err := r.query.New().FilterByID(ids...).Select(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -201,22 +211,38 @@ func (r *Repository) GetPlacesByIDs(ctx context.Context, ids []uuid.UUID) ([]mod
 	return res, nil
 }
 
-func (r *Repository) UpdatePlaceByID(
+func (r *PlacesRepository) Update(
 	ctx context.Context,
 	placeID uuid.UUID,
-	params place.UpdateParams,
+	params core.UpdatePlaceParams,
 ) (models.Place, error) {
-	row, err := r.PlacesSql.New().
-		FilterByID(placeID).
-		UpdateClassID(params.ClassID).
-		UpdateName(params.Name).
-		UpdateAddress(params.Address).
-		UpdateDescription(params.Description).
-		UpdateWebsite(params.Website).
-		UpdatePhone(params.Phone).
-		UpdateIconKey(params.IconKey).
-		UpdateBannerKey(params.BannerKey).
-		UpdateOne(ctx)
+	q := r.query.New().FilterByID(placeID)
+	if params.ClassID != nil {
+		q = q.UpdateClassID(*params.ClassID)
+	}
+	if params.Name != nil {
+		q = q.UpdateName(*params.Name)
+	}
+	if params.Address != nil {
+		q = q.UpdateAddress(*params.Address)
+	}
+	if params.Description != nil {
+		q = q.UpdateDescription(params.Description)
+	}
+	if params.Website != nil {
+		q = q.UpdateWebsite(params.Website)
+	}
+	if params.Phone != nil {
+		q = q.UpdatePhone(params.Phone)
+	}
+	if params.IconKey != nil {
+		q = q.UpdateIconKey(params.IconKey)
+	}
+	if params.BannerKey != nil {
+		q = q.UpdateBannerKey(params.BannerKey)
+	}
+
+	row, err := q.UpdateOne(ctx)
 	if err != nil {
 		return models.Place{}, err
 	}
@@ -229,12 +255,12 @@ func (r *Repository) UpdatePlaceByID(
 	return row.ToModel(), nil
 }
 
-func (r *Repository) UpdatePlaceStatus(
+func (r *PlacesRepository) UpdateStatus(
 	ctx context.Context,
 	placeID uuid.UUID,
 	status string,
 ) (models.Place, error) {
-	row, err := r.PlacesSql.New().FilterByID(placeID).UpdateStatus(status).UpdateOne(ctx)
+	row, err := r.query.New().FilterByID(placeID).UpdateStatus(status).UpdateOne(ctx)
 	if err != nil {
 		return models.Place{}, err
 	}
@@ -247,12 +273,12 @@ func (r *Repository) UpdatePlaceStatus(
 	return row.ToModel(), nil
 }
 
-func (r *Repository) UpdatePlaceVerified(
+func (r *PlacesRepository) UpdateVerified(
 	ctx context.Context,
 	placeID uuid.UUID,
 	verified bool,
 ) (models.Place, error) {
-	row, err := r.PlacesSql.New().FilterByID(placeID).UpdateVerified(verified).UpdateOne(ctx)
+	row, err := r.query.New().FilterByID(placeID).UpdateVerified(verified).UpdateOne(ctx)
 	if err != nil {
 		return models.Place{}, err
 	}
@@ -265,12 +291,12 @@ func (r *Repository) UpdatePlaceVerified(
 	return row.ToModel(), nil
 }
 
-func (r *Repository) UpdateClassForPlace(
+func (r *PlacesRepository) UpdateClass(
 	ctx context.Context,
 	placeID uuid.UUID,
 	classID uuid.UUID,
 ) (models.Place, error) {
-	row, err := r.PlacesSql.New().FilterByID(placeID).UpdateClassID(classID).UpdateOne(ctx)
+	row, err := r.query.New().FilterByID(placeID).UpdateClassID(classID).UpdateOne(ctx)
 	if err != nil {
 		return models.Place{}, err
 	}
@@ -283,6 +309,6 @@ func (r *Repository) UpdateClassForPlace(
 	return row.ToModel(), nil
 }
 
-func (r *Repository) DeletePlaceByID(ctx context.Context, placeID uuid.UUID) error {
-	return r.PlacesSql.New().FilterByID(placeID).Delete(ctx)
+func (r *PlacesRepository) Delete(ctx context.Context, placeID uuid.UUID) error {
+	return r.query.New().FilterByID(placeID).Delete(ctx)
 }

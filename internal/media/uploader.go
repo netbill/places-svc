@@ -29,18 +29,14 @@ type Config struct {
 	PlaceBanner    awsx.ImageValidator
 }
 
-type Storage struct {
+type Uploader struct {
 	s3     bucket
 	config Config
 }
 
-func NewStorage(s3 bucket, config Config) *Storage {
-	return &Storage{
+func NewUploader(s3 bucket, config Config) *Uploader {
+	return &Uploader{
 		s3:     s3,
 		config: config,
 	}
-}
-
-func ptrStrEq(a, b *string) bool {
-	return (a == nil && b == nil) || (a != nil && b != nil && *a == *b)
 }

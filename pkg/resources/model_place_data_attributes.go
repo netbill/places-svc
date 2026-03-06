@@ -34,9 +34,9 @@ type PlaceDataAttributes struct {
 	// A brief description of the place
 	Description *string `json:"description,omitempty"`
 	// A URL to an icon representing the place
-	IconKey *string `json:"icon_key,omitempty"`
+	IconUrl *string `json:"icon_url,omitempty"`
 	// A URL to a banner image for the place
-	BannerKey *string `json:"banner_key,omitempty"`
+	BannerUrl *string `json:"banner_url,omitempty"`
 	// The website URL of the place
 	Website *string `json:"website,omitempty"`
 	// The contact phone number of the place
@@ -228,68 +228,68 @@ func (o *PlaceDataAttributes) SetDescription(v string) {
 	o.Description = &v
 }
 
-// GetIconKey returns the IconKey field value if set, zero value otherwise.
-func (o *PlaceDataAttributes) GetIconKey() string {
-	if o == nil || IsNil(o.IconKey) {
+// GetIconUrl returns the IconUrl field value if set, zero value otherwise.
+func (o *PlaceDataAttributes) GetIconUrl() string {
+	if o == nil || IsNil(o.IconUrl) {
 		var ret string
 		return ret
 	}
-	return *o.IconKey
+	return *o.IconUrl
 }
 
-// GetIconKeyOk returns a tuple with the IconKey field value if set, nil otherwise
+// GetIconUrlOk returns a tuple with the IconUrl field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *PlaceDataAttributes) GetIconKeyOk() (*string, bool) {
-	if o == nil || IsNil(o.IconKey) {
+func (o *PlaceDataAttributes) GetIconUrlOk() (*string, bool) {
+	if o == nil || IsNil(o.IconUrl) {
 		return nil, false
 	}
-	return o.IconKey, true
+	return o.IconUrl, true
 }
 
-// HasIconKey returns a boolean if a field has been set.
-func (o *PlaceDataAttributes) HasIconKey() bool {
-	if o != nil && !IsNil(o.IconKey) {
+// HasIconUrl returns a boolean if a field has been set.
+func (o *PlaceDataAttributes) HasIconUrl() bool {
+	if o != nil && !IsNil(o.IconUrl) {
 		return true
 	}
 
 	return false
 }
 
-// SetIconKey gets a reference to the given string and assigns it to the IconKey field.
-func (o *PlaceDataAttributes) SetIconKey(v string) {
-	o.IconKey = &v
+// SetIconUrl gets a reference to the given string and assigns it to the IconUrl field.
+func (o *PlaceDataAttributes) SetIconUrl(v string) {
+	o.IconUrl = &v
 }
 
-// GetBannerKey returns the BannerKey field value if set, zero value otherwise.
-func (o *PlaceDataAttributes) GetBannerKey() string {
-	if o == nil || IsNil(o.BannerKey) {
+// GetBannerUrl returns the BannerUrl field value if set, zero value otherwise.
+func (o *PlaceDataAttributes) GetBannerUrl() string {
+	if o == nil || IsNil(o.BannerUrl) {
 		var ret string
 		return ret
 	}
-	return *o.BannerKey
+	return *o.BannerUrl
 }
 
-// GetBannerKeyOk returns a tuple with the BannerKey field value if set, nil otherwise
+// GetBannerUrlOk returns a tuple with the BannerUrl field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *PlaceDataAttributes) GetBannerKeyOk() (*string, bool) {
-	if o == nil || IsNil(o.BannerKey) {
+func (o *PlaceDataAttributes) GetBannerUrlOk() (*string, bool) {
+	if o == nil || IsNil(o.BannerUrl) {
 		return nil, false
 	}
-	return o.BannerKey, true
+	return o.BannerUrl, true
 }
 
-// HasBannerKey returns a boolean if a field has been set.
-func (o *PlaceDataAttributes) HasBannerKey() bool {
-	if o != nil && !IsNil(o.BannerKey) {
+// HasBannerUrl returns a boolean if a field has been set.
+func (o *PlaceDataAttributes) HasBannerUrl() bool {
+	if o != nil && !IsNil(o.BannerUrl) {
 		return true
 	}
 
 	return false
 }
 
-// SetBannerKey gets a reference to the given string and assigns it to the BannerKey field.
-func (o *PlaceDataAttributes) SetBannerKey(v string) {
-	o.BannerKey = &v
+// SetBannerUrl gets a reference to the given string and assigns it to the BannerUrl field.
+func (o *PlaceDataAttributes) SetBannerUrl(v string) {
+	o.BannerUrl = &v
 }
 
 // GetWebsite returns the Website field value if set, zero value otherwise.
@@ -446,11 +446,11 @@ func (o PlaceDataAttributes) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
 	}
-	if !IsNil(o.IconKey) {
-		toSerialize["icon_key"] = o.IconKey
+	if !IsNil(o.IconUrl) {
+		toSerialize["icon_url"] = o.IconUrl
 	}
-	if !IsNil(o.BannerKey) {
-		toSerialize["banner_key"] = o.BannerKey
+	if !IsNil(o.BannerUrl) {
+		toSerialize["banner_url"] = o.BannerUrl
 	}
 	if !IsNil(o.Website) {
 		toSerialize["website"] = o.Website

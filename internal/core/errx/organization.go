@@ -12,4 +12,7 @@ var (
 	ErrorOrgMemberNotExists     = ape.DeclareError("ORG_MEMBER_NOT_EXISTS")
 	ErrorOrgMemberAlreadyExists = ape.DeclareError("ORG_MEMBER_ALREADY_EXISTS")
 	ErrorOrgMemberDeleted       = ape.DeclareError("ORG_MEMBER_DELETED")
+
+	ErrorNotOrganizationHead              = ape.DeclareError("NOT_ORGANIZATION_HEAD")
+	ErrorInitiatorNotMemberOfOrganization = ape.DeclareError("INITIATOR_NOT_MEMBER_OF_ORGANIZATION")
 )

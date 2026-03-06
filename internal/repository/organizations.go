@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/netbill/places-svc/internal/core"
 	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
-	"github.com/netbill/places-svc/internal/core/modules/organization"
 )
 
 type OrganizationRow struct {
@@ -66,11 +66,21 @@ type OrganizationsQ interface {
 	Delete(ctx context.Context) error
 }
 
-func (r *Repository) CreateOrganization(
+type OrgRepository struct {
+	query OrganizationsQ
+}
+
+func NewOrgRepository(query OrganizationsQ) *OrgRepository {
+	return &OrgRepository{
+		query: query,
+	}
+}
+
+func (r *OrgRepository) Create(
 	ctx context.Context,
-	input organization.CreateParams,
+	input core.CreateOrgParams,
 ) error {
-	return r.OrganizationsSql.New().Insert(ctx, OrganizationRow{
+	return r.query.New().Insert(ctx, OrganizationRow{
 		ID:              input.ID,
 		Status:          input.Status,
 		Name:            input.Name,
@@ -82,11 +92,11 @@ func (r *Repository) CreateOrganization(
 	})
 }
 
-func (r *Repository) GetOrganization(
+func (r *OrgRepository) Get(
 	ctx context.Context,
 	orgID uuid.UUID,
 ) (models.Organization, error) {
-	row, err := r.OrganizationsSql.New().FilterByID(orgID).Get(ctx)
+	row, err := r.query.New().FilterByID(orgID).Get(ctx)
 	if err != nil {
 		return models.Organization{}, nil
 	}
@@ -99,11 +109,11 @@ func (r *Repository) GetOrganization(
 	return row.ToModel(), nil
 }
 
-func (r *Repository) GetOrgsByIDs(
+func (r *OrgRepository) GetListByIDs(
 	ctx context.Context,
 	ids []uuid.UUID,
 ) ([]models.Organization, error) {
-	rows, err := r.OrganizationsSql.New().FilterByID(ids...).Select(ctx)
+	rows, err := r.query.New().FilterByID(ids...).Select(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -116,16 +126,16 @@ func (r *Repository) GetOrgsByIDs(
 	return res, nil
 }
 
-func (r *Repository) ExistsOrganization(ctx context.Context, orgID uuid.UUID) (bool, error) {
-	return r.OrganizationsSql.New().FilterByID(orgID).Exists(ctx)
+func (r *OrgRepository) Exists(ctx context.Context, orgID uuid.UUID) (bool, error) {
+	return r.query.New().FilterByID(orgID).Exists(ctx)
 }
 
-func (r *Repository) UpdateOrganization(
+func (r *OrgRepository) Update(
 	ctx context.Context,
 	orgID uuid.UUID,
-	params organization.UpdateParams,
+	params core.UpdateOrgParams,
 ) error {
-	return r.OrganizationsSql.New().
+	return r.query.New().
 		FilterByID(orgID).
 		UpdateName(params.Name).
 		UpdateIcon(params.IconKey).
@@ -135,8 +145,8 @@ func (r *Repository) UpdateOrganization(
 		UpdateOne(ctx)
 }
 
-func (r *Repository) DeleteOrganization(ctx context.Context, ID uuid.UUID) error {
-	return r.OrganizationsSql.New().
+func (r *OrgRepository) Delete(ctx context.Context, ID uuid.UUID) error {
+	return r.query.New().
 		FilterByID(ID).
 		Delete(ctx)
 }

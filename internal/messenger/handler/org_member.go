@@ -7,8 +7,8 @@ import (
 
 	"github.com/netbill/eventbox"
 	"github.com/netbill/evtypes"
+	"github.com/netbill/places-svc/internal/core"
 	"github.com/netbill/places-svc/internal/core/errx"
-	"github.com/netbill/places-svc/internal/core/modules/organization"
 )
 
 const operationOrgMemberCreated = "organization_member_created"
@@ -25,7 +25,7 @@ func (h *Handler) OrgMemberCreated(
 	log := h.log.WithOperation(operationOrgMemberCreated).
 		With("member_id", payload.MemberID)
 
-	err := h.modules.Org.CreateOrgMember(ctx, organization.CreateMemberParams{
+	err := h.modules.Org.CreateMember(ctx, core.CreateMemberParams{
 		ID:             payload.MemberID,
 		AccountID:      payload.AccountID,
 		OrganizationID: payload.OrganizationID,
@@ -67,7 +67,7 @@ func (h *Handler) OrgMemberUpdated(
 	log := h.log.WithOperation(operationOrgMemberUpdated).
 		With("member_id", payload.MemberID)
 
-	err := h.modules.Org.UpdateOrgMember(ctx, payload.MemberID, organization.UpdateMemberParams{
+	err := h.modules.Org.UpdateMember(ctx, payload.MemberID, core.UpdateMemberParams{
 		Label:     payload.Label,
 		Position:  payload.Position,
 		Version:   payload.Version,
@@ -100,7 +100,7 @@ func (h *Handler) OrgMemberDeleted(
 	log := h.log.WithOperation(operationOrgMemberDeleted).
 		With("member_id", payload.MemberID)
 
-	err := h.modules.Org.DeleteOrgMember(ctx, payload.MemberID)
+	err := h.modules.Org.DeleteMember(ctx, payload.MemberID)
 	switch {
 	case errors.Is(err, errx.ErrorOrgMemberDeleted):
 		log.Debug("received org member deleted event for already deleted org member")

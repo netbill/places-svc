@@ -1,13 +1,13 @@
 services:
-#  places-svc:
-#    build: .
-#    container_name: places-svc
-#    environment:
-#      - KV_VIPER_FILE=./config_docker.yaml
-#    ports:
-#      - "8004:8000"
-#    networks:
-#      - chains-net
+  places-svc:
+    build: .
+    container_name: places-svc
+    environment:
+      - KV_VIPER_FILE=./config_docker.yaml
+    ports:
+      - "8004:8000"
+    networks:
+      - netbill-net
 
   places-svc-postgres:
     image: postgis/postgis:16-3.4
@@ -21,11 +21,23 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
-      - chains-net
+      - netbill-net
+
+  places-svc-swagger:
+    image: swaggerapi/swagger-ui
+    container_name: places-svc-swagger
+    environment:
+      - SWAGGER_JSON=/docs/api-bundled.yaml
+    volumes:
+      - ./docs:/docs:ro
+    ports:
+      - "5004:8080"
+    networks:
+      - netbill-net
 
 volumes:
   pgdata:
 
 networks:
-  chains-net:
+  netbill-net:
     external: true

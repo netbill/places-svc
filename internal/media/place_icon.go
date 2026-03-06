@@ -1,4 +1,4 @@
-package bucket
+package media
 
 import (
 	"context"
@@ -12,27 +12,15 @@ import (
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
-func CreateTempPlaceIconKey(placeID uuid.UUID) string {
-	return fmt.Sprintf("place/icon/%s/temp/%s", placeID, uuid.New().String())
-}
-
-func CreatePlaceIconKey(placeID uuid.UUID) string {
-	return fmt.Sprintf("place/icon/%s/%s", placeID, uuid.New().String())
-}
-
-func (s *Storage) CreatePlaceIconUploadMediaLinks(
+func (s *Uploader) CreatePlaceIconUploadMediaLinks(
 	ctx context.Context,
 	placeID uuid.UUID,
 ) (models.UploadMediaLink, error) {
-	key := CreateTempPlaceIconKey(placeID)
+	key := createTempPlaceIconKey(placeID)
 
-	uploadURL, getURL, err := s.s3.PresignPut(
-		ctx,
-		key,
-		s.config.LinkTTL,
-	)
+	uploadURL, getURL, err := s.s3.PresignPut(ctx, key, s.config.LinkTTL)
 	if err != nil {
-		return models.UploadMediaLink{}, fmt.Errorf("presigning put for place place icon: %w", err)
+		return models.UploadMediaLink{}, fmt.Errorf("presigning put for place icon: %w", err)
 	}
 
 	return models.UploadMediaLink{
@@ -42,35 +30,43 @@ func (s *Storage) CreatePlaceIconUploadMediaLinks(
 	}, nil
 }
 
-func (s *Storage) ValidatePlaceIcon(
+func (s *Uploader) UpdatePlaceIcon(
 	ctx context.Context,
 	placeID uuid.UUID,
 	key string,
-) error {
+) (string, error) {
 	err := validateTempPlaceIconKey(placeID, key)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	out, err := s.s3.GetObjectRange(ctx, key, 64*1024)
 	switch {
 	case errors.Is(err, awsx.ErrNotFound):
-		return errx.ErrorNoContentUploaded.Raise(
-			fmt.Errorf("place place icon not found for key: %s", key),
+		return "", errx.ErrorPlaceIconIsInvalid.Raise(
+			fmt.Errorf("place icon not found for key: %s", key),
 		)
 	case err != nil:
-		return fmt.Errorf("get object range for place place icon: %w", err)
+		return "", fmt.Errorf("get object range for place icon: %w", err)
 	}
 	defer out.Body.Close()
 
 	if err = s.config.PlaceIcon.Validate(out); err != nil {
-		return errx.ErrorPlaceIconIsInvalid.Raise(err)
+		return "", errx.ErrorPlaceIconIsInvalid.Raise(
+			fmt.Errorf("validating place icon content for key %s: %w", key, err),
+		)
 	}
 
-	return nil
+	finalKey := createPlaceIconKey(placeID)
+
+	if err = s.s3.CopyObject(ctx, key, finalKey); err != nil {
+		return "", fmt.Errorf("copying object for place icon: %w", err)
+	}
+
+	return finalKey, nil
 }
 
-func (s *Storage) DeleteUploadPlaceIcon(
+func (s *Uploader) DeleteUploadPlaceIcon(
 	ctx context.Context,
 	placeID uuid.UUID,
 	key string,
@@ -80,13 +76,13 @@ func (s *Storage) DeleteUploadPlaceIcon(
 	}
 
 	if err := s.s3.DeleteObject(ctx, key); err != nil {
-		return fmt.Errorf("deleting temp place place icon object: %w", err)
+		return fmt.Errorf("deleting temp place icon object: %w", err)
 	}
 
 	return nil
 }
 
-func (s *Storage) DeletePlaceIcon(
+func (s *Uploader) DeletePlaceIcon(
 	ctx context.Context,
 	placeID uuid.UUID,
 	key string,
@@ -96,68 +92,57 @@ func (s *Storage) DeletePlaceIcon(
 	}
 
 	if err := s.s3.DeleteObject(ctx, key); err != nil {
-		return fmt.Errorf("deleting place place icon object: %w", err)
+		return fmt.Errorf("deleting place icon object: %w", err)
 	}
 
 	return nil
 }
 
-func (s *Storage) UpdatePlaceIcon(
-	ctx context.Context,
-	placeID uuid.UUID,
-	key string,
-) (string, error) {
-	if err := validateTempPlaceIconKey(placeID, key); err != nil {
-		return "", err
-	}
-
-	finalKey := CreatePlaceIconKey(placeID)
-	if err := s.s3.CopyObject(ctx, key, finalKey); err != nil {
-		return "", fmt.Errorf("copying object for place icon: %w", err)
-	}
-
-	return finalKey, nil
+func createTempPlaceIconKey(placeID uuid.UUID) string {
+	return fmt.Sprintf("place/icon/%s/temp/%s", placeID, uuid.New().String())
 }
 
-var (
-	tempPlaceIconKeyRe = regexp.MustCompile(
-		`^place/icon/([0-9a-fA-F-]{36})/temp/([0-9a-fA-F-]{36})$`,
-	)
-
-	finalPlaceIconKeyRe = regexp.MustCompile(
-		`^place/icon/([0-9a-fA-F-]{36})/([0-9a-fA-F-]{36})$`,
-	)
+var tempPlaceIconKeyRe = regexp.MustCompile(
+	`^place/icon/([0-9a-fA-F-]{36})/temp/([0-9a-fA-F-]{36})$`,
 )
 
 func validateTempPlaceIconKey(placeID uuid.UUID, key string) error {
+	if key == "" {
+		return errx.ErrorPlaceIconIsInvalid.Raise(fmt.Errorf("empty key"))
+	}
+
 	matches := tempPlaceIconKeyRe.FindStringSubmatch(key)
 	if matches == nil {
-		return errx.ErrorPlaceIconIsInvalid.Raise(
-			fmt.Errorf("key %s does not match temp place place icon key pattern", key),
-		)
+		return errx.ErrorPlaceIconIsInvalid.Raise(fmt.Errorf("key %s does not match temp place icon key pattern", key))
 	}
 
 	if matches[1] != placeID.String() {
-		return errx.ErrorPlaceIconIsInvalid.Raise(
-			fmt.Errorf("key %s does not belong to place place %s", key, placeID),
-		)
+		return errx.ErrorPlaceIconIsInvalid.Raise(fmt.Errorf("key %s does not belong to place %s", key, placeID))
 	}
 
 	return nil
 }
 
+func createPlaceIconKey(placeID uuid.UUID) string {
+	return fmt.Sprintf("place/icon/%s/%s", placeID, uuid.New().String())
+}
+
+var finalPlaceIconKeyRe = regexp.MustCompile(
+	`^place/icon/([0-9a-fA-F-]{36})/([0-9a-fA-F-]{36})$`,
+)
+
 func validateFinalPlaceIconKey(placeID uuid.UUID, key string) error {
+	if key == "" {
+		return errx.ErrorPlaceIconIsInvalid.Raise(fmt.Errorf("empty key"))
+	}
+
 	matches := finalPlaceIconKeyRe.FindStringSubmatch(key)
 	if matches == nil {
-		return errx.ErrorPlaceIconIsInvalid.Raise(
-			fmt.Errorf("key %s does not match final place place icon key pattern", key),
-		)
+		return errx.ErrorPlaceIconIsInvalid.Raise(fmt.Errorf("key %s does not match final place icon key pattern", key))
 	}
 
 	if matches[1] != placeID.String() {
-		return errx.ErrorPlaceIconIsInvalid.Raise(
-			fmt.Errorf("key %s does not belong to place place %s", key, placeID),
-		)
+		return errx.ErrorPlaceIconIsInvalid.Raise(fmt.Errorf("key %s does not belong to place %s", key, placeID))
 	}
 
 	return nil

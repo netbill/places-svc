@@ -1,4 +1,4 @@
-package pclass
+package core
 
 import (
 	"context"
@@ -12,20 +12,16 @@ import (
 
 type PlaceClassModule struct {
 	repo      placeClassRepo
-	media     placeClassBucket
+	media     placeClassMedia
 	messenger placeClassMessenger
 	tx        transaction
 }
 
-type transaction interface {
-	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
-}
-
 type PlaceClassModuleDeps struct {
 	Repo      placeClassRepo
-	Media     placeClassBucket
+	Media     placeClassMedia
 	Messenger placeClassMessenger
-	tx        transaction
+	Tx        transaction
 }
 
 func NewPlaceClassModule(deps PlaceClassModuleDeps) *PlaceClassModule {
@@ -33,44 +29,44 @@ func NewPlaceClassModule(deps PlaceClassModuleDeps) *PlaceClassModule {
 		repo:      deps.Repo,
 		media:     deps.Media,
 		messenger: deps.Messenger,
-		tx:        deps.tx,
+		tx:        deps.Tx,
 	}
 }
 
 type placeClassRepo interface {
-	CreatePlaceClass(ctx context.Context, class CreatePlaceClassParams) (models.PlaceClass, error)
+	Create(ctx context.Context, params CreatePlaceClassParams) (models.PlaceClass, error)
 
-	GetPlaceClass(
+	Get(
 		ctx context.Context,
 		id uuid.UUID,
 	) (models.PlaceClass, error)
-	GetPlaceClassesByIDs(
+	GetListByIDs(
 		ctx context.Context,
 		ids []uuid.UUID,
 	) ([]models.PlaceClass, error)
-	GetPlaceClasses(
+	GetList(
 		ctx context.Context,
 		params FilterParams,
 		limit, offset uint,
 	) (pagi.Page[[]models.PlaceClass], error)
-	PlaceClassExists(
+	Exists(
 		ctx context.Context,
 		classID uuid.UUID,
 	) (bool, error)
 
-	UpdatePlaceClass(
+	Update(
 		ctx context.Context,
 		classID uuid.UUID,
-		params UpdateParams,
+		params UpdatePlaceClassParams,
 	) (models.PlaceClass, error)
-	DeprecatedPlaceClass(
+	Deprecated(
 		ctx context.Context,
 		classID uuid.UUID,
 		value bool,
 	) (models.PlaceClass, error)
 
 	CheckParentCycle(ctx context.Context, classID, parentID uuid.UUID) (bool, error)
-	CheckPlaceClassHasChildren(ctx context.Context, classID uuid.UUID) (bool, error)
+	CheckHasChildren(ctx context.Context, classID uuid.UUID) (bool, error)
 }
 
 type placeClassMessenger interface {
@@ -78,20 +74,19 @@ type placeClassMessenger interface {
 	PublishPlaceClassUpdated(ctx context.Context, class models.PlaceClass) error
 }
 
-type placeClassBucket interface {
-	CreatePlaceClassUploadMediaLinks(
+type placeClassMedia interface {
+	CreatePlaceClassIconUploadMediaLinks(
 		ctx context.Context,
 		classID uuid.UUID,
-	) (models.UploadPlaceClassMediaLinks, error)
+	) (models.UploadMediaLink, error)
 
 	UpdatePlaceClassIcon(
 		ctx context.Context,
 		classID uuid.UUID,
-		oldKey *string,
-		tempKey *string,
-	) (newKey *string, err error)
+		key string,
+	) (string, error)
 
-	DeletePlaceClassIcon(
+	DeleteUploadPlaceClassIcon(
 		ctx context.Context,
 		classID uuid.UUID,
 		key string,
@@ -110,7 +105,7 @@ func (m *PlaceClassModule) Create(
 	params CreatePlaceClassParams,
 ) (class models.PlaceClass, err error) {
 	if params.ParentID != nil {
-		class, err = m.repo.GetPlaceClass(ctx, *params.ParentID)
+		class, err = m.repo.Get(ctx, *params.ParentID)
 		if err != nil {
 			return models.PlaceClass{}, err
 		}
@@ -123,7 +118,7 @@ func (m *PlaceClassModule) Create(
 	}
 
 	if err = m.tx.Transaction(ctx, func(ctx context.Context) error {
-		class, err = m.repo.CreatePlaceClass(ctx, params)
+		class, err = m.repo.Create(ctx, params)
 		if err != nil {
 			return err
 		}
@@ -137,7 +132,7 @@ func (m *PlaceClassModule) Create(
 }
 
 func (m *PlaceClassModule) Get(ctx context.Context, id uuid.UUID) (models.PlaceClass, error) {
-	class, err := m.repo.GetPlaceClass(ctx, id)
+	class, err := m.repo.Get(ctx, id)
 	if err != nil {
 		return models.PlaceClass{}, err
 	}
@@ -163,7 +158,7 @@ func (m *PlaceClassModule) GetList(
 	params FilterParams,
 	limit, offset uint,
 ) (pagi.Page[[]models.PlaceClass], error) {
-	classes, err := m.repo.GetPlaceClasses(ctx, params, limit, offset)
+	classes, err := m.repo.GetList(ctx, params, limit, offset)
 	if err != nil {
 		return pagi.Page[[]models.PlaceClass]{}, err
 	}
@@ -175,10 +170,123 @@ func (m *PlaceClassModule) GetByIDs(
 	ctx context.Context,
 	ids []uuid.UUID,
 ) ([]models.PlaceClass, error) {
-	res, err := m.repo.GetPlaceClassesByIDs(ctx, ids)
+	res, err := m.repo.GetListByIDs(ctx, ids)
 	if err != nil {
 		return nil, err
 	}
 
 	return res, nil
+}
+
+type UpdatePlaceClassParams struct {
+	ParentID    *uuid.UUID `json:"parent_id,omitempty"`
+	Name        *string    `json:"name"`
+	Description *string    `json:"description"`
+	IconKey     *string    `json:"icon_key,omitempty"`
+}
+
+func (P UpdatePlaceClassParams) HasChanges(class models.PlaceClass) bool {
+	return !ptrEqual(P.ParentID, class.ParentID) ||
+		!ptrEqual(P.Name, &class.Name) ||
+		!ptrEqual(P.Description, &class.Description) ||
+		!ptrEqual(P.IconKey, class.IconKey)
+}
+
+func ptrEqual[T comparable](a, b *T) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return *a == *b
+}
+
+func (m *PlaceClassModule) Update(
+	ctx context.Context,
+	classID uuid.UUID,
+	params UpdatePlaceClassParams,
+) (class models.PlaceClass, err error) {
+	class, err = m.repo.Get(ctx, classID)
+	if err != nil {
+		return models.PlaceClass{}, err
+	}
+
+	if params.ParentID != nil || *params.ParentID != uuid.Nil {
+		exist, err := m.repo.CheckParentCycle(ctx, class.ID, *class.ParentID)
+		if err != nil {
+			return models.PlaceClass{}, err
+		}
+		if exist {
+			return models.PlaceClass{}, errx.ErrorPlaceClassParentCycle.Raise(
+				fmt.Errorf("setting parent %s for class %s would create a cycle", *class.ParentID, class.ID),
+			)
+		}
+	}
+
+	switch {
+	case params.IconKey != nil && *params.IconKey == "" && class.IconKey != nil:
+		if err := m.media.DeleteUploadPlaceClassIcon(ctx, class.ID, *class.IconKey); err != nil {
+			return models.PlaceClass{}, err
+		}
+		params.IconKey = nil
+	case params.IconKey != nil:
+		iconKey, err := m.media.UpdatePlaceClassIcon(ctx, class.ID, *params.IconKey)
+		if err != nil {
+			return models.PlaceClass{}, err
+		}
+		params.IconKey = &iconKey
+	}
+
+	if err = m.tx.Transaction(ctx, func(ctx context.Context) error {
+		class, err = m.repo.Update(ctx, classID, params)
+		if err != nil {
+			return err
+		}
+
+		return m.messenger.PublishPlaceClassUpdated(ctx, class)
+	}); err != nil {
+		return models.PlaceClass{}, err
+	}
+
+	return class, nil
+}
+
+func (m *PlaceClassModule) Deprecate(
+	ctx context.Context,
+	classID uuid.UUID,
+) (models.PlaceClass, error) {
+	return m.updateDeprecate(ctx, classID, true)
+}
+
+func (m *PlaceClassModule) Undeprecate(
+	ctx context.Context,
+	classID uuid.UUID,
+) (models.PlaceClass, error) {
+	return m.updateDeprecate(ctx, classID, false)
+}
+
+func (m *PlaceClassModule) updateDeprecate(
+	ctx context.Context,
+	classID uuid.UUID,
+	value bool,
+) (models.PlaceClass, error) {
+	class, err := m.repo.Get(ctx, classID)
+	if err != nil {
+		return models.PlaceClass{}, err
+	}
+
+	if class.DeprecatedAt != nil && value || class.DeprecatedAt == nil && !value {
+		return class, nil
+	}
+
+	if err = m.tx.Transaction(ctx, func(ctx context.Context) error {
+		class, err = m.repo.Deprecated(ctx, classID, value)
+		if err != nil {
+			return err
+		}
+
+		return m.messenger.PublishPlaceClassUpdated(ctx, class)
+	}); err != nil {
+		return models.PlaceClass{}, err
+	}
+
+	return class, nil
 }

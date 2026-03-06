@@ -4,80 +4,91 @@ import (
 	"net/http"
 
 	"github.com/netbill/places-svc/internal/core/models"
+	"github.com/netbill/places-svc/internal/rest/scope"
 	"github.com/netbill/places-svc/pkg/resources"
 	"github.com/netbill/restkit/pagi"
 )
 
 type placeResponse struct {
-	place    resources.PlaceData
+	data     resources.PlaceData
 	included []resources.PlaceIncludedInner
 }
 
 type PlaceOption func(*placeResponse)
 
-func WithClass(model models.PlaceClass) PlaceOption {
-	return func(r *placeResponse) {
-		inner := placeClassData(model)
-		r.included = append(r.included, resources.PlaceIncludedInner{
+func WithClass(r *http.Request, model models.PlaceClass) PlaceOption {
+	return func(res *placeResponse) {
+		inner := placeClassData(r, model)
+		res.included = append(res.included, resources.PlaceIncludedInner{
 			PlaceClassData: &inner,
 		})
 	}
 }
 
-func WithOrganization(model models.Organization) PlaceOption {
-	return func(r *placeResponse) {
-		r.included = append(r.included, resources.PlaceIncludedInner{
-			OrganizationData: organizationData(model),
+func WithOrganization(r *http.Request, model models.Organization) PlaceOption {
+	return func(res *placeResponse) {
+		inner := organizationData(r, model)
+		res.included = append(res.included, resources.PlaceIncludedInner{
+			OrganizationData: &inner,
 		})
 	}
 }
 
-func Place(model models.Place, opts ...PlaceOption) resources.Place {
-	r := &placeResponse{
-		place: placeData(model),
+func Place(r *http.Request, model models.Place, opts ...PlaceOption) resources.Place {
+	res := &placeResponse{
+		data: placeData(r, model),
 	}
 	for _, opt := range opts {
-		opt(r)
+		opt(res)
 	}
+
 	return resources.Place{
-		Data:     r.place,
-		Included: r.included,
+		Data:     res.data,
+		Included: deduplicatePlaceIncluded(res.included),
 	}
 }
 
-func placeData(model models.Place) resources.PlaceData {
-	return resources.PlaceData{
-		Id:   model.ID,
+func placeData(r *http.Request, place models.Place) resources.PlaceData {
+	res := resources.PlaceData{
+		Id:   place.ID,
 		Type: "place",
 		Attributes: resources.PlaceDataAttributes{
-			Status:   model.Status,
-			Verified: model.Verified,
+			Status:   place.Status,
+			Verified: place.Verified,
 			Point: resources.Point{
-				Latitude:  model.Point[1],
-				Longitude: model.Point[0],
+				Latitude:  place.Point[1],
+				Longitude: place.Point[0],
 			},
-			Address:     model.Address,
-			Name:        model.Name,
-			Description: model.Description,
-			IconKey:     model.IconKey,
-			BannerKey:   model.BannerKey,
-			Website:     model.Website,
-			Phone:       model.Phone,
-			Version:     model.Version,
-			CreatedAt:   model.CreatedAt,
-			UpdatedAt:   model.UpdatedAt,
+			Address:     place.Address,
+			Name:        place.Name,
+			Description: place.Description,
+			Website:     place.Website,
+			Phone:       place.Phone,
+			Version:     place.Version,
+			CreatedAt:   place.CreatedAt,
+			UpdatedAt:   place.UpdatedAt,
 		},
 		Relationships: resources.PlaceDataRelationships{
 			PlaceClass: resources.PlaceDataRelationshipsPlaceClass{
-				Id:   model.ClassID,
+				Id:   place.ClassID,
 				Type: "place_class",
 			},
 			Organization: resources.PlaceDataRelationshipsOrganization{
-				Id:   model.OrganizationID,
+				Id:   place.OrganizationID,
 				Type: "organization",
 			},
 		},
 	}
+	if place.IconKey != nil {
+		url := scope.ResolverURL(r, *place.IconKey)
+		res.Attributes.IconUrl = &url
+	}
+	if place.BannerKey != nil {
+		url := scope.ResolverURL(r, *place.BannerKey)
+		res.Attributes.BannerUrl = &url
+	}
+
+	return res
 }
 
 type placeCollectionResponse struct {
@@ -87,45 +98,46 @@ type placeCollectionResponse struct {
 
 type PlaceCollectionOption func(*placeCollectionResponse)
 
-func WithCollectionClass(models []models.PlaceClass) PlaceCollectionOption {
-	return func(r *placeCollectionResponse) {
+func WithCollectionClass(r *http.Request, models []models.PlaceClass) PlaceCollectionOption {
+	return func(res *placeCollectionResponse) {
 		for _, model := range models {
-			inner := placeClassData(model)
-			r.included = append(r.included, resources.PlaceIncludedInner{
+			inner := placeClassData(r, model)
+			res.included = append(res.included, resources.PlaceIncludedInner{
 				PlaceClassData: &inner,
 			})
 		}
 	}
 }
 
-func WithCollectionOrganization(models []models.Organization) PlaceCollectionOption {
-	return func(r *placeCollectionResponse) {
+func WithCollectionOrganization(r *http.Request, models []models.Organization) PlaceCollectionOption {
+	return func(res *placeCollectionResponse) {
 		for _, model := range models {
-			r.included = append(r.included, resources.PlaceIncludedInner{
-				OrganizationData: organizationData(model),
+			inner := organizationData(r, model)
+			res.included = append(res.included, resources.PlaceIncludedInner{
+				OrganizationData: &inner,
 			})
 		}
 	}
 }
 
-func Places(req *http.Request, page pagi.Page[[]models.Place], opts ...PlaceCollectionOption) resources.PlacesCollection {
+func Places(r *http.Request, page pagi.Page[[]models.Place], opts ...PlaceCollectionOption) resources.PlacesCollection {
 	data := make([]resources.PlaceData, len(page.Data))
 	for i, mod := range page.Data {
-		data[i] = placeData(mod)
+		data[i] = placeData(r, mod)
 	}
 
-	links := pagi.BuildPageLinks(req, page.Page, page.Size, page.Total)
-
-	resp := &placeCollectionResponse{
+	res := &placeCollectionResponse{
 		data: data,
 	}
 	for _, opt := range opts {
-		opt(resp)
+		opt(res)
 	}
 
+	links := pagi.BuildPageLinks(r, page.Page, page.Size, page.Total)
+
 	return resources.PlacesCollection{
-		Data:     resp.data,
-		Included: deduplicatePlaceIncluded(resp.included),
+		Data:     res.data,
+		Included: deduplicatePlaceIncluded(res.included),
 		Links: resources.PaginationData{
 			First: links.First,
 			Last:  links.Last,
@@ -158,4 +170,40 @@ func deduplicatePlaceIncluded(items []resources.PlaceIncludedInner) []resources.
 	}
 
 	return result
+}
+
+func UploadPlaceMediaLink(
+	r *http.Request,
+	place models.Place,
+	uploadLink models.UploadPlaceMediaLinks,
+) resources.UploadPlaceMediaLinks {
+	return resources.UploadPlaceMediaLinks{
+		Data: resources.UploadPlaceMediaLinksData{
+			Id:   place.ID,
+			Type: "place_upload_links",
+			Attributes: resources.UploadPlaceMediaLinksDataAttributes{
+				Icon: resources.UploadResourcesLink{
+					Key:        uploadLink.Icon.Key,
+					UploadUrl:  uploadLink.Icon.UploadURL,
+					PreloadUrl: uploadLink.Icon.PreloadUrl,
+				},
+				Banner: resources.UploadResourcesLink{
+					Key:        uploadLink.Banner.Key,
+					UploadUrl:  uploadLink.Banner.UploadURL,
+					PreloadUrl: uploadLink.Banner.PreloadUrl,
+				},
+			},
+			Relationships: resources.UploadPlaceMediaLinksDataRelationships{
+				Place: &resources.UploadPlaceMediaLinksDataRelationshipsPlace{
+					Data: resources.UploadPlaceMediaLinksDataRelationshipsPlaceData{
+						Id:   place.ID,
+						Type: "place",
+					},
+				},
+			},
+		},
+		Included: []resources.PlaceData{
+			placeData(r, place),
+		},
+	}
 }

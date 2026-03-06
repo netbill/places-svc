@@ -8,9 +8,8 @@ import (
 )
 
 const (
-	PlaceStatusActive    = "active"
-	PlaceStatusInactive  = "inactive"
-	PlaceStatusSuspended = "suspended"
+	PlaceStatusActive   = "active"
+	PlaceStatusInactive = "inactive"
 )
 
 type Place struct {

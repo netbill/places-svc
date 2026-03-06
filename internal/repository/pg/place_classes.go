@@ -263,7 +263,12 @@ func (q *placeClasses) UpdateOne(ctx context.Context) (repository.PlaceClassRow,
 }
 
 func (q *placeClasses) UpdateParent(parentID *uuid.UUID) repository.PlaceClassesQ {
-	q.updater = q.updater.Set("parent_id", parentID)
+	value := pgtype.UUID{Valid: parentID != nil, Bytes: [16]byte{}}
+	if parentID != nil {
+		value = pgtype.UUID{Bytes: *parentID, Valid: true}
+	}
+
+	q.updater = q.updater.Set("parent_id", value)
 	return q
 }
 
@@ -278,12 +283,22 @@ func (q *placeClasses) UpdateDescription(description string) repository.PlaceCla
 }
 
 func (q *placeClasses) UpdateIconKey(key *string) repository.PlaceClassesQ {
-	q.updater = q.updater.Set("icon_key", key)
+	value := pgtype.Text{Valid: key != nil, String: ""}
+	if key != nil {
+		value = pgtype.Text{String: *key, Valid: *key != ""}
+	}
+
+	q.updater = q.updater.Set("icon_key", value)
 	return q
 }
 
 func (q *placeClasses) UpdateDeprecatedAt(t *time.Time) repository.PlaceClassesQ {
-	q.updater = q.updater.Set("deprecated_at", t)
+	value := pgtype.Timestamptz{Valid: t != nil, Time: time.Time{}}
+	if t != nil {
+		value = pgtype.Timestamptz{Time: *t, Valid: true}
+	}
+
+	q.updater = q.updater.Set("deprecated_at", value)
 	return q
 }
 

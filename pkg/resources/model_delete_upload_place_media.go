@@ -16,38 +16,38 @@ import (
 	"fmt"
 )
 
-// checks if the DeleteUploadPlaceBanner type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &DeleteUploadPlaceBanner{}
+// checks if the DeleteUploadPlaceMedia type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &DeleteUploadPlaceMedia{}
 
-// DeleteUploadPlaceBanner struct for DeleteUploadPlaceBanner
-type DeleteUploadPlaceBanner struct {
-	Data DeleteUploadPlaceBannerData `json:"data"`
+// DeleteUploadPlaceMedia struct for DeleteUploadPlaceMedia
+type DeleteUploadPlaceMedia struct {
+	Data DeleteUploadPlaceMediaData `json:"data"`
 }
 
-type _DeleteUploadPlaceBanner DeleteUploadPlaceBanner
+type _DeleteUploadPlaceMedia DeleteUploadPlaceMedia
 
-// NewDeleteUploadPlaceBanner instantiates a new DeleteUploadPlaceBanner object
+// NewDeleteUploadPlaceMedia instantiates a new DeleteUploadPlaceMedia object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewDeleteUploadPlaceBanner(data DeleteUploadPlaceBannerData) *DeleteUploadPlaceBanner {
-	this := DeleteUploadPlaceBanner{}
+func NewDeleteUploadPlaceMedia(data DeleteUploadPlaceMediaData) *DeleteUploadPlaceMedia {
+	this := DeleteUploadPlaceMedia{}
 	this.Data = data
 	return &this
 }
 
-// NewDeleteUploadPlaceBannerWithDefaults instantiates a new DeleteUploadPlaceBanner object
+// NewDeleteUploadPlaceMediaWithDefaults instantiates a new DeleteUploadPlaceMedia object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewDeleteUploadPlaceBannerWithDefaults() *DeleteUploadPlaceBanner {
-	this := DeleteUploadPlaceBanner{}
+func NewDeleteUploadPlaceMediaWithDefaults() *DeleteUploadPlaceMedia {
+	this := DeleteUploadPlaceMedia{}
 	return &this
 }
 
 // GetData returns the Data field value
-func (o *DeleteUploadPlaceBanner) GetData() DeleteUploadPlaceBannerData {
+func (o *DeleteUploadPlaceMedia) GetData() DeleteUploadPlaceMediaData {
 	if o == nil {
-		var ret DeleteUploadPlaceBannerData
+		var ret DeleteUploadPlaceMediaData
 		return ret
 	}
 
@@ -56,7 +56,7 @@ func (o *DeleteUploadPlaceBanner) GetData() DeleteUploadPlaceBannerData {
 
 // GetDataOk returns a tuple with the Data field value
 // and a boolean to check if the value has been set.
-func (o *DeleteUploadPlaceBanner) GetDataOk() (*DeleteUploadPlaceBannerData, bool) {
+func (o *DeleteUploadPlaceMedia) GetDataOk() (*DeleteUploadPlaceMediaData, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -64,11 +64,11 @@ func (o *DeleteUploadPlaceBanner) GetDataOk() (*DeleteUploadPlaceBannerData, boo
 }
 
 // SetData sets field value
-func (o *DeleteUploadPlaceBanner) SetData(v DeleteUploadPlaceBannerData) {
+func (o *DeleteUploadPlaceMedia) SetData(v DeleteUploadPlaceMediaData) {
 	o.Data = v
 }
 
-func (o DeleteUploadPlaceBanner) MarshalJSON() ([]byte, error) {
+func (o DeleteUploadPlaceMedia) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -76,13 +76,13 @@ func (o DeleteUploadPlaceBanner) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o DeleteUploadPlaceBanner) ToMap() (map[string]interface{}, error) {
+func (o DeleteUploadPlaceMedia) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["data"] = o.Data
 	return toSerialize, nil
 }
 
-func (o *DeleteUploadPlaceBanner) UnmarshalJSON(data []byte) (err error) {
+func (o *DeleteUploadPlaceMedia) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
@@ -104,53 +104,53 @@ func (o *DeleteUploadPlaceBanner) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varDeleteUploadPlaceBanner := _DeleteUploadPlaceBanner{}
+	varDeleteUploadPlaceMedia := _DeleteUploadPlaceMedia{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varDeleteUploadPlaceBanner)
+	err = decoder.Decode(&varDeleteUploadPlaceMedia)
 
 	if err != nil {
 		return err
 	}
 
-	*o = DeleteUploadPlaceBanner(varDeleteUploadPlaceBanner)
+	*o = DeleteUploadPlaceMedia(varDeleteUploadPlaceMedia)
 
 	return err
 }
 
-type NullableDeleteUploadPlaceBanner struct {
-	value *DeleteUploadPlaceBanner
+type NullableDeleteUploadPlaceMedia struct {
+	value *DeleteUploadPlaceMedia
 	isSet bool
 }
 
-func (v NullableDeleteUploadPlaceBanner) Get() *DeleteUploadPlaceBanner {
+func (v NullableDeleteUploadPlaceMedia) Get() *DeleteUploadPlaceMedia {
 	return v.value
 }
 
-func (v *NullableDeleteUploadPlaceBanner) Set(val *DeleteUploadPlaceBanner) {
+func (v *NullableDeleteUploadPlaceMedia) Set(val *DeleteUploadPlaceMedia) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableDeleteUploadPlaceBanner) IsSet() bool {
+func (v NullableDeleteUploadPlaceMedia) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableDeleteUploadPlaceBanner) Unset() {
+func (v *NullableDeleteUploadPlaceMedia) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableDeleteUploadPlaceBanner(val *DeleteUploadPlaceBanner) *NullableDeleteUploadPlaceBanner {
-	return &NullableDeleteUploadPlaceBanner{value: val, isSet: true}
+func NewNullableDeleteUploadPlaceMedia(val *DeleteUploadPlaceMedia) *NullableDeleteUploadPlaceMedia {
+	return &NullableDeleteUploadPlaceMedia{value: val, isSet: true}
 }
 
-func (v NullableDeleteUploadPlaceBanner) MarshalJSON() ([]byte, error) {
+func (v NullableDeleteUploadPlaceMedia) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableDeleteUploadPlaceBanner) UnmarshalJSON(src []byte) error {
+func (v *NullableDeleteUploadPlaceMedia) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

@@ -27,7 +27,7 @@ type PlaceClassDataAttributes struct {
 	// A brief description of the class
 	Description string `json:"description"`
 	// A URL to an icon representing the class
-	IconKey *string `json:"icon_key,omitempty"`
+	IconUrl *string `json:"icon_url,omitempty"`
 	// The version number of the class data, used for concurrency control
 	Version int32 `json:"version"`
 	// The date and time when the class was created
@@ -110,36 +110,36 @@ func (o *PlaceClassDataAttributes) SetDescription(v string) {
 	o.Description = v
 }
 
-// GetIconKey returns the IconKey field value if set, zero value otherwise.
-func (o *PlaceClassDataAttributes) GetIconKey() string {
-	if o == nil || IsNil(o.IconKey) {
+// GetIconUrl returns the IconUrl field value if set, zero value otherwise.
+func (o *PlaceClassDataAttributes) GetIconUrl() string {
+	if o == nil || IsNil(o.IconUrl) {
 		var ret string
 		return ret
 	}
-	return *o.IconKey
+	return *o.IconUrl
 }
 
-// GetIconKeyOk returns a tuple with the IconKey field value if set, nil otherwise
+// GetIconUrlOk returns a tuple with the IconUrl field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *PlaceClassDataAttributes) GetIconKeyOk() (*string, bool) {
-	if o == nil || IsNil(o.IconKey) {
+func (o *PlaceClassDataAttributes) GetIconUrlOk() (*string, bool) {
+	if o == nil || IsNil(o.IconUrl) {
 		return nil, false
 	}
-	return o.IconKey, true
+	return o.IconUrl, true
 }
 
-// HasIconKey returns a boolean if a field has been set.
-func (o *PlaceClassDataAttributes) HasIconKey() bool {
-	if o != nil && !IsNil(o.IconKey) {
+// HasIconUrl returns a boolean if a field has been set.
+func (o *PlaceClassDataAttributes) HasIconUrl() bool {
+	if o != nil && !IsNil(o.IconUrl) {
 		return true
 	}
 
 	return false
 }
 
-// SetIconKey gets a reference to the given string and assigns it to the IconKey field.
-func (o *PlaceClassDataAttributes) SetIconKey(v string) {
-	o.IconKey = &v
+// SetIconUrl gets a reference to the given string and assigns it to the IconUrl field.
+func (o *PlaceClassDataAttributes) SetIconUrl(v string) {
+	o.IconUrl = &v
 }
 
 // GetVersion returns the Version field value
@@ -258,8 +258,8 @@ func (o PlaceClassDataAttributes) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["name"] = o.Name
 	toSerialize["description"] = o.Description
-	if !IsNil(o.IconKey) {
-		toSerialize["icon_key"] = o.IconKey
+	if !IsNil(o.IconUrl) {
+		toSerialize["icon_url"] = o.IconUrl
 	}
 	toSerialize["version"] = o.Version
 	toSerialize["created_at"] = o.CreatedAt

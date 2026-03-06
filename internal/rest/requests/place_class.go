@@ -10,21 +10,20 @@ import (
 	"github.com/netbill/restkit"
 )
 
-func CreatePlace(r *http.Request) (req resources.CreatePlace, err error) {
+func CreatePlaceClass(r *http.Request) (req resources.CreatePlaceClass, err error) {
 	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		err = restkit.NewDecodeError("body", err)
 		return
 	}
 
 	errs := validation.Errors{
-		"data/type":       validation.Validate(req.Data.Type, validation.Required, validation.In("place")),
+		"data/type":       validation.Validate(req.Data.Type, validation.Required, validation.In("place_class")),
 		"data/attributes": validation.Validate(req.Data.Attributes, validation.Required),
 	}
-
 	return req, errs.Filter()
 }
 
-func UpdatePlace(r *http.Request) (req resources.UpdatePlace, err error) {
+func UpdatePlaceClass(r *http.Request) (req resources.UpdatePlaceClass, err error) {
 	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		err = restkit.NewDecodeError("body", err)
 		return
@@ -32,18 +31,18 @@ func UpdatePlace(r *http.Request) (req resources.UpdatePlace, err error) {
 
 	errs := validation.Errors{
 		"data/id":         validation.Validate(req.Data.Id, validation.Required),
-		"data/type":       validation.Validate(req.Data.Type, validation.Required, validation.In("place")),
+		"data/type":       validation.Validate(req.Data.Type, validation.Required, validation.In("place_class")),
 		"data/attributes": validation.Validate(req.Data.Attributes, validation.Required),
 	}
 
-	if chi.URLParam(r, "place_id") != req.Data.Id.String() {
-		errs["data/id"] = validation.NewError("mismatch", "query place_id and body data/id do not match")
+	if chi.URLParam(r, "place_class_id") != req.Data.Id.String() {
+		errs["data/id"] = validation.NewError("mismatch", "query place_class_id and body data/id do not match")
 	}
 
 	return req, errs.Filter()
 }
 
-func DeleteUploadPlaceMedia(r *http.Request) (req *resources.DeleteUploadPlaceMedia, err error) {
+func DeleteUploadPlaceClassMedia(r *http.Request) (req *resources.DeleteUploadPlaceClassMedia, err error) {
 	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		err = restkit.NewDecodeError("body", err)
 		return
@@ -51,11 +50,11 @@ func DeleteUploadPlaceMedia(r *http.Request) (req *resources.DeleteUploadPlaceMe
 
 	errs := validation.Errors{
 		"data/id":         validation.Validate(req.Data.Id, validation.Required),
-		"data/type":       validation.Validate(req.Data.Type, validation.Required, validation.In("place")),
+		"data/type":       validation.Validate(req.Data.Type, validation.Required, validation.In("place_class")),
 		"data/attributes": validation.Validate(req.Data.Attributes, validation.Required),
 	}
 
-	if chi.URLParam(r, "place_id") != req.Data.Id.String() {
+	if chi.URLParam(r, "place_class_id") != req.Data.Id.String() {
 		errs["data/id"] = validation.NewError("mismatch", "query place_id and body data/id do not match")
 	}
 

@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/netbill/places-svc/internal/core"
 	"github.com/netbill/places-svc/internal/core/errx"
 	"github.com/netbill/places-svc/internal/core/models"
-	"github.com/netbill/places-svc/internal/core/modules/organization"
 )
 
 type OrgMemberRow struct {
@@ -66,11 +66,21 @@ type OrgMembersQ interface {
 	Delete(ctx context.Context) error
 }
 
-func (r *Repository) CreateOrgMember(
+type OrgMembersRepository struct {
+	query OrgMembersQ
+}
+
+func NewOrgMember(query OrgMembersQ) *OrgMembersRepository {
+	return &OrgMembersRepository{
+		query: query,
+	}
+}
+
+func (r *OrgMembersRepository) Create(
 	ctx context.Context,
-	params organization.CreateMemberParams,
+	params core.CreateMemberParams,
 ) error {
-	return r.OrgMembersSql.New().Insert(ctx, OrgMemberRow{
+	return r.query.New().Insert(ctx, OrgMemberRow{
 		ID:              params.ID,
 		AccountID:       params.AccountID,
 		OrganizationID:  params.OrganizationID,
@@ -83,12 +93,12 @@ func (r *Repository) CreateOrgMember(
 	})
 }
 
-func (r *Repository) UpdateOrgMember(
+func (r *OrgMembersRepository) Update(
 	ctx context.Context,
 	memberID uuid.UUID,
-	params organization.UpdateMemberParams,
+	params core.UpdateMemberParams,
 ) error {
-	return r.OrgMembersSql.New().FilterByID(memberID).
+	return r.query.New().FilterByID(memberID).
 		UpdateLabel(params.Label).
 		UpdatePosition(params.Position).
 		UpdateSourceUpdatedAt(params.UpdatedAt).
@@ -96,17 +106,17 @@ func (r *Repository) UpdateOrgMember(
 		UpdateOne(ctx)
 }
 
-func (r *Repository) DeleteOrgMember(ctx context.Context, memberID uuid.UUID) error {
-	return r.OrgMembersSql.New().
+func (r *OrgMembersRepository) Delete(ctx context.Context, memberID uuid.UUID) error {
+	return r.query.New().
 		FilterByID(memberID).
 		Delete(ctx)
 }
 
-func (r *Repository) GetOrgMemberByAccountID(
+func (r *OrgMembersRepository) GetForAccountAndOrg(
 	ctx context.Context,
 	accountID, organizationID uuid.UUID,
 ) (models.OrgMember, error) {
-	row, err := r.OrgMembersSql.New().
+	row, err := r.query.New().
 		FilterByOrganizationID(organizationID).
 		FilterByAccountID(accountID).
 		Get(ctx)
@@ -117,8 +127,18 @@ func (r *Repository) GetOrgMemberByAccountID(
 	return row.ToModel(), nil
 }
 
-func (r *Repository) GetOrgMemberByID(ctx context.Context, memberID uuid.UUID) (models.OrgMember, error) {
-	row, err := r.OrgMembersSql.New().FilterByID(memberID).Get(ctx)
+func (r *OrgMembersRepository) ExistsForAccountAndOrg(
+	ctx context.Context,
+	accountID, organizationID uuid.UUID,
+) (bool, error) {
+	return r.query.New().
+		FilterByOrganizationID(organizationID).
+		FilterByAccountID(accountID).
+		Exists(ctx)
+}
+
+func (r *OrgMembersRepository) GetByID(ctx context.Context, memberID uuid.UUID) (models.OrgMember, error) {
+	row, err := r.query.New().FilterByID(memberID).Get(ctx)
 	if err != nil {
 		return models.OrgMember{}, err
 	}
@@ -131,6 +151,6 @@ func (r *Repository) GetOrgMemberByID(ctx context.Context, memberID uuid.UUID) (
 	return row.ToModel(), nil
 }
 
-func (r *Repository) ExistsOrgMember(ctx context.Context, memberID uuid.UUID) (bool, error) {
-	return r.OrgMembersSql.New().FilterByID(memberID).Exists(ctx)
+func (r *OrgMembersRepository) ExistsByID(ctx context.Context, memberID uuid.UUID) (bool, error) {
+	return r.query.New().FilterByID(memberID).Exists(ctx)
 }

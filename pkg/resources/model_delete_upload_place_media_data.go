@@ -17,41 +17,41 @@ import (
 	"fmt"
 )
 
-// checks if the UpdatePlaceVerifyData type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &UpdatePlaceVerifyData{}
+// checks if the DeleteUploadPlaceMediaData type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &DeleteUploadPlaceMediaData{}
 
-// UpdatePlaceVerifyData struct for UpdatePlaceVerifyData
-type UpdatePlaceVerifyData struct {
-	// The unique identifier of the place
+// DeleteUploadPlaceMediaData struct for DeleteUploadPlaceMediaData
+type DeleteUploadPlaceMediaData struct {
+	// place id
 	Id uuid.UUID `json:"id"`
 	Type string `json:"type"`
-	Attributes UpdatePlaceVerifyDataAttributes `json:"attributes"`
+	Attributes DeleteUploadPlaceMediaDataAttributes `json:"attributes"`
 }
 
-type _UpdatePlaceVerifyData UpdatePlaceVerifyData
+type _DeleteUploadPlaceMediaData DeleteUploadPlaceMediaData
 
-// NewUpdatePlaceVerifyData instantiates a new UpdatePlaceVerifyData object
+// NewDeleteUploadPlaceMediaData instantiates a new DeleteUploadPlaceMediaData object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUpdatePlaceVerifyData(id uuid.UUID, type_ string, attributes UpdatePlaceVerifyDataAttributes) *UpdatePlaceVerifyData {
-	this := UpdatePlaceVerifyData{}
+func NewDeleteUploadPlaceMediaData(id uuid.UUID, type_ string, attributes DeleteUploadPlaceMediaDataAttributes) *DeleteUploadPlaceMediaData {
+	this := DeleteUploadPlaceMediaData{}
 	this.Id = id
 	this.Type = type_
 	this.Attributes = attributes
 	return &this
 }
 
-// NewUpdatePlaceVerifyDataWithDefaults instantiates a new UpdatePlaceVerifyData object
+// NewDeleteUploadPlaceMediaDataWithDefaults instantiates a new DeleteUploadPlaceMediaData object
 // This constructor will only assign default values to properties that have it defined,
 // but it doesn't guarantee that properties required by API are set
-func NewUpdatePlaceVerifyDataWithDefaults() *UpdatePlaceVerifyData {
-	this := UpdatePlaceVerifyData{}
+func NewDeleteUploadPlaceMediaDataWithDefaults() *DeleteUploadPlaceMediaData {
+	this := DeleteUploadPlaceMediaData{}
 	return &this
 }
 
 // GetId returns the Id field value
-func (o *UpdatePlaceVerifyData) GetId() uuid.UUID {
+func (o *DeleteUploadPlaceMediaData) GetId() uuid.UUID {
 	if o == nil {
 		var ret uuid.UUID
 		return ret
@@ -62,7 +62,7 @@ func (o *UpdatePlaceVerifyData) GetId() uuid.UUID {
 
 // GetIdOk returns a tuple with the Id field value
 // and a boolean to check if the value has been set.
-func (o *UpdatePlaceVerifyData) GetIdOk() (*uuid.UUID, bool) {
+func (o *DeleteUploadPlaceMediaData) GetIdOk() (*uuid.UUID, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -70,12 +70,12 @@ func (o *UpdatePlaceVerifyData) GetIdOk() (*uuid.UUID, bool) {
 }
 
 // SetId sets field value
-func (o *UpdatePlaceVerifyData) SetId(v uuid.UUID) {
+func (o *DeleteUploadPlaceMediaData) SetId(v uuid.UUID) {
 	o.Id = v
 }
 
 // GetType returns the Type field value
-func (o *UpdatePlaceVerifyData) GetType() string {
+func (o *DeleteUploadPlaceMediaData) GetType() string {
 	if o == nil {
 		var ret string
 		return ret
@@ -86,7 +86,7 @@ func (o *UpdatePlaceVerifyData) GetType() string {
 
 // GetTypeOk returns a tuple with the Type field value
 // and a boolean to check if the value has been set.
-func (o *UpdatePlaceVerifyData) GetTypeOk() (*string, bool) {
+func (o *DeleteUploadPlaceMediaData) GetTypeOk() (*string, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -94,14 +94,14 @@ func (o *UpdatePlaceVerifyData) GetTypeOk() (*string, bool) {
 }
 
 // SetType sets field value
-func (o *UpdatePlaceVerifyData) SetType(v string) {
+func (o *DeleteUploadPlaceMediaData) SetType(v string) {
 	o.Type = v
 }
 
 // GetAttributes returns the Attributes field value
-func (o *UpdatePlaceVerifyData) GetAttributes() UpdatePlaceVerifyDataAttributes {
+func (o *DeleteUploadPlaceMediaData) GetAttributes() DeleteUploadPlaceMediaDataAttributes {
 	if o == nil {
-		var ret UpdatePlaceVerifyDataAttributes
+		var ret DeleteUploadPlaceMediaDataAttributes
 		return ret
 	}
 
@@ -110,7 +110,7 @@ func (o *UpdatePlaceVerifyData) GetAttributes() UpdatePlaceVerifyDataAttributes 
 
 // GetAttributesOk returns a tuple with the Attributes field value
 // and a boolean to check if the value has been set.
-func (o *UpdatePlaceVerifyData) GetAttributesOk() (*UpdatePlaceVerifyDataAttributes, bool) {
+func (o *DeleteUploadPlaceMediaData) GetAttributesOk() (*DeleteUploadPlaceMediaDataAttributes, bool) {
 	if o == nil {
 		return nil, false
 	}
@@ -118,11 +118,11 @@ func (o *UpdatePlaceVerifyData) GetAttributesOk() (*UpdatePlaceVerifyDataAttribu
 }
 
 // SetAttributes sets field value
-func (o *UpdatePlaceVerifyData) SetAttributes(v UpdatePlaceVerifyDataAttributes) {
+func (o *DeleteUploadPlaceMediaData) SetAttributes(v DeleteUploadPlaceMediaDataAttributes) {
 	o.Attributes = v
 }
 
-func (o UpdatePlaceVerifyData) MarshalJSON() ([]byte, error) {
+func (o DeleteUploadPlaceMediaData) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -130,7 +130,7 @@ func (o UpdatePlaceVerifyData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o UpdatePlaceVerifyData) ToMap() (map[string]interface{}, error) {
+func (o DeleteUploadPlaceMediaData) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["id"] = o.Id
 	toSerialize["type"] = o.Type
@@ -138,7 +138,7 @@ func (o UpdatePlaceVerifyData) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-func (o *UpdatePlaceVerifyData) UnmarshalJSON(data []byte) (err error) {
+func (o *DeleteUploadPlaceMediaData) UnmarshalJSON(data []byte) (err error) {
 	// This validates that all required properties are included in the JSON object
 	// by unmarshalling the object into a generic map with string keys and checking
 	// that every required field exists as a key in the generic map.
@@ -162,53 +162,53 @@ func (o *UpdatePlaceVerifyData) UnmarshalJSON(data []byte) (err error) {
 		}
 	}
 
-	varUpdatePlaceVerifyData := _UpdatePlaceVerifyData{}
+	varDeleteUploadPlaceMediaData := _DeleteUploadPlaceMediaData{}
 
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varUpdatePlaceVerifyData)
+	err = decoder.Decode(&varDeleteUploadPlaceMediaData)
 
 	if err != nil {
 		return err
 	}
 
-	*o = UpdatePlaceVerifyData(varUpdatePlaceVerifyData)
+	*o = DeleteUploadPlaceMediaData(varDeleteUploadPlaceMediaData)
 
 	return err
 }
 
-type NullableUpdatePlaceVerifyData struct {
-	value *UpdatePlaceVerifyData
+type NullableDeleteUploadPlaceMediaData struct {
+	value *DeleteUploadPlaceMediaData
 	isSet bool
 }
 
-func (v NullableUpdatePlaceVerifyData) Get() *UpdatePlaceVerifyData {
+func (v NullableDeleteUploadPlaceMediaData) Get() *DeleteUploadPlaceMediaData {
 	return v.value
 }
 
-func (v *NullableUpdatePlaceVerifyData) Set(val *UpdatePlaceVerifyData) {
+func (v *NullableDeleteUploadPlaceMediaData) Set(val *DeleteUploadPlaceMediaData) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableUpdatePlaceVerifyData) IsSet() bool {
+func (v NullableDeleteUploadPlaceMediaData) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableUpdatePlaceVerifyData) Unset() {
+func (v *NullableDeleteUploadPlaceMediaData) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableUpdatePlaceVerifyData(val *UpdatePlaceVerifyData) *NullableUpdatePlaceVerifyData {
-	return &NullableUpdatePlaceVerifyData{value: val, isSet: true}
+func NewNullableDeleteUploadPlaceMediaData(val *DeleteUploadPlaceMediaData) *NullableDeleteUploadPlaceMediaData {
+	return &NullableDeleteUploadPlaceMediaData{value: val, isSet: true}
 }
 
-func (v NullableUpdatePlaceVerifyData) MarshalJSON() ([]byte, error) {
+func (v NullableDeleteUploadPlaceMediaData) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableUpdatePlaceVerifyData) UnmarshalJSON(src []byte) error {
+func (v *NullableDeleteUploadPlaceMediaData) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }

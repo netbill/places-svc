@@ -5,23 +5,20 @@ import (
 	"fmt"
 	"sync"
 
+	awscfg "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/netbill/awsx"
 	"github.com/netbill/eventbox"
-	"github.com/netbill/places-svc/internal/repository/pg"
-
-	awscfg "github.com/aws/aws-sdk-go-v2/config"
 	eventpg "github.com/netbill/eventbox/pg"
 	"github.com/netbill/pgdbx"
-	"github.com/netbill/places-svc/internal/bucket"
-	"github.com/netbill/places-svc/internal/core/modules/organization"
-	"github.com/netbill/places-svc/internal/core/modules/pclass"
-	"github.com/netbill/places-svc/internal/core/modules/place"
+	"github.com/netbill/places-svc/internal/core"
 	"github.com/netbill/places-svc/internal/geogueser"
+	"github.com/netbill/places-svc/internal/media"
 	"github.com/netbill/places-svc/internal/messenger"
 	"github.com/netbill/places-svc/internal/messenger/handler"
 	"github.com/netbill/places-svc/internal/messenger/publisher"
 	"github.com/netbill/places-svc/internal/repository"
+	"github.com/netbill/places-svc/internal/repository/pg"
 	"github.com/netbill/places-svc/internal/rest"
 	"github.com/netbill/places-svc/internal/rest/controller"
 	"github.com/netbill/places-svc/internal/rest/middlewares"
@@ -49,15 +46,6 @@ func (a *App) Run(ctx context.Context) error {
 
 	db := pgdbx.NewDB(pool)
 
-	repo := &repository.Repository{
-		PlacesSql:        pg.NewPlacesQ(db),
-		PlaceClassesSql:  pg.NewPlaceClassesQ(db),
-		OrganizationsSql: pg.NewOrganizationsQ(db),
-		OrgMembersSql:    pg.NewOrgMembersQ(db),
-		TombstonesSql:    pg.NewTombstonesQ(db),
-		TransactionSql:   db,
-	}
-
 	cfg, err := awscfg.LoadDefaultConfig(
 		context.Background(),
 		awscfg.WithRegion(a.config.S3.Aws.Region),
@@ -73,7 +61,7 @@ func (a *App) Run(ctx context.Context) error {
 		return fmt.Errorf("load aws config: %w", err)
 	}
 
-	s3 := bucket.NewStorage(awsx.New(a.config.S3.Aws.BucketName, cfg), bucket.Config{
+	s3 := media.NewUploader(awsx.New(a.config.S3.Aws.BucketName, cfg), media.Config{
 		LinkTTL:        a.config.S3.Media.Link.TTL,
 		PlaceClassIcon: a.config.S3.Media.Resources.PlaceClass.Icon,
 		PlaceIcon:      a.config.S3.Media.Resources.Place.Icon,
@@ -110,31 +98,71 @@ func (a *App) Run(ctx context.Context) error {
 		return fmt.Errorf("create geography: %w", err)
 	}
 
-	orgCore := organization.New(repo)
-	placeCore := place.New(repo, s3, outbound, geo)
-	classCore := pclass.New(repo, s3, outbound)
+	orgRepo := repository.NewOrgRepository(pg.NewOrganizationsQ(db))
+	orgMemberRepo := repository.NewOrgMember(pg.NewOrgMembersQ(db))
+	placeRepo := repository.NewPlaces(pg.NewPlacesQ(db))
+	classRepo := repository.NewPlaceClasses(pg.NewPlaceClassesQ(db))
+	tombstoneRepo := pg.NewTombstonesQ(db)
 
 	tokenManager := tokenmanager.New(tokenmanager.Config{
 		Issuer:   a.config.Auth.Tokens.Issuer,
 		AccessSK: a.config.Auth.Tokens.AccountAccess.SecretKey,
 	})
 
-	ctrl := controller.New(&controller.Modules{
-		Place: placeCore,
-		Org:   orgCore,
-		Class: classCore,
+	orgCore := core.NewOrgModule(core.OrgModuleDeps{
+		Org:       orgRepo,
+		Member:    orgMemberRepo,
+		Tombstone: tombstoneRepo,
+		Tx:        db,
 	})
-	mdlv := middlewares.New(tokenManager)
-	router := rest.New(mdlv, ctrl)
 
-	run(func() {
-		router.Run(ctx, a.log, rest.Config{
+	placeCore := core.NewModule(core.PlaceModuleDeps{
+		Repo:      placeRepo,
+		Class:     classRepo,
+		Tombstone: tombstoneRepo,
+		Auth:      orgCore,
+		Media:     s3,
+		Messenger: outbound,
+		Territory: geo,
+		Tx:        db,
+	})
+
+	placeClassCore := core.NewPlaceClassModule(core.PlaceClassModuleDeps{
+		Repo:      classRepo,
+		Media:     s3,
+		Messenger: outbound,
+		Tx:        db,
+	})
+
+	mdlv := middlewares.New(tokenManager)
+
+	placeController := controller.NewPlaceController(controller.PlaceControllerDeps{
+		Place: placeCore,
+		Class: placeClassCore,
+		Org:   orgCore,
+	})
+
+	placeClassController := controller.NewPlaceClassController(controller.PlaceClassControllerDeps{
+		Class: placeClassCore,
+	})
+
+	router := rest.NewServer(rest.ServerDeps{
+		Place:         placeController,
+		Class:         placeClassController,
+		Middlewares:   mdlv,
+		Log:           a.log,
+		MediaResolver: media.NewResolver(a.config.S3.Aws.BaseURL),
+		Config: rest.Config{
 			Port:              a.config.Rest.Port,
 			ReadTimeout:       a.config.Rest.Timeouts.Read,
 			ReadHeaderTimeout: a.config.Rest.Timeouts.ReadHeader,
 			WriteTimeout:      a.config.Rest.Timeouts.Write,
 			IdleTimeout:       a.config.Rest.Timeouts.Idle,
-		})
+		},
+	})
+
+	run(func() {
+		router.Run(ctx)
 	})
 
 	outboxWorker := messenger.NewOutboxWorker(a.log, outbox, producer, eventbox.OutboxWorkerConfig{

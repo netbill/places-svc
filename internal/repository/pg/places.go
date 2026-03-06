@@ -336,27 +336,51 @@ func (q *placesQ) UpdateAddress(address string) repository.PlacesQ {
 }
 
 func (q *placesQ) UpdateDescription(description *string) repository.PlacesQ {
-	q.updater = q.updater.Set("description", description)
+	value := pgtype.Text{Valid: description != nil, String: ""}
+	if description != nil {
+		value.String = *description
+	}
+	q.updater = q.updater.Set("description", value)
 	return q
 }
 
 func (q *placesQ) UpdateIconKey(icon *string) repository.PlacesQ {
-	q.updater = q.updater.Set("icon_key", icon)
+	value := pgtype.Text{Valid: icon != nil, String: ""}
+	if icon != nil {
+		value.String = *icon
+	}
+
+	q.updater = q.updater.Set("icon_key", value)
 	return q
 }
 
 func (q *placesQ) UpdateBannerKey(banner *string) repository.PlacesQ {
-	q.updater = q.updater.Set("banner_key", banner)
+	value := pgtype.Text{Valid: banner != nil, String: ""}
+	if banner != nil {
+		value.String = *banner
+	}
+
+	q.updater = q.updater.Set("banner_key", value)
 	return q
 }
 
 func (q *placesQ) UpdateWebsite(website *string) repository.PlacesQ {
-	q.updater = q.updater.Set("website", website)
+	value := pgtype.Text{Valid: website != nil, String: ""}
+	if website != nil {
+		value.String = *website
+	}
+
+	q.updater = q.updater.Set("website", value)
 	return q
 }
 
 func (q *placesQ) UpdatePhone(phone *string) repository.PlacesQ {
-	q.updater = q.updater.Set("phone", phone)
+	value := pgtype.Text{Valid: phone != nil, String: ""}
+	if phone != nil {
+		value.String = *phone
+	}
+
+	q.updater = q.updater.Set("phone", value)
 	return q
 }
 

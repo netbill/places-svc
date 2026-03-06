@@ -1,4 +1,4 @@
-package bucket
+package media
 
 import (
 	"context"
@@ -12,27 +12,15 @@ import (
 	"github.com/netbill/places-svc/internal/core/models"
 )
 
-func CreateTempPlaceBannerKey(placeID uuid.UUID) string {
-	return fmt.Sprintf("place/banner/%s/temp/%s", placeID, uuid.New().String())
-}
-
-func CreatePlaceBannerKey(placeID uuid.UUID) string {
-	return fmt.Sprintf("place/banner/%s/%s", placeID, uuid.New().String())
-}
-
-func (s *Storage) CreatePlaceBannerUploadMediaLinks(
+func (s *Uploader) CreatePlaceBannerUploadMediaLinks(
 	ctx context.Context,
 	placeID uuid.UUID,
 ) (models.UploadMediaLink, error) {
-	key := CreateTempPlaceBannerKey(placeID)
+	key := createTempPlaceBannerKey(placeID)
 
-	uploadURL, getURL, err := s.s3.PresignPut(
-		ctx,
-		key,
-		s.config.LinkTTL,
-	)
+	uploadURL, getURL, err := s.s3.PresignPut(ctx, key, s.config.LinkTTL)
 	if err != nil {
-		return models.UploadMediaLink{}, fmt.Errorf("presigning put for place place banner: %w", err)
+		return models.UploadMediaLink{}, fmt.Errorf("presigning put for place banner: %w", err)
 	}
 
 	return models.UploadMediaLink{
@@ -42,37 +30,43 @@ func (s *Storage) CreatePlaceBannerUploadMediaLinks(
 	}, nil
 }
 
-func (s *Storage) ValidatePlaceBanner(
+func (s *Uploader) UpdatePlaceBanner(
 	ctx context.Context,
 	placeID uuid.UUID,
 	key string,
-) error {
+) (string, error) {
 	err := validateTempPlaceBannerKey(placeID, key)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	out, err := s.s3.GetObjectRange(ctx, key, 64*1024)
 	switch {
 	case errors.Is(err, awsx.ErrNotFound):
-		return errx.ErrorNoContentUploaded.Raise(
-			fmt.Errorf("place place banner not found for key: %s", key),
+		return "", errx.ErrorPlaceBannerIsInvalid.Raise(
+			fmt.Errorf("place banner not found for key: %s", key),
 		)
 	case err != nil:
-		return fmt.Errorf("get object range for place place banner: %w", err)
+		return "", fmt.Errorf("get object range for place banner: %w", err)
 	}
 	defer out.Body.Close()
 
 	if err = s.config.PlaceBanner.Validate(out); err != nil {
-		return errx.ErrorPlaceBannerIsInvalid.Raise(
+		return "", errx.ErrorPlaceBannerIsInvalid.Raise(
 			fmt.Errorf("validating place banner content for key %s: %w", key, err),
 		)
 	}
 
-	return nil
+	finalKey := createPlaceBannerKey(placeID)
+
+	if err = s.s3.CopyObject(ctx, key, finalKey); err != nil {
+		return "", fmt.Errorf("copying object for place banner: %w", err)
+	}
+
+	return finalKey, nil
 }
 
-func (s *Storage) DeleteUploadPlaceBanner(
+func (s *Uploader) DeleteUploadPlaceBanner(
 	ctx context.Context,
 	placeID uuid.UUID,
 	key string,
@@ -82,13 +76,13 @@ func (s *Storage) DeleteUploadPlaceBanner(
 	}
 
 	if err := s.s3.DeleteObject(ctx, key); err != nil {
-		return fmt.Errorf("deleting temp place place banner object: %w", err)
+		return fmt.Errorf("deleting temp place banner object: %w", err)
 	}
 
 	return nil
 }
 
-func (s *Storage) DeletePlaceBanner(
+func (s *Uploader) DeletePlaceBanner(
 	ctx context.Context,
 	placeID uuid.UUID,
 	key string,
@@ -98,38 +92,18 @@ func (s *Storage) DeletePlaceBanner(
 	}
 
 	if err := s.s3.DeleteObject(ctx, key); err != nil {
-		return fmt.Errorf("deleting place place banner object: %w", err)
+		return fmt.Errorf("deleting place banner object: %w", err)
 	}
 
 	return nil
 }
 
-func (s *Storage) UpdatePlaceBanner(
-	ctx context.Context,
-	placeID uuid.UUID,
-	key string,
-) (string, error) {
-	if err := validateTempPlaceBannerKey(placeID, key); err != nil {
-		return "", err
-	}
-
-	finalKey := CreatePlaceBannerKey(placeID)
-
-	if err := s.s3.CopyObject(ctx, key, finalKey); err != nil {
-		return "", fmt.Errorf("copying object for place banner: %w", err)
-	}
-
-	return finalKey, nil
+func createTempPlaceBannerKey(placeID uuid.UUID) string {
+	return fmt.Sprintf("place/banner/%s/temp/%s", placeID, uuid.New().String())
 }
 
-var (
-	tempPlaceBannerKeyRe = regexp.MustCompile(
-		`^place/banner/([0-9a-fA-F-]{36})/temp/([0-9a-fA-F-]{36})$`,
-	)
-
-	finalPlaceBannerKeyRe = regexp.MustCompile(
-		`^place/banner/([0-9a-fA-F-]{36})/([0-9a-fA-F-]{36})$`,
-	)
+var tempPlaceBannerKeyRe = regexp.MustCompile(
+	`^place/banner/([0-9a-fA-F-]{36})/temp/([0-9a-fA-F-]{36})$`,
 )
 
 func validateTempPlaceBannerKey(placeID uuid.UUID, key string) error {
@@ -139,15 +113,23 @@ func validateTempPlaceBannerKey(placeID uuid.UUID, key string) error {
 
 	matches := tempPlaceBannerKeyRe.FindStringSubmatch(key)
 	if matches == nil {
-		return errx.ErrorPlaceBannerIsInvalid.Raise(fmt.Errorf("key %s does not match temp place place banner key pattern", key))
+		return errx.ErrorPlaceBannerIsInvalid.Raise(fmt.Errorf("key %s does not match temp place banner key pattern", key))
 	}
 
 	if matches[1] != placeID.String() {
-		return errx.ErrorPlaceBannerIsInvalid.Raise(fmt.Errorf("key %s does not belong to place place %s", key, placeID))
+		return errx.ErrorPlaceBannerIsInvalid.Raise(fmt.Errorf("key %s does not belong to place %s", key, placeID))
 	}
 
 	return nil
 }
+
+func createPlaceBannerKey(placeID uuid.UUID) string {
+	return fmt.Sprintf("place/banner/%s/%s", placeID, uuid.New().String())
+}
+
+var finalPlaceBannerKeyRe = regexp.MustCompile(
+	`^place/banner/([0-9a-fA-F-]{36})/([0-9a-fA-F-]{36})$`,
+)
 
 func validateFinalPlaceBannerKey(placeID uuid.UUID, key string) error {
 	if key == "" {
@@ -156,11 +138,11 @@ func validateFinalPlaceBannerKey(placeID uuid.UUID, key string) error {
 
 	matches := finalPlaceBannerKeyRe.FindStringSubmatch(key)
 	if matches == nil {
-		return errx.ErrorPlaceBannerIsInvalid.Raise(fmt.Errorf("key %s does not match final place place banner key pattern", key))
+		return errx.ErrorPlaceBannerIsInvalid.Raise(fmt.Errorf("key %s does not match final place banner key pattern", key))
 	}
 
 	if matches[1] != placeID.String() {
-		return errx.ErrorPlaceBannerIsInvalid.Raise(fmt.Errorf("key %s does not belong to place place %s", key, placeID))
+		return errx.ErrorPlaceBannerIsInvalid.Raise(fmt.Errorf("key %s does not belong to place %s", key, placeID))
 	}
 
 	return nil

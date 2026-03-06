@@ -13,8 +13,6 @@ package resources
 import (
 	"encoding/json"
 	"github.com/google/uuid"
-	"bytes"
-	"fmt"
 )
 
 // checks if the UpdatePlaceClassDataAttributes type satisfies the MappedNullable interface at compile time
@@ -25,23 +23,19 @@ type UpdatePlaceClassDataAttributes struct {
 	// The ID of the parent class, if any
 	ParentId *uuid.UUID `json:"parent_id,omitempty"`
 	// The name of the class
-	Name string `json:"name"`
+	Name *string `json:"name,omitempty"`
 	// A brief description of the class
-	Description string `json:"description"`
+	Description *string `json:"description,omitempty"`
 	// The S3 key for the class icon
 	IconKey *string `json:"icon_key,omitempty"`
 }
-
-type _UpdatePlaceClassDataAttributes UpdatePlaceClassDataAttributes
 
 // NewUpdatePlaceClassDataAttributes instantiates a new UpdatePlaceClassDataAttributes object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewUpdatePlaceClassDataAttributes(name string, description string) *UpdatePlaceClassDataAttributes {
+func NewUpdatePlaceClassDataAttributes() *UpdatePlaceClassDataAttributes {
 	this := UpdatePlaceClassDataAttributes{}
-	this.Name = name
-	this.Description = description
 	return &this
 }
 
@@ -85,52 +79,68 @@ func (o *UpdatePlaceClassDataAttributes) SetParentId(v uuid.UUID) {
 	o.ParentId = &v
 }
 
-// GetName returns the Name field value
+// GetName returns the Name field value if set, zero value otherwise.
 func (o *UpdatePlaceClassDataAttributes) GetName() string {
-	if o == nil {
+	if o == nil || IsNil(o.Name) {
 		var ret string
 		return ret
 	}
-
-	return o.Name
+	return *o.Name
 }
 
-// GetNameOk returns a tuple with the Name field value
+// GetNameOk returns a tuple with the Name field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *UpdatePlaceClassDataAttributes) GetNameOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Name) {
 		return nil, false
 	}
-	return &o.Name, true
+	return o.Name, true
 }
 
-// SetName sets field value
+// HasName returns a boolean if a field has been set.
+func (o *UpdatePlaceClassDataAttributes) HasName() bool {
+	if o != nil && !IsNil(o.Name) {
+		return true
+	}
+
+	return false
+}
+
+// SetName gets a reference to the given string and assigns it to the Name field.
 func (o *UpdatePlaceClassDataAttributes) SetName(v string) {
-	o.Name = v
+	o.Name = &v
 }
 
-// GetDescription returns the Description field value
+// GetDescription returns the Description field value if set, zero value otherwise.
 func (o *UpdatePlaceClassDataAttributes) GetDescription() string {
-	if o == nil {
+	if o == nil || IsNil(o.Description) {
 		var ret string
 		return ret
 	}
-
-	return o.Description
+	return *o.Description
 }
 
-// GetDescriptionOk returns a tuple with the Description field value
+// GetDescriptionOk returns a tuple with the Description field value if set, nil otherwise
 // and a boolean to check if the value has been set.
 func (o *UpdatePlaceClassDataAttributes) GetDescriptionOk() (*string, bool) {
-	if o == nil {
+	if o == nil || IsNil(o.Description) {
 		return nil, false
 	}
-	return &o.Description, true
+	return o.Description, true
 }
 
-// SetDescription sets field value
+// HasDescription returns a boolean if a field has been set.
+func (o *UpdatePlaceClassDataAttributes) HasDescription() bool {
+	if o != nil && !IsNil(o.Description) {
+		return true
+	}
+
+	return false
+}
+
+// SetDescription gets a reference to the given string and assigns it to the Description field.
 func (o *UpdatePlaceClassDataAttributes) SetDescription(v string) {
-	o.Description = v
+	o.Description = &v
 }
 
 // GetIconKey returns the IconKey field value if set, zero value otherwise.
@@ -178,50 +188,16 @@ func (o UpdatePlaceClassDataAttributes) ToMap() (map[string]interface{}, error) 
 	if !IsNil(o.ParentId) {
 		toSerialize["parent_id"] = o.ParentId
 	}
-	toSerialize["name"] = o.Name
-	toSerialize["description"] = o.Description
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
+	}
+	if !IsNil(o.Description) {
+		toSerialize["description"] = o.Description
+	}
 	if !IsNil(o.IconKey) {
 		toSerialize["icon_key"] = o.IconKey
 	}
 	return toSerialize, nil
-}
-
-func (o *UpdatePlaceClassDataAttributes) UnmarshalJSON(data []byte) (err error) {
-	// This validates that all required properties are included in the JSON object
-	// by unmarshalling the object into a generic map with string keys and checking
-	// that every required field exists as a key in the generic map.
-	requiredProperties := []string{
-		"name",
-		"description",
-	}
-
-	allProperties := make(map[string]interface{})
-
-	err = json.Unmarshal(data, &allProperties)
-
-	if err != nil {
-		return err;
-	}
-
-	for _, requiredProperty := range(requiredProperties) {
-		if _, exists := allProperties[requiredProperty]; !exists {
-			return fmt.Errorf("no value given for required property %v", requiredProperty)
-		}
-	}
-
-	varUpdatePlaceClassDataAttributes := _UpdatePlaceClassDataAttributes{}
-
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&varUpdatePlaceClassDataAttributes)
-
-	if err != nil {
-		return err
-	}
-
-	*o = UpdatePlaceClassDataAttributes(varUpdatePlaceClassDataAttributes)
-
-	return err
 }
 
 type NullableUpdatePlaceClassDataAttributes struct {
