@@ -1,4 +1,4 @@
-package core
+package organization
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core/errx"
+	"github.com/netbill/places-svc/internal/errx"
 )
 
 type CreateMemberParams struct {
@@ -20,41 +20,41 @@ type CreateMemberParams struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func (m *OrgModule) CreateMember(
+func (s *Service) CreateMember(
 	ctx context.Context,
 	params CreateMemberParams,
 ) error {
-	exists, err := m.member.ExistsByID(ctx, params.ID)
+	exists, err := s.member.ExistsByID(ctx, params.ID)
 	if err != nil {
 		return err
 	}
 	if exists {
 		return errx.ErrorOrgMemberAlreadyExists.Raise(
-			fmt.Errorf("organization member with id %s already exists", params.ID),
+			fmt.Errorf("orgRepo memberRepo with id %s already exists", params.ID),
 		)
 	}
 
-	bury, err := m.tombstone.OrgMemberIsBuried(ctx, params.ID)
+	bury, err := s.tombstone.OrgMemberIsBuried(ctx, params.ID)
 	if err != nil {
 		return err
 	}
 	if bury {
 		return errx.ErrorOrgMemberDeleted.Raise(
-			fmt.Errorf("organization member with id %s is already deleted", params.ID),
+			fmt.Errorf("orgRepo memberRepo with id %s is already deleted", params.ID),
 		)
 	}
 
-	bury, err = m.tombstone.OrganizationIsBuried(ctx, params.ID)
+	bury, err = s.tombstone.OrganizationIsBuried(ctx, params.ID)
 	if err != nil {
 		return err
 	}
 	if bury {
 		return errx.ErrorOrganizationDeleted.Raise(
-			fmt.Errorf("organization with id %s is already deleted", params.OrganizationID),
+			fmt.Errorf("orgRepo with id %s is already deleted", params.OrganizationID),
 		)
 	}
 
-	return m.member.Create(ctx, params)
+	return s.member.Create(ctx, params)
 }
 
 type UpdateMemberParams struct {
@@ -65,22 +65,22 @@ type UpdateMemberParams struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (m *OrgModule) UpdateMember(
+func (s *Service) UpdateMember(
 	ctx context.Context,
 	memberID uuid.UUID,
 	params UpdateMemberParams,
 ) error {
-	bury, err := m.tombstone.OrgMemberIsBuried(ctx, memberID)
+	bury, err := s.tombstone.OrgMemberIsBuried(ctx, memberID)
 	if err != nil {
 		return err
 	}
 	if bury {
 		return errx.ErrorOrgMemberDeleted.Raise(
-			fmt.Errorf("organization member with id %s is already deleted", memberID),
+			fmt.Errorf("orgRepo memberRepo with id %s is already deleted", memberID),
 		)
 	}
 
-	member, err := m.member.GetByID(ctx, memberID)
+	member, err := s.member.GetByID(ctx, memberID)
 	if err != nil {
 		return err
 	}
@@ -88,28 +88,28 @@ func (m *OrgModule) UpdateMember(
 		return nil
 	}
 
-	return m.member.Update(ctx, memberID, params)
+	return s.member.Update(ctx, memberID, params)
 }
 
-func (m *OrgModule) DeleteMember(
+func (s *Service) DeleteMember(
 	ctx context.Context,
 	memberID uuid.UUID,
 ) error {
-	bury, err := m.tombstone.OrgMemberIsBuried(ctx, memberID)
+	bury, err := s.tombstone.OrgMemberIsBuried(ctx, memberID)
 	if err != nil {
 		return err
 	}
 	if bury {
 		return errx.ErrorOrgMemberDeleted.Raise(
-			fmt.Errorf("organization member with id %s is already deleted", memberID),
+			fmt.Errorf("orgRepo memberRepo with id %s is already deleted", memberID),
 		)
 	}
 
-	return m.tx.Transaction(ctx, func(ctx context.Context) error {
-		if err := m.tombstone.BuryOrgMember(ctx, memberID); err != nil {
+	return s.tx.Transaction(ctx, func(ctx context.Context) error {
+		if err := s.tombstone.BuryOrgMember(ctx, memberID); err != nil {
 			return err
 		}
 
-		return m.member.Delete(ctx, memberID)
+		return s.member.Delete(ctx, memberID)
 	})
 }

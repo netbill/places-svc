@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core"
-	"github.com/netbill/places-svc/internal/core/errx"
-	"github.com/netbill/places-svc/internal/core/models"
+	"github.com/netbill/places-svc/internal/core/organization"
+	"github.com/netbill/places-svc/internal/errx"
+	"github.com/netbill/places-svc/internal/models"
 )
 
 type OrganizationRow struct {
@@ -78,7 +78,7 @@ func NewOrgRepository(query OrganizationsQ) *OrgRepository {
 
 func (r *OrgRepository) Create(
 	ctx context.Context,
-	input core.CreateOrgParams,
+	input organization.CreateParams,
 ) error {
 	return r.query.New().Insert(ctx, OrganizationRow{
 		ID:              input.ID,
@@ -133,7 +133,7 @@ func (r *OrgRepository) Exists(ctx context.Context, orgID uuid.UUID) (bool, erro
 func (r *OrgRepository) Update(
 	ctx context.Context,
 	orgID uuid.UUID,
-	params core.UpdateOrgParams,
+	params organization.UpdateParams,
 ) error {
 	return r.query.New().
 		FilterByID(orgID).

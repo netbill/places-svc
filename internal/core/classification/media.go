@@ -1,22 +1,22 @@
-package core
+package classification
 
 import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core/models"
+	"github.com/netbill/places-svc/internal/models"
 )
 
-func (m *PlaceClassModule) CreateUploadMediaLinks(
+func (s *Service) CreateUploadMediaLinks(
 	ctx context.Context,
 	placeClassID uuid.UUID,
 ) (models.PlaceClass, models.UploadPlaceClassMediaLinks, error) {
-	class, err := m.repo.Get(ctx, placeClassID)
+	class, err := s.repo.Get(ctx, placeClassID)
 	if err != nil {
 		return models.PlaceClass{}, models.UploadPlaceClassMediaLinks{}, err
 	}
 
-	links, err := m.media.CreatePlaceClassIconUploadMediaLinks(ctx, class.ID)
+	links, err := s.media.CreatePlaceClassIconUploadMediaLinks(ctx, class.ID)
 	if err != nil {
 		return models.PlaceClass{}, models.UploadPlaceClassMediaLinks{}, err
 	}
@@ -30,18 +30,18 @@ type DeleteUploadPlaceClassMediaParams struct {
 	Icon *string
 }
 
-func (m *PlaceClassModule) DeleteUploadMedia(
+func (s *Service) DeleteUploadMedia(
 	ctx context.Context,
 	classID uuid.UUID,
 	params DeleteUploadPlaceClassMediaParams,
 ) error {
-	_, err := m.repo.Get(ctx, classID)
+	_, err := s.repo.Get(ctx, classID)
 	if err != nil {
 		return err
 	}
 
 	if params.Icon != nil {
-		if err = m.media.DeleteUploadPlaceClassIcon(ctx, classID, *params.Icon); err != nil {
+		if err = s.media.DeleteUploadPlaceClassIcon(ctx, classID, *params.Icon); err != nil {
 			return err
 		}
 	}

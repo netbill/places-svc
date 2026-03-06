@@ -1,4 +1,4 @@
-package controller
+package controllers
 
 import (
 	"errors"
@@ -8,8 +8,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core"
-	"github.com/netbill/places-svc/internal/core/errx"
+	"github.com/netbill/places-svc/internal/core/places"
+	"github.com/netbill/places-svc/internal/errx"
 	"github.com/netbill/places-svc/internal/rest/requests"
 	"github.com/netbill/places-svc/internal/rest/responses"
 	"github.com/netbill/places-svc/internal/rest/scope"
@@ -34,17 +34,22 @@ func (c *PlaceController) CreateUploadMediaLink(w http.ResponseWriter, r *http.R
 
 	log = log.WithField("place_id", placeID)
 
-	place, media, err := c.place.CreateUploadMediaLinks(r.Context(), placeID)
+	place, media, err := c.place.CreateUploadMediaLinks(r.Context(), scope.AccountActor(r), placeID)
 	switch {
-	case errors.Is(err, errx.ErrorPlaceNotExists):
+	case errors.Is(err, errx.ErrorPlaceNotExists),
+		errors.Is(err, errx.ErrorPlaceDeleted):
 		log.WithError(err).Warn("place does not exist")
 		render.ResponseError(w, problems.NotFound("place does not exist"))
+	case errors.Is(err, errx.ErrorOrganizationNotExists),
+		errors.Is(err, errx.ErrorOrganizationDeleted):
+		log.WithError(err).Warn("organization does not exist")
+		render.ResponseError(w, problems.NotFound("organization does not exist"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Forbidden("organization is suspended"))
-	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.WithError(err).Warn("not enough rights to create place upload media link")
-		render.ResponseError(w, problems.Forbidden("not enough rights to create place upload media link"))
+	case errors.Is(err, errx.ErrorInitiatorNotMemberOfOrganization):
+		log.WithError(err).Warn("initiator is not a member of organization")
+		render.ResponseError(w, problems.Forbidden("initiator is not a member of organization"))
 	case err != nil:
 		log.WithError(err).Error("failed to create place upload media link")
 		render.ResponseError(w, problems.InternalError())
@@ -72,18 +77,26 @@ func (c *PlaceController) DeleteUploadMedia(w http.ResponseWriter, r *http.Reque
 		r.Context(),
 		scope.AccountActor(r),
 		req.Data.Id,
-		core.DeleteUploadPlaceMediaParams{
+		places.DeleteUploadPlaceMediaParams{
 			Banner: req.Data.Attributes.BannerKey,
 			Icon:   req.Data.Attributes.IconKey,
 		},
 	)
 	switch {
-	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.WithError(err).Warn("not enough rights to delete place banner in upload session")
-		render.ResponseError(w, problems.Forbidden("not enough rights to delete place banner in upload session"))
+	case errors.Is(err, errx.ErrorPlaceNotExists),
+		errors.Is(err, errx.ErrorPlaceDeleted):
+		log.WithError(err).Warn("place does not exist")
+		render.ResponseError(w, problems.NotFound("place does not exist"))
+	case errors.Is(err, errx.ErrorOrganizationNotExists),
+		errors.Is(err, errx.ErrorOrganizationDeleted):
+		log.WithError(err).Warn("organization does not exist")
+		render.ResponseError(w, problems.NotFound("organization does not exist"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Forbidden("organization is suspended"))
+	case errors.Is(err, errx.ErrorInitiatorNotMemberOfOrganization):
+		log.WithError(err).Warn("initiator is not a member of organization")
+		render.ResponseError(w, problems.Forbidden("initiator is not a member of organization"))
 	case errors.Is(err, errx.ErrorPlaceBannerIsInvalid):
 		log.WithError(err).Warn("place banner key is invalid")
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
@@ -94,9 +107,6 @@ func (c *PlaceController) DeleteUploadMedia(w http.ResponseWriter, r *http.Reque
 		render.ResponseError(w, problems.BadRequest(validation.Errors{
 			"icon": err,
 		})...)
-	case errors.Is(err, errx.ErrorPlaceNotExists):
-		log.WithError(err).Warn("place does not exist")
-		render.ResponseError(w, problems.NotFound("place does not exist"))
 	case err != nil:
 		log.WithError(err).Error("failed to delete place banner in upload session")
 		render.ResponseError(w, problems.InternalError())

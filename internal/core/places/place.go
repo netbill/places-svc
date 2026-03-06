@@ -1,15 +1,15 @@
-package core
+package places
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core/errx"
-	"github.com/netbill/places-svc/internal/core/models"
+	"github.com/netbill/places-svc/internal/errx"
+	"github.com/netbill/places-svc/internal/models"
 )
 
-type UpdatePlaceParams struct {
+type UpdateParams struct {
 	ClassID *uuid.UUID
 	Name    *string
 	Address *string
@@ -22,7 +22,14 @@ type UpdatePlaceParams struct {
 	BannerKey *string
 }
 
-func (p *UpdatePlaceParams) HasChanges(place models.Place) bool {
+func ptrEqual[T comparable](a, b *T) bool {
+	if a == nil || b == nil {
+		return a == b
+	}
+	return *a == *b
+}
+
+func (p *UpdateParams) HasChanges(place models.Place) bool {
 	return !ptrEqual(p.ClassID, &place.ClassID) ||
 		!ptrEqual(p.Name, &place.Name) ||
 		!ptrEqual(p.Address, &place.Address) ||
@@ -33,23 +40,23 @@ func (p *UpdatePlaceParams) HasChanges(place models.Place) bool {
 		!ptrEqual(p.BannerKey, place.BannerKey)
 }
 
-func (m *PlaceModule) Update(
+func (s *Service) Update(
 	ctx context.Context,
 	actor models.AccountActor,
 	placeID uuid.UUID,
-	params UpdatePlaceParams,
+	params UpdateParams,
 ) (place models.Place, err error) {
-	place, err = m.repo.Get(ctx, placeID)
+	place, err = s.place.Get(ctx, placeID)
 	if err != nil {
 		return models.Place{}, err
 	}
 
-	_, err = m.auth.authorizeOrgHead(ctx, actor, place.OrganizationID)
+	_, err = s.org.AuthorizeOrgHead(ctx, actor, place.OrganizationID)
 	if err != nil {
 		return models.Place{}, err
 	}
 
-	_, err = m.auth.validateOrg(ctx, place.OrganizationID)
+	_, err = s.org.ValidateOrg(ctx, place.OrganizationID)
 	if err != nil {
 		return models.Place{}, err
 	}
@@ -59,7 +66,7 @@ func (m *PlaceModule) Update(
 	}
 
 	if params.ClassID != nil {
-		class, err := m.class.Get(ctx, *params.ClassID)
+		class, err := s.class.Get(ctx, *params.ClassID)
 		if err != nil {
 			return models.Place{}, err
 		}
@@ -72,12 +79,12 @@ func (m *PlaceModule) Update(
 
 	switch {
 	case params.IconKey != nil && *params.IconKey == "" && place.IconKey != nil:
-		if err := m.media.DeletePlaceIcon(ctx, placeID, *place.IconKey); err != nil {
+		if err := s.media.DeletePlaceIcon(ctx, placeID, *place.IconKey); err != nil {
 			return models.Place{}, fmt.Errorf("failed to delete place icon: %w", err)
 		}
 		params.IconKey = nil
 	case params.IconKey != nil:
-		iconKey, err := m.media.UpdatePlaceIcon(ctx, placeID, *params.IconKey)
+		iconKey, err := s.media.UpdatePlaceIcon(ctx, placeID, *params.IconKey)
 		if err != nil {
 			return models.Place{}, fmt.Errorf("failed to validate place icon: %w", err)
 		}
@@ -86,25 +93,25 @@ func (m *PlaceModule) Update(
 
 	switch {
 	case params.BannerKey != nil && *params.BannerKey == "" && place.BannerKey != nil:
-		if err := m.media.DeletePlaceBanner(ctx, placeID, *place.BannerKey); err != nil {
+		if err := s.media.DeletePlaceBanner(ctx, placeID, *place.BannerKey); err != nil {
 			return models.Place{}, fmt.Errorf("failed to delete place banner: %w", err)
 		}
 		params.BannerKey = nil
 	case params.BannerKey != nil:
-		bannerKey, err := m.media.UpdatePlaceBanner(ctx, placeID, *params.BannerKey)
+		bannerKey, err := s.media.UpdatePlaceBanner(ctx, placeID, *params.BannerKey)
 		if err != nil {
 			return models.Place{}, fmt.Errorf("failed to validate place banner: %w", err)
 		}
 		params.BannerKey = &bannerKey
 	}
 
-	err = m.tx.Transaction(ctx, func(ctx context.Context) error {
-		place, err = m.repo.Update(ctx, placeID, params)
+	err = s.tx.Transaction(ctx, func(ctx context.Context) error {
+		place, err = s.place.Update(ctx, placeID, params)
 		if err != nil {
 			return err
 		}
 
-		return m.messenger.PublishUpdatePlace(ctx, place)
+		return s.messenger.PublishUpdatePlace(ctx, place)
 	})
 	if err != nil {
 		return models.Place{}, err
@@ -113,39 +120,39 @@ func (m *PlaceModule) Update(
 	return place, nil
 }
 
-func (m *PlaceModule) Activate(
+func (s *Service) Activate(
 	ctx context.Context,
 	actor models.AccountActor,
 	placeID uuid.UUID,
 ) (place models.Place, err error) {
-	return m.updateStatus(ctx, actor, placeID, models.PlaceStatusActive)
+	return s.updateStatus(ctx, actor, placeID, models.PlaceStatusActive)
 }
 
-func (m *PlaceModule) Deactivate(
+func (s *Service) Deactivate(
 	ctx context.Context,
 	actor models.AccountActor,
 	placeID uuid.UUID,
 ) (place models.Place, err error) {
-	return m.updateStatus(ctx, actor, placeID, models.PlaceStatusInactive)
+	return s.updateStatus(ctx, actor, placeID, models.PlaceStatusInactive)
 }
 
-func (m *PlaceModule) updateStatus(
+func (s *Service) updateStatus(
 	ctx context.Context,
 	actor models.AccountActor,
 	placeID uuid.UUID,
 	status string,
 ) (place models.Place, err error) {
-	place, err = m.repo.Get(ctx, placeID)
+	place, err = s.place.Get(ctx, placeID)
 	if err != nil {
 		return models.Place{}, err
 	}
 
-	_, err = m.auth.authorizeOrgHead(ctx, actor, place.OrganizationID)
+	_, err = s.org.AuthorizeOrgHead(ctx, actor, place.OrganizationID)
 	if err != nil {
 		return models.Place{}, err
 	}
 
-	_, err = m.auth.validateOrg(ctx, place.OrganizationID)
+	_, err = s.org.ValidateOrg(ctx, place.OrganizationID)
 	if err != nil {
 		return models.Place{}, err
 	}
@@ -159,13 +166,13 @@ func (m *PlaceModule) updateStatus(
 		)
 	}
 
-	err = m.tx.Transaction(ctx, func(ctx context.Context) error {
-		place, err = m.repo.UpdateStatus(ctx, placeID, status)
+	err = s.tx.Transaction(ctx, func(ctx context.Context) error {
+		place, err = s.place.UpdateStatus(ctx, placeID, status)
 		if err != nil {
 			return err
 		}
 
-		return m.messenger.PublishUpdatePlace(ctx, place)
+		return s.messenger.PublishUpdatePlace(ctx, place)
 	})
 	if err != nil {
 		return models.Place{}, err
@@ -174,26 +181,26 @@ func (m *PlaceModule) updateStatus(
 	return place, nil
 }
 
-func (m *PlaceModule) Verify(
+func (s *Service) Verify(
 	ctx context.Context,
 	placeID uuid.UUID,
 ) (place models.Place, err error) {
-	return m.updateVerified(ctx, placeID, true)
+	return s.updateVerified(ctx, placeID, true)
 }
 
-func (m *PlaceModule) Unverify(
+func (s *Service) Unverify(
 	ctx context.Context,
 	placeID uuid.UUID,
 ) (place models.Place, err error) {
-	return m.updateVerified(ctx, placeID, false)
+	return s.updateVerified(ctx, placeID, false)
 }
 
-func (m *PlaceModule) updateVerified(
+func (s *Service) updateVerified(
 	ctx context.Context,
 	placeID uuid.UUID,
 	verified bool,
 ) (place models.Place, err error) {
-	place, err = m.repo.Get(ctx, placeID)
+	place, err = s.place.Get(ctx, placeID)
 	if err != nil {
 		return models.Place{}, err
 	}
@@ -202,13 +209,13 @@ func (m *PlaceModule) updateVerified(
 		return place, nil
 	}
 
-	err = m.tx.Transaction(ctx, func(ctx context.Context) error {
-		place, err = m.repo.UpdateVerified(ctx, placeID, verified)
+	err = s.tx.Transaction(ctx, func(ctx context.Context) error {
+		place, err = s.place.UpdateVerified(ctx, placeID, verified)
 		if err != nil {
 			return err
 		}
 
-		return m.messenger.PublishUpdatePlace(ctx, place)
+		return s.messenger.PublishUpdatePlace(ctx, place)
 	})
 
 	return place, nil

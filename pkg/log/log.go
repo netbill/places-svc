@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/netbill/ape"
 	"github.com/netbill/logium"
-	"github.com/netbill/places-svc/internal/core/models"
+	"github.com/netbill/places-svc/internal/models"
 )
 
 const (

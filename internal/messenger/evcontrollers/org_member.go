@@ -1,4 +1,4 @@
-package handler
+package evcontrollers
 
 import (
 	"context"
@@ -7,13 +7,13 @@ import (
 
 	"github.com/netbill/eventbox"
 	"github.com/netbill/evtypes"
-	"github.com/netbill/places-svc/internal/core"
-	"github.com/netbill/places-svc/internal/core/errx"
+	"github.com/netbill/places-svc/internal/core/organization"
+	"github.com/netbill/places-svc/internal/errx"
 )
 
 const operationOrgMemberCreated = "organization_member_created"
 
-func (h *Handler) OrgMemberCreated(
+func (h *OrgController) OrgMemberCreated(
 	ctx context.Context,
 	event eventbox.InboxEvent,
 ) error {
@@ -25,7 +25,7 @@ func (h *Handler) OrgMemberCreated(
 	log := h.log.WithOperation(operationOrgMemberCreated).
 		With("member_id", payload.MemberID)
 
-	err := h.modules.Org.CreateMember(ctx, core.CreateMemberParams{
+	err := h.modules.Org.CreateMember(ctx, organization.CreateMemberParams{
 		ID:             payload.MemberID,
 		AccountID:      payload.AccountID,
 		OrganizationID: payload.OrganizationID,
@@ -55,7 +55,7 @@ func (h *Handler) OrgMemberCreated(
 
 const operationOrgMemberUpdated = "organization_member_updated"
 
-func (h *Handler) OrgMemberUpdated(
+func (h *OrgController) OrgMemberUpdated(
 	ctx context.Context,
 	event eventbox.InboxEvent,
 ) error {
@@ -67,7 +67,7 @@ func (h *Handler) OrgMemberUpdated(
 	log := h.log.WithOperation(operationOrgMemberUpdated).
 		With("member_id", payload.MemberID)
 
-	err := h.modules.Org.UpdateMember(ctx, payload.MemberID, core.UpdateMemberParams{
+	err := h.modules.Org.UpdateMember(ctx, payload.MemberID, organization.UpdateMemberParams{
 		Label:     payload.Label,
 		Position:  payload.Position,
 		Version:   payload.Version,
@@ -88,7 +88,7 @@ func (h *Handler) OrgMemberUpdated(
 
 const operationOrgMemberDeleted = "organization_member_deleted"
 
-func (h *Handler) OrgMemberDeleted(
+func (h *OrgController) OrgMemberDeleted(
 	ctx context.Context,
 	event eventbox.InboxEvent,
 ) error {

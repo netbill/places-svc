@@ -1,4 +1,4 @@
-package controller
+package controllers
 
 import (
 	"errors"
@@ -8,8 +8,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core"
-	"github.com/netbill/places-svc/internal/core/errx"
+	"github.com/netbill/places-svc/internal/core/places"
+	"github.com/netbill/places-svc/internal/errx"
 	"github.com/netbill/places-svc/internal/rest/requests"
 	"github.com/netbill/places-svc/internal/rest/responses"
 	"github.com/netbill/places-svc/internal/rest/scope"
@@ -35,7 +35,7 @@ func (c *PlaceController) Update(w http.ResponseWriter, r *http.Request) {
 		r.Context(),
 		scope.AccountActor(r),
 		req.Data.Id,
-		core.UpdatePlaceParams{
+		places.UpdateParams{
 			ClassID:     req.Data.Attributes.ClassId,
 			Name:        req.Data.Attributes.Name,
 			Address:     req.Data.Attributes.Address,
@@ -47,15 +47,20 @@ func (c *PlaceController) Update(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 	switch {
-	case errors.Is(err, errx.ErrorPlaceNotExists):
+	case errors.Is(err, errx.ErrorPlaceNotExists),
+		errors.Is(err, errx.ErrorPlaceDeleted):
 		log.WithError(err).Warn("place not found")
 		render.ResponseError(w, problems.NotFound("place not found"))
-	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.WithError(err).Warn("not enough rights to update place")
-		render.ResponseError(w, problems.Forbidden("not enough rights to update place"))
+	case errors.Is(err, errx.ErrorOrganizationNotExists),
+		errors.Is(err, errx.ErrorOrganizationDeleted):
+		log.WithError(err).Warn("organization not found")
+		render.ResponseError(w, problems.NotFound("organization not found"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Conflict("organization is suspended"))
+	case errors.Is(err, errx.ErrorInitiatorNotMemberOfOrganization):
+		log.WithError(err).Warn("initiator is not a member of organization")
+		render.ResponseError(w, problems.Forbidden("initiator is not a member of organization"))
 	case errors.Is(err, errx.ErrorPlaceClassIsDeprecated):
 		log.WithError(err).Warn("place class is deprecated")
 		render.ResponseError(w, problems.Conflict("place class is deprecated"))
@@ -96,15 +101,20 @@ func (c *PlaceController) Activate(w http.ResponseWriter, r *http.Request) {
 
 	res, err := c.place.Activate(r.Context(), scope.AccountActor(r), placeID)
 	switch {
-	case errors.Is(err, errx.ErrorPlaceNotExists):
+	case errors.Is(err, errx.ErrorPlaceNotExists),
+		errors.Is(err, errx.ErrorPlaceDeleted):
 		log.WithError(err).Warn("place not found")
 		render.ResponseError(w, problems.NotFound("place not found"))
+	case errors.Is(err, errx.ErrorOrganizationNotExists),
+		errors.Is(err, errx.ErrorOrganizationDeleted):
+		log.WithError(err).Warn("organization not found")
+		render.ResponseError(w, problems.NotFound("organization not found"))
+	case errors.Is(err, errx.ErrorNotOrganizationHead):
+		log.WithError(err).Warn("account is not organization head")
+		render.ResponseError(w, problems.Forbidden("only organization head can activate place"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Forbidden("organization is suspended"))
-	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.WithError(err).Warn("not enough rights to update place status")
-		render.ResponseError(w, problems.Forbidden("not enough rights to update place status"))
 	case err != nil:
 		log.WithError(err).Error("failed to update place status")
 		render.ResponseError(w, problems.InternalError())
@@ -130,15 +140,20 @@ func (c *PlaceController) Deactivate(w http.ResponseWriter, r *http.Request) {
 
 	res, err := c.place.Deactivate(r.Context(), scope.AccountActor(r), placeID)
 	switch {
-	case errors.Is(err, errx.ErrorPlaceNotExists):
+	case errors.Is(err, errx.ErrorPlaceNotExists),
+		errors.Is(err, errx.ErrorPlaceDeleted):
 		log.WithError(err).Warn("place not found")
 		render.ResponseError(w, problems.NotFound("place not found"))
+	case errors.Is(err, errx.ErrorOrganizationNotExists),
+		errors.Is(err, errx.ErrorOrganizationDeleted):
+		log.WithError(err).Warn("organization not found")
+		render.ResponseError(w, problems.NotFound("organization not found"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Forbidden("organization is suspended"))
-	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.WithError(err).Warn("not enough rights to update place status")
-		render.ResponseError(w, problems.Forbidden("not enough rights to update place status"))
+	case errors.Is(err, errx.ErrorNotOrganizationHead):
+		log.WithError(err).Warn("account is not organization head")
+		render.ResponseError(w, problems.Forbidden("only organization head can deactivate place"))
 	case err != nil:
 		log.WithError(err).Error("failed to update place status")
 		render.ResponseError(w, problems.InternalError())

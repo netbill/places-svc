@@ -1,4 +1,4 @@
-package controller
+package controllers
 
 import (
 	"context"
@@ -11,9 +11,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core"
-	"github.com/netbill/places-svc/internal/core/errx"
-	"github.com/netbill/places-svc/internal/core/models"
+	"github.com/netbill/places-svc/internal/core/classification"
+	"github.com/netbill/places-svc/internal/errx"
+	"github.com/netbill/places-svc/internal/models"
 	"github.com/netbill/places-svc/internal/rest/requests"
 	"github.com/netbill/places-svc/internal/rest/responses"
 	"github.com/netbill/places-svc/internal/rest/scope"
@@ -26,7 +26,7 @@ import (
 type placeClassCore interface {
 	Create(
 		ctx context.Context,
-		params core.CreatePlaceClassParams,
+		params classification.CreateParams,
 	) (class models.PlaceClass, err error)
 
 	Get(ctx context.Context, id uuid.UUID) (models.PlaceClass, error)
@@ -38,7 +38,7 @@ type placeClassCore interface {
 
 	GetList(
 		ctx context.Context,
-		params core.FilterParams,
+		params classification.FilterParams,
 		limit, offset uint,
 	) (pagi.Page[[]models.PlaceClass], error)
 
@@ -55,7 +55,7 @@ type placeClassCore interface {
 	Update(
 		ctx context.Context,
 		classID uuid.UUID,
-		params core.UpdatePlaceClassParams,
+		params classification.UpdateParams,
 	) (class models.PlaceClass, err error)
 
 	CreateUploadMediaLinks(
@@ -66,7 +66,7 @@ type placeClassCore interface {
 	DeleteUploadMedia(
 		ctx context.Context,
 		classID uuid.UUID,
-		params core.DeleteUploadPlaceClassMediaParams,
+		params classification.DeleteUploadPlaceClassMediaParams,
 	) error
 }
 
@@ -97,7 +97,7 @@ func (c *PlaceClassController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := c.class.Create(r.Context(), core.CreatePlaceClassParams{
+	res, err := c.class.Create(r.Context(), classification.CreateParams{
 		ParentID:    req.Data.Attributes.ParentId,
 		Name:        req.Data.Attributes.Name,
 		Description: req.Data.Attributes.Description,
@@ -108,12 +108,8 @@ func (c *PlaceClassController) Create(w http.ResponseWriter, r *http.Request) {
 			Warn("place class not found")
 		render.ResponseError(w, problems.NotFound("place class not found"))
 	case errors.Is(err, errx.ErrorPlaceClassIsDeprecated):
-		log.WithField("place_class_id", req.Data.Attributes.ParentId).
-			Warn("place class is deprecated")
+		log.WithField("place_class_id", req.Data.Attributes.ParentId).Warn("place class is deprecated")
 		render.ResponseError(w, problems.Conflict("place class is deprecated"))
-	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.WithError(err).Warn("not enough rights to create place class")
-		render.ResponseError(w, problems.Forbidden("not enough rights to create place class"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Forbidden("organization is suspended"))
@@ -256,7 +252,7 @@ func (c *PlaceClassController) GetList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := core.FilterParams{}
+	params := classification.FilterParams{}
 
 	if text := r.URL.Query().Get("text"); text != "" {
 		params.BestMatch = &text
@@ -272,7 +268,7 @@ func (c *PlaceClassController) GetList(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		parent := &core.FilterPlaceClassParams{ID: parentID}
+		parent := &classification.FilterParentParams{ID: parentID}
 
 		if raw := r.URL.Query().Get("with_parents"); raw != "" {
 			with, err := strconv.ParseBool(raw)
@@ -362,7 +358,7 @@ func (c *PlaceClassController) Update(w http.ResponseWriter, r *http.Request) {
 	res, err := c.class.Update(
 		r.Context(),
 		req.Data.Id,
-		core.UpdatePlaceClassParams{
+		classification.UpdateParams{
 			ParentID:    req.Data.Attributes.ParentId,
 			Name:        req.Data.Attributes.Name,
 			Description: req.Data.Attributes.Description,

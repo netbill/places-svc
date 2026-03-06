@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/netbill/awsx"
-	"github.com/netbill/places-svc/internal/core/errx"
-	"github.com/netbill/places-svc/internal/core/models"
+	"github.com/netbill/places-svc/internal/errx"
+	"github.com/netbill/places-svc/internal/models"
 )
 
 func (s *Uploader) CreatePlaceBannerUploadMediaLinks(

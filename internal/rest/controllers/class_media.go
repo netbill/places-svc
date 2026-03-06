@@ -1,4 +1,4 @@
-package controller
+package controllers
 
 import (
 	"errors"
@@ -8,8 +8,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core"
-	"github.com/netbill/places-svc/internal/core/errx"
+	"github.com/netbill/places-svc/internal/core/classification"
+	"github.com/netbill/places-svc/internal/errx"
 	"github.com/netbill/places-svc/internal/rest/requests"
 	"github.com/netbill/places-svc/internal/rest/responses"
 	"github.com/netbill/places-svc/internal/rest/scope"
@@ -65,7 +65,7 @@ func (c *PlaceClassController) DeleteUploadMedia(w http.ResponseWriter, r *http.
 	err = c.class.DeleteUploadMedia(
 		r.Context(),
 		req.Data.Id,
-		core.DeleteUploadPlaceClassMediaParams{
+		classification.DeleteUploadPlaceClassMediaParams{
 			Icon: req.Data.Attributes.IconKey,
 		},
 	)

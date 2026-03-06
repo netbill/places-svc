@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core"
-	"github.com/netbill/places-svc/internal/core/errx"
-	"github.com/netbill/places-svc/internal/core/models"
+	"github.com/netbill/places-svc/internal/core/organization"
+	"github.com/netbill/places-svc/internal/errx"
+	"github.com/netbill/places-svc/internal/models"
 )
 
 type OrgMemberRow struct {
@@ -78,7 +78,7 @@ func NewOrgMember(query OrgMembersQ) *OrgMembersRepository {
 
 func (r *OrgMembersRepository) Create(
 	ctx context.Context,
-	params core.CreateMemberParams,
+	params organization.CreateMemberParams,
 ) error {
 	return r.query.New().Insert(ctx, OrgMemberRow{
 		ID:              params.ID,
@@ -96,7 +96,7 @@ func (r *OrgMembersRepository) Create(
 func (r *OrgMembersRepository) Update(
 	ctx context.Context,
 	memberID uuid.UUID,
-	params core.UpdateMemberParams,
+	params organization.UpdateMemberParams,
 ) error {
 	return r.query.New().FilterByID(memberID).
 		UpdateLabel(params.Label).

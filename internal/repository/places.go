@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core"
-	"github.com/netbill/places-svc/internal/core/errx"
-	"github.com/netbill/places-svc/internal/core/models"
+	"github.com/netbill/places-svc/internal/core/places"
+	"github.com/netbill/places-svc/internal/errx"
+	"github.com/netbill/places-svc/internal/models"
 	"github.com/netbill/restkit/pagi"
 	"github.com/paulmach/orb"
 )
@@ -107,7 +107,7 @@ func NewPlaces(query PlacesQ) *PlacesRepository {
 	}
 }
 
-func (r *PlacesRepository) Create(ctx context.Context, params core.CreatePlaceParams) (models.Place, error) {
+func (r *PlacesRepository) Create(ctx context.Context, params places.CreateParams) (models.Place, error) {
 	row, err := r.query.New().Insert(ctx, PlaceRow{
 		ClassID:        params.ClassID,
 		OrganizationID: params.OrganizationID,
@@ -143,7 +143,7 @@ func (r *PlacesRepository) Get(ctx context.Context, placeID uuid.UUID) (models.P
 
 func (r *PlacesRepository) GetList(
 	ctx context.Context,
-	params core.FilterPlaceParams,
+	params places.FilterPlaceParams,
 	limit, offset uint,
 ) (pagi.Page[[]models.Place], error) {
 	if limit == 0 {
@@ -214,7 +214,7 @@ func (r *PlacesRepository) GetListByIDs(ctx context.Context, ids []uuid.UUID) ([
 func (r *PlacesRepository) Update(
 	ctx context.Context,
 	placeID uuid.UUID,
-	params core.UpdatePlaceParams,
+	params places.UpdateParams,
 ) (models.Place, error) {
 	q := r.query.New().FilterByID(placeID)
 	if params.ClassID != nil {

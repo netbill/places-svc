@@ -1,4 +1,4 @@
-package controller
+package controllers
 
 import (
 	"context"
@@ -12,9 +12,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/google/uuid"
-	"github.com/netbill/places-svc/internal/core"
-	"github.com/netbill/places-svc/internal/core/errx"
-	"github.com/netbill/places-svc/internal/core/models"
+	"github.com/netbill/places-svc/internal/core/places"
+	"github.com/netbill/places-svc/internal/errx"
+	"github.com/netbill/places-svc/internal/models"
 	"github.com/netbill/places-svc/internal/rest/requests"
 	"github.com/netbill/places-svc/internal/rest/responses"
 	"github.com/netbill/places-svc/internal/rest/scope"
@@ -31,7 +31,7 @@ type placeCore interface {
 	Create(
 		ctx context.Context,
 		actor models.AccountActor,
-		params core.CreatePlaceParams,
+		params places.CreateParams,
 	) (place models.Place, err error)
 
 	Delete(
@@ -49,7 +49,7 @@ type placeCore interface {
 
 	GetList(
 		ctx context.Context,
-		params core.FilterPlaceParams,
+		params places.FilterPlaceParams,
 		limit, offset uint,
 	) (pagi.Page[[]models.Place], error)
 
@@ -57,7 +57,7 @@ type placeCore interface {
 		ctx context.Context,
 		actor models.AccountActor,
 		placeID uuid.UUID,
-		params core.UpdatePlaceParams,
+		params places.UpdateParams,
 	) (place models.Place, err error)
 
 	Activate(
@@ -84,6 +84,7 @@ type placeCore interface {
 
 	CreateUploadMediaLinks(
 		ctx context.Context,
+		actor models.AccountActor,
 		placeID uuid.UUID,
 	) (models.Place, models.UploadPlaceMediaLinks, error)
 
@@ -91,11 +92,11 @@ type placeCore interface {
 		ctx context.Context,
 		actor models.AccountActor,
 		placeID uuid.UUID,
-		params core.DeleteUploadPlaceMediaParams,
+		params places.DeleteUploadPlaceMediaParams,
 	) error
 }
 
-type organizationCore interface {
+type organizationGetter interface {
 	Get(ctx context.Context, id uuid.UUID) (models.Organization, error)
 
 	GetByIDs(
@@ -113,13 +114,13 @@ type placeClassGetter interface {
 type PlaceController struct {
 	place placeCore
 	class placeClassGetter
-	org   organizationCore
+	org   organizationGetter
 }
 
 type PlaceControllerDeps struct {
 	Place placeCore
 	Class placeClassGetter
-	Org   organizationCore
+	Org   organizationGetter
 }
 
 func NewPlaceController(deps PlaceControllerDeps) *PlaceController {
@@ -143,7 +144,7 @@ func (c *PlaceController) Create(w http.ResponseWriter, r *http.Request) {
 	log = log.WithField("organization_id", req.Data.Attributes.OrganizationId).
 		WithField("class_id", req.Data.Attributes.ClassId)
 
-	res, err := c.place.Create(r.Context(), scope.AccountActor(r), core.CreatePlaceParams{
+	res, err := c.place.Create(r.Context(), scope.AccountActor(r), places.CreateParams{
 		OrganizationID: req.Data.Attributes.OrganizationId,
 		ClassID:        req.Data.Attributes.ClassId,
 		Address:        req.Data.Attributes.Address,
@@ -157,15 +158,16 @@ func (c *PlaceController) Create(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 	switch {
-	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.WithError(err).Warn("not enough rights to create place")
-		render.ResponseError(w, problems.Forbidden("not enough rights to create place"))
-	case errors.Is(err, errx.ErrorOrganizationNotExists):
+	case errors.Is(err, errx.ErrorOrganizationNotExists),
+		errors.Is(err, errx.ErrorOrganizationDeleted):
 		log.WithError(err).Warn("organization not found")
 		render.ResponseError(w, problems.NotFound("organization not found"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Forbidden("organization is suspended"))
+	case errors.Is(err, errx.ErrorNotOrganizationHead):
+		log.WithError(err).Warn("account is not organization head")
+		render.ResponseError(w, problems.Forbidden("account is not organization head"))
 	case errors.Is(err, errx.ErrorPlaceOutOfTerritory):
 		log.WithError(err).Warn("place is out of organization's territory")
 		render.ResponseError(w, problems.Forbidden("place is out of organization's territory"))
@@ -202,15 +204,20 @@ func (c *PlaceController) Delete(w http.ResponseWriter, r *http.Request) {
 
 	err = c.place.Delete(r.Context(), scope.AccountActor(r), placeID)
 	switch {
-	case errors.Is(err, errx.ErrorPlaceNotExists) || errors.Is(err, errx.ErrorPlaceDeleted):
+	case errors.Is(err, errx.ErrorPlaceNotExists),
+		errors.Is(err, errx.ErrorPlaceDeleted):
 		log.WithError(err).Warn("place not found")
 		render.ResponseError(w, problems.NotFound("place not found"))
-	case errors.Is(err, errx.ErrorNotEnoughRights):
-		log.WithError(err).Warn("not enough rights to delete place")
-		render.ResponseError(w, problems.Forbidden("not enough rights to delete place"))
+	case errors.Is(err, errx.ErrorOrganizationNotExists),
+		errors.Is(err, errx.ErrorOrganizationDeleted):
+		log.WithError(err).Warn("organization not found")
+		render.ResponseError(w, problems.NotFound("organization not found"))
 	case errors.Is(err, errx.ErrorOrganizationIsSuspended):
 		log.WithError(err).Warn("organization is suspended")
 		render.ResponseError(w, problems.Forbidden("organization is suspended"))
+	case errors.Is(err, errx.ErrorNotOrganizationHead):
+		log.WithError(err).Warn("account is not organization head")
+		render.ResponseError(w, problems.Forbidden("account is not organization head"))
 	case err != nil:
 		log.WithError(err).Error("failed to delete place")
 		render.ResponseError(w, problems.InternalError())
@@ -237,7 +244,8 @@ func (c *PlaceController) Get(w http.ResponseWriter, r *http.Request) {
 
 	place, err := c.place.Get(r.Context(), placeID)
 	switch {
-	case errors.Is(err, errx.ErrorPlaceNotExists):
+	case errors.Is(err, errx.ErrorPlaceNotExists),
+		errors.Is(err, errx.ErrorPlaceDeleted):
 		log.WithError(err).Warn("place not found")
 		render.ResponseError(w, problems.NotFound(fmt.Sprintf("place with id %s not found", placeID)))
 		return
@@ -271,7 +279,8 @@ func (c *PlaceController) Get(w http.ResponseWriter, r *http.Request) {
 	if slices.Contains(includes, "organization") {
 		org, err := c.org.Get(r.Context(), place.OrganizationID)
 		switch {
-		case errors.Is(err, errx.ErrorOrganizationNotExists):
+		case errors.Is(err, errx.ErrorOrganizationNotExists),
+			errors.Is(err, errx.ErrorOrganizationDeleted):
 			log.WithField("organization_id", place.OrganizationID).Warn("organization not found")
 			render.ResponseError(w, problems.NotFound(fmt.Sprintf("organization with id %s not found", place.OrganizationID)))
 			return
@@ -301,7 +310,7 @@ func (c *PlaceController) GetList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := core.FilterPlaceParams{}
+	params := places.FilterPlaceParams{}
 
 	if orgIDStr := r.URL.Query().Get("organization_id"); orgIDStr != "" {
 		orgID, err := uuid.Parse(orgIDStr)
@@ -353,7 +362,7 @@ func (c *PlaceController) GetList(w http.ResponseWriter, r *http.Request) {
 			ids = append(ids, id)
 		}
 
-		class := &core.FilterClassForPlaceParams{ClassID: ids}
+		class := &places.FilterClassForPlaceParams{ClassID: ids}
 
 		if incParentStr := r.URL.Query().Get("include_parent"); incParentStr != "" {
 			value, err := strconv.ParseBool(incParentStr)
@@ -410,7 +419,7 @@ func (c *PlaceController) GetList(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		params.Near = &core.FilterPlaceNearParams{
+		params.Near = &places.FilterPlaceNearParams{
 			Point:   orb.Point{lon, lat},
 			RadiusM: uint(radius),
 		}

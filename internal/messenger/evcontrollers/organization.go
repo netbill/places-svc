@@ -1,4 +1,4 @@
-package handler
+package evcontrollers
 
 import (
 	"context"
@@ -7,13 +7,13 @@ import (
 
 	"github.com/netbill/eventbox"
 	"github.com/netbill/evtypes"
-	"github.com/netbill/places-svc/internal/core"
-	"github.com/netbill/places-svc/internal/core/errx"
+	"github.com/netbill/places-svc/internal/core/organization"
+	"github.com/netbill/places-svc/internal/errx"
 )
 
 const operationOrganizationCreated = "organization_created"
 
-func (h *Handler) OrganizationCreated(
+func (h *OrgController) OrganizationCreated(
 	ctx context.Context,
 	event eventbox.InboxEvent,
 ) error {
@@ -25,7 +25,7 @@ func (h *Handler) OrganizationCreated(
 	log := h.log.WithOperation(operationOrganizationCreated).
 		With("organization_id", payload.OrganizationID)
 
-	err := h.modules.Org.Create(ctx, core.CreateOrgParams{
+	err := h.modules.Org.Create(ctx, organization.CreateParams{
 		ID:        payload.OrganizationID,
 		Status:    payload.Status,
 		Name:      payload.Name,
@@ -51,7 +51,7 @@ func (h *Handler) OrganizationCreated(
 
 const operationOrganizationUpdated = "organization_updated"
 
-func (h *Handler) OrganizationUpdated(
+func (h *OrgController) OrganizationUpdated(
 	ctx context.Context,
 	event eventbox.InboxEvent,
 ) error {
@@ -63,7 +63,7 @@ func (h *Handler) OrganizationUpdated(
 	log := h.log.WithOperation(operationOrganizationUpdated).
 		With("organization_id", payload.OrganizationID)
 
-	err := h.modules.Org.Update(ctx, payload.OrganizationID, core.UpdateOrgParams{
+	err := h.modules.Org.Update(ctx, payload.OrganizationID, organization.UpdateParams{
 		Name:      payload.Name,
 		Status:    payload.Status,
 		IconKey:   payload.IconKey,
@@ -89,7 +89,7 @@ func (h *Handler) OrganizationUpdated(
 
 const operationOrganizationDeleted = "organization_deleted"
 
-func (h *Handler) OrganizationDeleted(
+func (h *OrgController) OrganizationDeleted(
 	ctx context.Context,
 	event eventbox.InboxEvent,
 ) error {

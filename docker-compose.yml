@@ -11,7 +11,7 @@ services:
 
   places-svc-postgres:
     image: postgis/postgis:16-3.4
-    container_name:  places-svc-postgres
+    container_name: places-svc-postgres
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres

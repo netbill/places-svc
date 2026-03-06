@@ -11,16 +11,18 @@ import (
 	"github.com/netbill/eventbox"
 	eventpg "github.com/netbill/eventbox/pg"
 	"github.com/netbill/pgdbx"
-	"github.com/netbill/places-svc/internal/core"
+	"github.com/netbill/places-svc/internal/core/classification"
+	"github.com/netbill/places-svc/internal/core/organization"
+	"github.com/netbill/places-svc/internal/core/places"
 	"github.com/netbill/places-svc/internal/geogueser"
 	"github.com/netbill/places-svc/internal/media"
 	"github.com/netbill/places-svc/internal/messenger"
-	"github.com/netbill/places-svc/internal/messenger/handler"
+	"github.com/netbill/places-svc/internal/messenger/evcontrollers"
 	"github.com/netbill/places-svc/internal/messenger/publisher"
 	"github.com/netbill/places-svc/internal/repository"
 	"github.com/netbill/places-svc/internal/repository/pg"
 	"github.com/netbill/places-svc/internal/rest"
-	"github.com/netbill/places-svc/internal/rest/controller"
+	"github.com/netbill/places-svc/internal/rest/controllers"
 	"github.com/netbill/places-svc/internal/rest/middlewares"
 	"github.com/netbill/places-svc/internal/tokenmanager"
 )
@@ -61,7 +63,7 @@ func (a *App) Run(ctx context.Context) error {
 		return fmt.Errorf("load aws config: %w", err)
 	}
 
-	s3 := media.NewUploader(awsx.New(a.config.S3.Aws.BucketName, cfg), media.Config{
+	uploader := media.NewUploader(awsx.New(a.config.S3.Aws.BucketName, cfg), media.Config{
 		LinkTTL:        a.config.S3.Media.Link.TTL,
 		PlaceClassIcon: a.config.S3.Media.Resources.PlaceClass.Icon,
 		PlaceIcon:      a.config.S3.Media.Resources.Place.Icon,
@@ -109,40 +111,40 @@ func (a *App) Run(ctx context.Context) error {
 		AccessSK: a.config.Auth.Tokens.AccountAccess.SecretKey,
 	})
 
-	orgCore := core.NewOrgModule(core.OrgModuleDeps{
+	orgCore := organization.NewService(organization.ServiceDeps{
 		Org:       orgRepo,
 		Member:    orgMemberRepo,
 		Tombstone: tombstoneRepo,
 		Tx:        db,
 	})
 
-	placeCore := core.NewModule(core.PlaceModuleDeps{
+	placeCore := places.NewModule(places.PlaceModuleDeps{
 		Repo:      placeRepo,
 		Class:     classRepo,
 		Tombstone: tombstoneRepo,
-		Auth:      orgCore,
-		Media:     s3,
+		Org:       orgCore,
+		Media:     uploader,
 		Messenger: outbound,
 		Territory: geo,
 		Tx:        db,
 	})
 
-	placeClassCore := core.NewPlaceClassModule(core.PlaceClassModuleDeps{
+	placeClassCore := classification.NewPlaceClassModule(classification.ServiceDeps{
 		Repo:      classRepo,
-		Media:     s3,
+		Media:     uploader,
 		Messenger: outbound,
 		Tx:        db,
 	})
 
 	mdlv := middlewares.New(tokenManager)
 
-	placeController := controller.NewPlaceController(controller.PlaceControllerDeps{
+	placeController := controllers.NewPlaceController(controllers.PlaceControllerDeps{
 		Place: placeCore,
 		Class: placeClassCore,
 		Org:   orgCore,
 	})
 
-	placeClassController := controller.NewPlaceClassController(controller.PlaceClassControllerDeps{
+	placeClassController := controllers.NewPlaceClassController(controllers.PlaceClassControllerDeps{
 		Class: placeClassCore,
 	})
 
@@ -180,7 +182,7 @@ func (a *App) Run(ctx context.Context) error {
 		outboxWorker.Run(ctx)
 	})
 
-	inbound := handler.New(a.log, handler.Modules{
+	inbound := evcontrollers.New(a.log, evcontrollers.Modules{
 		Org: orgCore,
 	})
 

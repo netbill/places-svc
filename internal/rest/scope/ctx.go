@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/netbill/places-svc/internal/core/models"
 	"github.com/netbill/places-svc/internal/media"
+	"github.com/netbill/places-svc/internal/models"
 	"github.com/netbill/places-svc/pkg/log"
 	"github.com/netbill/restkit/tokens"
 )
