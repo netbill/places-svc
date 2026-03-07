@@ -2,8 +2,6 @@ services:
   places-svc:
     build: .
     container_name: places-svc
-    environment:
-      - KV_VIPER_FILE=./config_docker.yaml
     ports:
       - "8004:8000"
     networks:
