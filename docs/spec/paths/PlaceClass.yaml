@@ -13,10 +13,6 @@ get:
   summary: Get place class
   description: >
     Returns a place class by ID.
-
-    **400 Bad Request** is returned when the place class ID is not a valid UUID.
-    **404 Not Found** is returned when the place class or its parent does not exist.
-    **500 Internal Server Error** is returned when an unexpected error occurs.
   parameters:
     - in: query
       name: include
@@ -65,14 +61,6 @@ patch:
   summary: Update place class
   description: >
     Updates a place class by ID. Accessible by system moderators only.
-
-    **400 Bad Request** is returned when the place class ID is not a valid UUID,
-    the request body is invalid, or the uploaded icon is invalid.
-    **401 Unauthorized** is returned when the authorization token is missing or invalid.
-    **403 Forbidden** is returned when the initiator is not a system moderator.
-    **404 Not Found** is returned when the place class does not exist.
-    **409 Conflict** is returned when setting the parent would create a cycle in the hierarchy.
-    **500 Internal Server Error** is returned when an unexpected error occurs.
   security:
     - BearerAuth: [ ]
   requestBody:

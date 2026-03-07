@@ -13,13 +13,6 @@ post:
   summary: Create place upload media link
   description: >
     Generates upload media links (icon and banner) for a place.
-
-    **400 Bad Request** is returned when the place ID is not a valid UUID.
-    **401 Unauthorized** is returned when the authorization token is missing or invalid.
-    **403 Forbidden** is returned when the initiator does not have enough rights
-    or the organization is suspended.
-    **404 Not Found** is returned when the place does not exist.
-    **500 Internal Server Error** is returned when an unexpected error occurs.
   security:
     - BearerAuth: [ ]
   responses:
@@ -71,14 +64,6 @@ delete:
   summary: Delete place uploaded media
   description: >
     Deletes uploaded media (icon and/or banner) from an active upload session for a place.
-
-    **400 Bad Request** is returned when the request body is invalid,
-    or the provided icon/banner key is invalid.
-    **401 Unauthorized** is returned when the authorization token is missing or invalid.
-    **403 Forbidden** is returned when the initiator does not have enough rights
-    or the organization is suspended.
-    **404 Not Found** is returned when the place does not exist.
-    **500 Internal Server Error** is returned when an unexpected error occurs.
   security:
     - BearerAuth: [ ]
   requestBody:

@@ -4,9 +4,6 @@ get:
   summary: Get places list
   description: >
     Returns a paginated list of places with optional filters.
-
-    **400 Bad Request** is returned when any query parameter has an invalid format.
-    **500 Internal Server Error** is returned when an unexpected error occurs.
   parameters:
     - in: query
       name: size
@@ -143,14 +140,6 @@ post:
   summary: Create place
   description: >
     Creates a new place for an organization.
-
-    **400 Bad Request** is returned when the request body is invalid.
-    **401 Unauthorized** is returned when the authorization token is missing or invalid.
-    **403 Forbidden** is returned when the initiator does not have enough rights,
-    the organization is suspended, or the place point is outside the organization's territory.
-    **404 Not Found** is returned when the organization or place class does not exist.
-    **409 Conflict** is returned when the place class is deprecated.
-    **500 Internal Server Error** is returned when an unexpected error occurs.
   security:
     - BearerAuth: [ ]
   requestBody:

@@ -154,17 +154,16 @@ func (a *App) Run(ctx context.Context) error {
 		Middlewares:   mdlv,
 		Log:           a.log,
 		MediaResolver: media.NewResolver(a.config.S3.Aws.BaseURL),
-		Config: rest.Config{
+	})
+
+	run(func() {
+		router.Run(ctx, rest.Config{
 			Port:              a.config.Rest.Port,
 			ReadTimeout:       a.config.Rest.Timeouts.Read,
 			ReadHeaderTimeout: a.config.Rest.Timeouts.ReadHeader,
 			WriteTimeout:      a.config.Rest.Timeouts.Write,
 			IdleTimeout:       a.config.Rest.Timeouts.Idle,
-		},
-	})
-
-	run(func() {
-		router.Run(ctx)
+		})
 	})
 
 	outboxWorker := messenger.NewOutboxWorker(a.log, outbox, producer, eventbox.OutboxWorkerConfig{

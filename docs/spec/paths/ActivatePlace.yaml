@@ -13,13 +13,6 @@ patch:
   summary: Activate place
   description: >
     Activates a place by ID, setting its status to `active`.
-
-    **400 Bad Request** is returned when the place ID is not a valid UUID.
-    **401 Unauthorized** is returned when the authorization token is missing or invalid.
-    **403 Forbidden** is returned when the initiator does not have enough rights
-    or the organization is suspended.
-    **404 Not Found** is returned when the place does not exist.
-    **500 Internal Server Error** is returned when an unexpected error occurs.
   security:
     - BearerAuth: [ ]
   responses:

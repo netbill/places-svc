@@ -262,35 +262,20 @@ func (c *PlaceController) Get(w http.ResponseWriter, r *http.Request) {
 
 	if slices.Contains(includes, "place_class") {
 		class, err := c.class.Get(r.Context(), place.ClassID)
-		switch {
-		case errors.Is(err, errx.ErrorPlaceClassNotExists):
-			log.WithField("place_class_id", place.ClassID).Warn("place class not found")
-			render.ResponseError(w, problems.NotFound(fmt.Sprintf("place class with id %s not found", place.ClassID)))
-			return
-		case err != nil:
+		if err != nil {
 			log.WithError(err).Error("failed to get place class")
-			render.ResponseError(w, problems.InternalError())
-			return
-		default:
-			opts = append(opts, responses.WithClass(r, class))
 		}
+
+		opts = append(opts, responses.WithClass(r, class))
 	}
 
 	if slices.Contains(includes, "organization") {
 		org, err := c.org.Get(r.Context(), place.OrganizationID)
-		switch {
-		case errors.Is(err, errx.ErrorOrganizationNotExists),
-			errors.Is(err, errx.ErrorOrganizationDeleted):
-			log.WithField("organization_id", place.OrganizationID).Warn("organization not found")
-			render.ResponseError(w, problems.NotFound(fmt.Sprintf("organization with id %s not found", place.OrganizationID)))
-			return
-		case err != nil:
-			log.WithError(err).Error("failed to get organization")
-			render.ResponseError(w, problems.InternalError())
-			return
-		default:
-			opts = append(opts, responses.WithOrganization(r, org))
+		if err != nil {
+			log.WithError(err).Error("failed to get organization for place")
 		}
+
+		opts = append(opts, responses.WithOrganization(r, org))
 	}
 
 	render.Response(w, http.StatusOK, responses.Place(r, place, opts...))
@@ -447,8 +432,6 @@ func (c *PlaceController) GetList(w http.ResponseWriter, r *http.Request) {
 		classes, err := c.class.GetByIDs(r.Context(), classIDs)
 		if err != nil {
 			log.WithError(err).Error("failed to get place classes")
-			render.ResponseError(w, problems.InternalError())
-			return
 		}
 
 		opts = append(opts, responses.WithCollectionClass(r, classes))
@@ -463,8 +446,6 @@ func (c *PlaceController) GetList(w http.ResponseWriter, r *http.Request) {
 		orgs, err := c.org.GetByIDs(r.Context(), orgIDs)
 		if err != nil {
 			log.WithError(err).Error("failed to get organizations")
-			render.ResponseError(w, problems.InternalError())
-			return
 		}
 
 		opts = append(opts, responses.WithCollectionOrganization(r, orgs))

@@ -13,10 +13,6 @@ get:
   summary: Get place
   description: >
     Returns a place by ID.
-
-    **400 Bad Request** is returned when the place ID is not a valid UUID.
-    **404 Not Found** is returned when the place, related place class, or related organization does not exist.
-    **500 Internal Server Error** is returned when an unexpected error occurs.
   parameters:
     - in: query
       name: include
@@ -66,14 +62,6 @@ patch:
   summary: Update place
   description: >
     Updates a place by ID.
-
-    **400 Bad Request** is returned when the place ID is not a valid UUID, the request body is invalid,
-    or the uploaded icon/banner is invalid.
-    **401 Unauthorized** is returned when the authorization token is missing or invalid.
-    **403 Forbidden** is returned when the initiator does not have enough rights.
-    **404 Not Found** is returned when the place does not exist.
-    **409 Conflict** is returned when the organization is suspended or the place class is deprecated.
-    **500 Internal Server Error** is returned when an unexpected error occurs.
   security:
     - BearerAuth: [ ]
   requestBody:

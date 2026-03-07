@@ -1,7 +1,7 @@
 # ==============================
 # 1) BUILD STAGE
 # ==============================
-ARG GO_VERSION=1.24.7
+ARG GO_VERSION=1.25.7
 FROM golang:${GO_VERSION}-alpine AS builder
 
 WORKDIR /service
@@ -24,9 +24,9 @@ WORKDIR /service
 RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /service/main .
-COPY config_docker.yaml .
+COPY config.yaml .
 
-ENV KV_VIPER_FILE=/service/config_docker.yaml
+ENV KV_VIPER_FILE=/service/config.yaml
 
 CMD ["./main", "run", "service"]
 

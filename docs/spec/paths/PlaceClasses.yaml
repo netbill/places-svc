@@ -4,9 +4,6 @@ get:
   summary: Get place classes list
   description: >
     Returns a paginated list of place classes with optional filters.
-
-    **400 Bad Request** is returned when any query parameter has an invalid format.
-    **500 Internal Server Error** is returned when an unexpected error occurs.
   parameters:
     - in: query
       name: size
@@ -90,13 +87,6 @@ post:
   summary: Create place class
   description: >
     Creates a new place class. Accessible by system administrators only.
-
-    **400 Bad Request** is returned when the request body is invalid.
-    **401 Unauthorized** is returned when the authorization token is missing or invalid.
-    **403 Forbidden** is returned when the initiator does not have enough rights.
-    **404 Not Found** is returned when the parent place class does not exist.
-    **409 Conflict** is returned when the parent place class is deprecated.
-    **500 Internal Server Error** is returned when an unexpected error occurs.
   security:
     - BearerAuth: [ ]
   requestBody:

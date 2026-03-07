@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
-  description: API for managing places and their classes.
-  title: Place Service API
-  version: 0.0.1
+  description: API documentation for managing places and their classes.
+  title: netbill places-svc API
+  version: 0.1.0
 servers:
 - url: /
 paths:
@@ -10,7 +10,6 @@ paths:
     get:
       description: |
         Returns a paginated list of places with optional filters.
-        **400 Bad Request** is returned when any query parameter has an invalid format. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Pagination limit. Cannot be greater than 1000.
         explode: true
@@ -176,7 +175,6 @@ paths:
     post:
       description: |
         Creates a new place for an organization.
-        **400 Bad Request** is returned when the request body is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights, the organization is suspended, or the place point is outside the organization's territory. **404 Not Found** is returned when the organization or place class does not exist. **409 Conflict** is returned when the place class is deprecated. **500 Internal Server Error** is returned when an unexpected error occurs.
       requestBody:
         content:
           application/json:
@@ -296,7 +294,6 @@ paths:
     get:
       description: |
         Returns a place by ID.
-        **400 Bad Request** is returned when the place ID is not a valid UUID. **404 Not Found** is returned when the place, related place class, or related organization does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: |
           List of related resources to include in the response. Supported values: `place_class`, `organization`.
@@ -364,7 +361,6 @@ paths:
     patch:
       description: |
         Updates a place by ID.
-        **400 Bad Request** is returned when the place ID is not a valid UUID, the request body is invalid, or the uploaded icon/banner is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights. **404 Not Found** is returned when the place does not exist. **409 Conflict** is returned when the organization is suspended or the place class is deprecated. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Place ID
         explode: false
@@ -448,7 +444,6 @@ paths:
     patch:
       description: |
         Activates a place by ID, setting its status to `active`.
-        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Place ID
         explode: false
@@ -519,7 +514,6 @@ paths:
     patch:
       description: |
         Deactivates a place by ID, setting its status to `inactive`.
-        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Place ID
         explode: false
@@ -580,7 +574,6 @@ paths:
     delete:
       description: |
         Removes verification from a place. Accessible by system moderators only.
-        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Place ID
         explode: false
@@ -650,7 +643,6 @@ paths:
     patch:
       description: |
         Marks a place as verified. Accessible by system moderators only.
-        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Place ID
         explode: false
@@ -711,7 +703,6 @@ paths:
     delete:
       description: |
         Deletes uploaded media (icon and/or banner) from an active upload session for a place.
-        **400 Bad Request** is returned when the request body is invalid, or the provided icon/banner key is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Place ID
         explode: false
@@ -783,7 +774,6 @@ paths:
     post:
       description: |
         Generates upload media links (icon and banner) for a place.
-        **400 Bad Request** is returned when the place ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights or the organization is suspended. **404 Not Found** is returned when the place does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Place ID
         explode: false
@@ -844,7 +834,6 @@ paths:
     get:
       description: |
         Returns a paginated list of place classes with optional filters.
-        **400 Bad Request** is returned when any query parameter has an invalid format. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Pagination limit. Cannot be greater than 100.
         explode: true
@@ -945,7 +934,6 @@ paths:
     post:
       description: |
         Creates a new place class. Accessible by system administrators only.
-        **400 Bad Request** is returned when the request body is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator does not have enough rights. **404 Not Found** is returned when the parent place class does not exist. **409 Conflict** is returned when the parent place class is deprecated. **500 Internal Server Error** is returned when an unexpected error occurs.
       requestBody:
         content:
           application/json:
@@ -1009,7 +997,6 @@ paths:
     get:
       description: |
         Returns a place class by ID.
-        **400 Bad Request** is returned when the place class ID is not a valid UUID. **404 Not Found** is returned when the place class or its parent does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: |
           List of related resources to include in the response. Supported values: `parent`.
@@ -1076,7 +1063,6 @@ paths:
     patch:
       description: |
         Updates a place class by ID. Accessible by system moderators only.
-        **400 Bad Request** is returned when the place class ID is not a valid UUID, the request body is invalid, or the uploaded icon is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place class does not exist. **409 Conflict** is returned when setting the parent would create a cycle in the hierarchy. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Place class ID
         explode: false
@@ -1150,7 +1136,6 @@ paths:
     delete:
       description: |
         Removes the deprecated mark from a place class. Accessible by system moderators only.
-        **400 Bad Request** is returned when the place class ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place class does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Place class ID
         explode: false
@@ -1220,7 +1205,6 @@ paths:
     patch:
       description: |
         Marks a place class as deprecated. Accessible by system moderators only. Deprecated place classes cannot be assigned to new places.
-        **400 Bad Request** is returned when the place class ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system moderator. **404 Not Found** is returned when the place class does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Place class ID
         explode: false
@@ -1281,7 +1265,6 @@ paths:
     delete:
       description: |
         Deletes uploaded media (icon) from an active upload session for a place class. Accessible by system administrators only.
-        **400 Bad Request** is returned when the request body is invalid or the provided icon key is invalid. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system administrator. **404 Not Found** is returned when the place class does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Place class ID
         explode: false
@@ -1353,7 +1336,6 @@ paths:
     post:
       description: |
         Generates an upload media link (icon) for a place class. Accessible by system administrators only.
-        **400 Bad Request** is returned when the place class ID is not a valid UUID. **401 Unauthorized** is returned when the authorization token is missing or invalid. **403 Forbidden** is returned when the initiator is not a system administrator. **404 Not Found** is returned when the place class does not exist. **500 Internal Server Error** is returned when an unexpected error occurs.
       parameters:
       - description: Place class ID
         explode: false

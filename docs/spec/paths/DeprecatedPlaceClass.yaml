@@ -14,12 +14,6 @@ patch:
   description: >
     Marks a place class as deprecated. Accessible by system moderators only.
     Deprecated place classes cannot be assigned to new places.
-
-    **400 Bad Request** is returned when the place class ID is not a valid UUID.
-    **401 Unauthorized** is returned when the authorization token is missing or invalid.
-    **403 Forbidden** is returned when the initiator is not a system moderator.
-    **404 Not Found** is returned when the place class does not exist.
-    **500 Internal Server Error** is returned when an unexpected error occurs.
   security:
     - BearerAuth: [ ]
   responses:
@@ -70,12 +64,6 @@ delete:
   summary: Undeprecate place class
   description: >
     Removes the deprecated mark from a place class. Accessible by system moderators only.
-
-    **400 Bad Request** is returned when the place class ID is not a valid UUID.
-    **401 Unauthorized** is returned when the authorization token is missing or invalid.
-    **403 Forbidden** is returned when the initiator is not a system moderator.
-    **404 Not Found** is returned when the place class does not exist.
-    **500 Internal Server Error** is returned when an unexpected error occurs.
   security:
     - BearerAuth: [ ]
   responses:

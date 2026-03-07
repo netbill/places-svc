@@ -221,18 +221,11 @@ func (c *PlaceClassController) Get(w http.ResponseWriter, r *http.Request) {
 
 	if slices.Contains(includes, "parent") && class.ParentID != nil {
 		parent, err := c.class.Get(r.Context(), *class.ParentID)
-		switch {
-		case errors.Is(err, errx.ErrorPlaceClassNotExists):
-			log.WithField("parent_class_id", class.ParentID).Warn("place class not found")
-			render.ResponseError(w, problems.NotFound("place class not found"))
-			return
-		case err != nil:
-			log.WithError(err).Error("failed to get place class")
-			render.ResponseError(w, problems.InternalError())
-			return
-		default:
-			opts = append(opts, responses.WithParentClass(r, parent))
+		if err != nil {
+			log.WithError(err).Error("failed to get parent place class")
 		}
+
+		opts = append(opts, responses.WithParentClass(r, parent))
 	}
 
 	render.Response(w, http.StatusOK, responses.PlaceClass(r, class, opts...))
@@ -331,8 +324,6 @@ func (c *PlaceClassController) GetList(w http.ResponseWriter, r *http.Request) {
 		parents, err := c.class.GetByIDs(r.Context(), parentIDs)
 		if err != nil {
 			log.WithError(err).Error("failed to get place classes")
-			render.ResponseError(w, problems.InternalError())
-			return
 		}
 
 		opts = append(opts, responses.WithCollectionParentClass(r, parents))
